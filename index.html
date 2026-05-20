@@ -351,6 +351,35 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 .uau-seg-modal{background:#fff;border-radius:16px;padding:22px;width:640px;max-width:96vw;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
 .uau-seg-modal .mtabs{margin-bottom:12px}
 
+/* ── JERARQUÍA REPORTES ── */
+.hierarchy-view{padding:4px 0}
+.hier-node{margin-bottom:8px}
+.hier-node .hier-node{margin-top:6px;margin-left:24px;margin-bottom:0}
+.hier-node .hier-node .hier-node{margin-left:24px}
+.hier-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:box-shadow .15s,transform .15s;user-select:none}
+.hier-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);transform:translateY(-1px)}
+.hier-card.open{border-color:#1e40af;background:#eff6ff}
+.hier-lvl-badge{font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;white-space:nowrap}
+.hier-lvl-regional{background:#1e40af;color:#fff}
+.hier-lvl-zona{background:#0891b2;color:#fff}
+.hier-lvl-sucursal{background:#0d9488;color:#fff}
+.hier-name{font-size:13px;font-weight:800;color:var(--dark);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hier-stats{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.hier-stat{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.hs-total{background:var(--soft);color:var(--dark)}
+.hs-ec{background:var(--midbg);color:var(--mid)}
+.hs-es{background:#dbeafe;color:#1e40af}
+.hs-ci{background:var(--goodbg);color:var(--good)}
+.hs-atr{background:var(--badbg);color:var(--bad)}
+.hs-pct{background:#f1f5f9;color:#475569}
+.hier-chevron{font-size:11px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.hier-children{display:none;padding-top:4px}
+.hier-plan-list{display:flex;flex-direction:column;gap:3px;margin-top:4px;margin-left:24px}
+.hier-plan-item{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:12px;transition:background .12s}
+.hier-plan-item:hover{background:var(--soft)}
+.hier-plan-item.tipo-unoauno{border-left:3px solid var(--gold)}
+.hier-plan-item.tipo-fortalecimiento{border-left:3px solid #1e293b}
+
 /* ── PRINT ── */
 @media print{
   html,body{height:auto!important;overflow:visible!important;width:auto!important}
@@ -1318,7 +1347,122 @@ window.renderAll=()=>{
   const plans=filteredPlans();
   const hayAtr=plans.some(isAtrasado);
   renderKPIs(plans,hayAtr);
-  renderKanban(plans,hayAtr);
+  const rol=userProfile.rol;
+  if(currentSubView==='reportes'&&['director','regional','zona'].includes(rol)){
+    const me=currentUser.uid;
+    const creadorDe=p=>p.creadoPor||p.liderUid||'';
+    const reportPlans=allPlanes.filter(p=>creadorDe(p)!==me);
+    document.getElementById('kanbanArea').innerHTML=renderReportesHierarchy(reportPlans);
+  } else {
+    renderKanban(plans,hayAtr);
+  }
+};
+
+// ── JERARQUÍA VISUAL DE REPORTES ─────────────────────────────────────────────
+function planStats(ps){
+  const total=ps.length;
+  const enC=ps.filter(p=>p.estado==='En curso'&&!isAtrasado(p)).length;
+  const enS=ps.filter(p=>p.estado==='En seguimiento'&&!isAtrasado(p)).length;
+  const cie=ps.filter(p=>p.estado==='Cierre').length;
+  const atr=ps.filter(isAtrasado).length;
+  const avgPct=total>0?Math.round(ps.reduce((s,p)=>s+(p.pct||0),0)/total):0;
+  return {total,enC,enS,cie,atr,avgPct};
+}
+
+function hierBadges(st){
+  return `<span class="hier-stat hs-total">${st.total} plan${st.total!==1?'es':''}</span>`+
+    (st.enC?`<span class="hier-stat hs-ec">En curso: ${st.enC}</span>`:'')+
+    (st.enS?`<span class="hier-stat hs-es">En seg: ${st.enS}</span>`:'')+
+    (st.cie?`<span class="hier-stat hs-ci">Cierre: ${st.cie}</span>`:'')+
+    (st.atr?`<span class="hier-stat hs-atr">⚠ ${st.atr}</span>`:'')+
+    `<span class="hier-stat hs-pct">${st.avgPct}% avance</span>`;
+}
+
+function hierPlanList(ps){
+  if(!ps.length) return '';
+  return `<div class="hier-plan-list">${ps.map(p=>{
+    const isUaU=p.tipo==='unoauno';
+    const atr=isAtrasado(p);
+    const stCls=atr?'atr':p.estado==='Cierre'?'good':p.estado==='En seguimiento'?'neu':'mid';
+    const meta=isUaU?`S${p.semana||'?'}`:(p.pct!==undefined?`${p.pct}%`:'');
+    return `<div class="hier-plan-item ${isUaU?'tipo-unoauno':'tipo-fortalecimiento'}" onclick="openDetail('${p.id}')">
+      <span style="flex:1;font-weight:700;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.asesor||'—'}</span>
+      ${meta?`<span style="font-size:10px;color:var(--muted);flex-shrink:0">${meta}</span>`:''}
+      <span class="pill ${stCls}" style="font-size:10px;flex-shrink:0">${p.estado}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function hierNode(id,levelCls,label,name,ps,childrenHtml){
+  const st=planStats(ps);
+  return `<div class="hier-node">
+    <div class="hier-card" onclick="toggleHN('${id}')">
+      <span class="hier-lvl-badge ${levelCls}">${label}</span>
+      <span class="hier-name">${name}</span>
+      <div class="hier-stats">${hierBadges(st)}</div>
+      <span class="hier-chevron" id="hc_${id}">▶</span>
+    </div>
+    <div class="hier-children" id="hn_${id}">${childrenHtml}</div>
+  </div>`;
+}
+
+function sucNodes(plans){
+  const bySuc={};
+  plans.forEach(p=>{const s=p.sucursal||'Sin sucursal';(bySuc[s]=bySuc[s]||[]).push(p);});
+  return Object.entries(bySuc).sort((a,b)=>a[0].localeCompare(b[0])).map(([s,sp])=>
+    hierNode('s_'+s.replace(/[\s,\.]/g,'_'),'hier-lvl-sucursal','Sucursal',s,sp,hierPlanList(sp))
+  ).join('');
+}
+
+function zonaNodes(regionName,plans){
+  const byZona={};
+  plans.forEach(p=>{const z=p.zona||'Sin zona';(byZona[z]=byZona[z]||[]).push(p);});
+  return Object.entries(byZona).sort((a,b)=>a[0].localeCompare(b[0])).map(([z,zp])=>{
+    const skip=regionName.trim().toLowerCase()===z.trim().toLowerCase();
+    if(skip) return sucNodes(zp); // Regla: Regional=Zona → saltar directo a sucursales
+    return hierNode('z_'+z.replace(/[\s,\.]/g,'_'),'hier-lvl-zona','Zona',z,zp,sucNodes(zp));
+  }).join('');
+}
+
+function renderReportesHierarchy(plans){
+  const rol=userProfile.rol;
+  if(!plans.length) return `<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">No hay planes de reportes disponibles.</div>`;
+  if(rol==='director'){
+    const byReg={};
+    plans.forEach(p=>{const r=p.region||'Sin región';(byReg[r]=byReg[r]||[]).push(p);});
+    return `<div class="hierarchy-view">${
+      Object.entries(byReg).sort((a,b)=>a[0].localeCompare(b[0])).map(([r,rp])=>
+        hierNode('r_'+r.replace(/[\s,\.]/g,'_'),'hier-lvl-regional','Regional',r,rp,zonaNodes(r,rp))
+      ).join('')
+    }</div>`;
+  }
+  if(rol==='regional'){
+    const myReg=userProfile.region||'';
+    const byZona={};
+    plans.forEach(p=>{const z=p.zona||'Sin zona';(byZona[z]=byZona[z]||[]).push(p);});
+    return `<div class="hierarchy-view">${
+      Object.entries(byZona).sort((a,b)=>a[0].localeCompare(b[0])).map(([z,zp])=>{
+        const skip=myReg.trim().toLowerCase()===z.trim().toLowerCase();
+        if(skip) return sucNodes(zp);
+        return hierNode('z_'+z.replace(/[\s,\.]/g,'_'),'hier-lvl-zona','Zona',z,zp,sucNodes(zp));
+      }).join('')
+    }</div>`;
+  }
+  if(rol==='zona'){
+    return `<div class="hierarchy-view">${sucNodes(plans)}</div>`;
+  }
+  return '';
+}
+
+window.toggleHN=(id)=>{
+  const el=document.getElementById('hn_'+id);
+  const chev=document.getElementById('hc_'+id);
+  const card=el?.previousElementSibling;
+  if(!el) return;
+  const isOpen=el.style.display==='block';
+  el.style.display=isOpen?'none':'block';
+  if(chev) chev.style.transform=isOpen?'':'rotate(90deg)';
+  if(card) card.classList.toggle('open',!isOpen);
 };
 
 function filteredPlans(){
