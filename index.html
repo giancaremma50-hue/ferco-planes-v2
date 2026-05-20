@@ -898,7 +898,8 @@ function fileIcon(n){
   if(['xlsx','xls','csv'].includes(e)) return s('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/>','#22c55e');
   return s('<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>');
 }
-function fmt$(n){if(!n&&n!==0) return '—';return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function getCurrSymbol(pais){const p=(pais||'').toLowerCase();if(p.startsWith('guat')||p==='gt') return 'Q';if(p.startsWith('hon')||p==='hn') return 'L';return '$';}
+function fmt$(n,pais){if(!n&&n!==0) return '—';const sym=pais?getCurrSymbol(pais):'$';return sym+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
 function getVal(id){const el=document.getElementById(id);return el?el.value:'';}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display='block';}}
 function hideErr(id){const el=document.getElementById(id);if(el)el.style.display='none';}
@@ -1418,9 +1419,9 @@ function renderKanban(plans,hayAtr){
           ${avenc.filter(a=>a.vencido).map(a=>`<div style="font-size:10px;color:var(--atr);font-weight:700;background:var(--atrbg);padding:2px 6px;border-radius:4px;margin-bottom:2px">⚠ Acuerdo #${a.idx+1} vencido</div>`).join('')}
         </div>`:''}
         <div class="pc-counts">
-          <span class="pc-count">${lIcon('clipboard',11)} ${segsN} seg.</span>
-          <span class="pc-count">${lIcon('paperclip',11)} ${archN} arch.</span>
-          <span class="pc-count">${lIcon('message-circle',11)} ${comN} com.</span>
+          ${segsN>0?`<span class="pc-count">${lIcon('clipboard',11)} ${segsN} seg.</span>`:''}
+          ${archN>0?`<span class="pc-count">${lIcon('paperclip',11)} ${archN} arch.</span>`:''}
+          ${comN>0?`<span class="pc-count">${lIcon('message-circle',11)} ${comN} com.</span>`:''}
         </div>
       </div>`;
     }
@@ -1513,11 +1514,11 @@ window.setDetailTab=(tab,el,idx)=>{
       <div class="fm-section">Indicadores — Semana ${p.semana||''}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
         ${[
-          ['Meta de Utilidad',fmt$(ind.metaUtilidad)],
-          ['Utilidad Generada',fmt$(ind.utilidadGenerada)],
+          ['Meta de Utilidad',fmt$(ind.metaUtilidad,p.pais)],
+          ['Utilidad Generada',fmt$(ind.utilidadGenerada,p.pais)],
           ['% PPT',ppt+'%'],
-          ['Monto Cotizado',fmt$(ind.montoCotizado)],
-          ['Facturación',fmt$(ind.facturacion)],
+          ['Monto Cotizado',fmt$(ind.montoCotizado,p.pais)],
+          ['Facturación',fmt$(ind.facturacion,p.pais)],
           ['Tasa de Conversión',mc+'%'],
           ['Clientes Atendidos',ind.clientesAtendidos??'—'],
           ['Cotizaciones',ind.cotizaciones??'—'],
@@ -1572,7 +1573,7 @@ window.setDetailTab=(tab,el,idx)=>{
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0;font-size:11px">
             <div class="ind-calc"><label>PPT</label><span class="calc-val">${ppt}%</span></div>
             <div class="ind-calc"><label>Margen</label><span class="calc-val">${mc}%</span></div>
-            <div style="background:var(--soft);border-radius:8px;padding:8px;font-size:11px"><label style="font-size:10px;font-weight:800;color:var(--muted)">Facturación</label><div style="font-weight:700;margin-top:2px">${fmt$(ind.facturacion)}</div></div>
+            <div style="background:var(--soft);border-radius:8px;padding:8px;font-size:11px"><label style="font-size:10px;font-weight:800;color:var(--muted)">Facturación</label><div style="font-weight:700;margin-top:2px">${fmt$(ind.facturacion,p.pais)}</div></div>
             <div style="background:var(--soft);border-radius:8px;padding:8px;font-size:11px"><label style="font-size:10px;font-weight:800;color:var(--muted)">Clientes</label><div style="font-weight:700;margin-top:2px">${ind.clientesAtendidos||0}</div></div>
           </div>
           ${sg.resumen?`<div class="tl-text"><b>Resumen:</b> ${sg.resumen}</div>`:''}
@@ -2353,9 +2354,8 @@ const TABS=[
     const up=userProfile;
     const autoHier=up.rol==='sucursal'&&up.region;
     return `<div class="form-grid">
-      <div class="form-group"><label>Nombre completo del asesor *</label><input type="text" id="f_nombre" placeholder="Nombre y apellidos" value="${formData.nombre||''}"></div>
-      <div class="form-group"><label>Puesto *</label><input type="text" id="f_puesto" placeholder="Ej. Asesor Comercial" value="${formData.puesto||''}"></div>
-      <div class="form-group"><label>Fecha de inicio *</label><input type="date" id="f_fecha" value="${formData.fecha||''}"></div>
+      <div class="form-group"><label>Nombre completo del colaborador *</label><input type="text" id="f_nombre" placeholder="Nombre y apellidos" value="${formData.nombre||''}"></div>
+      <div class="form-group"><label>Puesto *</label><input type="text" id="f_puesto" placeholder="Ej. Coordinador Administrativo" value="${formData.puesto||''}"></div>
       <div class="form-group"><label>País *</label><select id="f_pais">
         <option value="">— Selecciona —</option>
         <option ${formData.pais==='Guatemala'?'selected':''}>Guatemala</option>
@@ -2363,15 +2363,6 @@ const TABS=[
         <option ${formData.pais==='Honduras'?'selected':''}>Honduras</option>
         <option ${formData.pais==='El Salvador'?'selected':''}>El Salvador</option>
       </select></div>
-      <div class="form-group"><label>Área *</label><select id="f_area">
-        <option value="">— Selecciona —</option>
-        <option ${formData.area==='Comercial'?'selected':''}>Comercial</option>
-        <option ${formData.area==='Administrativo'?'selected':''}>Administrativo</option>
-        <option ${formData.area==='Operaciones'?'selected':''}>Operaciones</option>
-      </select></div>
-      ${autoHier
-        ?`<div class="form-group full"><div class="hier-info">📍 Jerarquía: ${up.region||''} › ${up.zona||''} › ${up.sucursal||''}</div></div>`
-        :`<div class="form-group"><label>Sucursal *</label><input type="text" id="f_sucursal" placeholder="Nombre de la sucursal" value="${formData.sucursal||''}"></div>`}
     </div>`;
   },
   ()=>`<div class="form-group full">
@@ -2404,7 +2395,7 @@ window.prevTab=()=>{saveTabData();currentTab--;renderTab(currentTab);updateNav()
 
 function saveTabData(){
   const g=id=>document.getElementById(id)?.value||'';
-  if(currentTab===0){formData.nombre=g('f_nombre');formData.puesto=g('f_puesto');formData.fecha=g('f_fecha');formData.pais=g('f_pais');formData.area=g('f_area');formData.sucursal=g('f_sucursal')||userProfile.sucursal||'';}
+  if(currentTab===0){formData.nombre=g('f_nombre');formData.puesto=g('f_puesto');formData.pais=g('f_pais');}
   else if(currentTab===1){formData.fortalezas=g('f_fortalezas');}
   else if(currentTab===2){formData.areas=g('f_areas');}
 }
@@ -2519,9 +2510,9 @@ window.savePlan=async()=>{
   const planData={
   asesor:formData.nombre||'',puesto:formData.puesto||'',lider:userProfile.nombre||currentUser.email,
     liderUid:currentUser.uid,creadoPor:currentUser.uid,
-    fecha:formData.fecha||'',pais:formData.pais||'',area:formData.area||'',
+    fecha:new Date().toISOString().slice(0,10),pais:formData.pais||'',
     proxSeg:'',region:up.region||'',zona:up.zona||'',
-    sucursal:up.sucursal||formData.sucursal||'',
+    sucursal:'',
     fortalezas:formData.fortalezas||'',areas:formData.areas||'',
     smart,estado:'En curso',pct:0,
     seguimientos:[],archivos:[],comentarios:[],
@@ -2586,21 +2577,14 @@ function renderEditTab(t){
   const content=document.getElementById('editTabContent');
   if(t===0){
     content.innerHTML=`<div class="form-grid">
-      <div class="form-group"><label>Nombre completo del asesor *</label><input type="text" id="ef_nombre" value="${p.asesor||''}"></div>
+      <div class="form-group"><label>Nombre completo del colaborador *</label><input type="text" id="ef_nombre" value="${p.asesor||''}"></div>
       <div class="form-group"><label>Puesto *</label><input type="text" id="ef_puesto" value="${p.puesto||''}"></div>
-      <div class="form-group"><label>Fecha de inicio *</label><input type="date" id="ef_fecha" value="${p.fecha||''}"></div>
       <div class="form-group"><label>País *</label><select id="ef_pais">
         <option ${p.pais==='Guatemala'?'selected':''}>Guatemala</option>
         <option ${p.pais==='México'?'selected':''}>México</option>
         <option ${p.pais==='Honduras'?'selected':''}>Honduras</option>
         <option ${p.pais==='El Salvador'?'selected':''}>El Salvador</option>
       </select></div>
-      <div class="form-group"><label>Área *</label><select id="ef_area">
-        <option ${p.area==='Comercial'?'selected':''}>Comercial</option>
-        <option ${p.area==='Administrativo'?'selected':''}>Administrativo</option>
-        <option ${p.area==='Operaciones'?'selected':''}>Operaciones</option>
-      </select></div>
-      ${!autoHier?`<div class="form-group"><label>Sucursal *</label><input type="text" id="ef_sucursal" value="${p.sucursal||''}"></div>`:''}
     </div>`;
   } else if(t===1){
     content.innerHTML=`<div class="form-group full"><label>1. Fortalezas actuales *</label><textarea id="ef_fortalezas" rows="10" style="width:100%;min-height:200px">${p.fortalezas||''}</textarea></div>`;
@@ -2626,7 +2610,7 @@ function renderEditTab(t){
 function saveEditTabData(){
   const g=id=>{const el=document.getElementById(id);return el?el.value:null;};
   if(editTab===0){
-   if(g('ef_nombre')!==null) editFormData._ef={nombre:g('ef_nombre'),puesto:g('ef_puesto'),fecha:g('ef_fecha'),pais:g('ef_pais'),area:g('ef_area'),sucursal:g('ef_sucursal')||editFormData.sucursal||''};
+   if(g('ef_nombre')!==null) editFormData._ef={nombre:g('ef_nombre'),puesto:g('ef_puesto'),pais:g('ef_pais')};
   } else if(editTab===1){if(g('ef_fortalezas')!==null) editFormData._ef_fortalezas=g('ef_fortalezas');}
   else if(editTab===2){if(g('ef_areas')!==null) editFormData._ef_areas=g('ef_areas');}
   else if(editTab===3){
@@ -2648,7 +2632,7 @@ window.saveEdit=async()=>{
   const updates={};
   const ef=editFormData._ef;
   if(ef){
-    const campos=[{k:'asesor',label:'Nombre',v:ef.nombre},{k:'puesto',label:'Puesto',v:ef.puesto},{k:'lider',label:'Líder',v:ef.lider},{k:'fecha',label:'Fecha inicio',v:ef.fecha},{k:'pais',label:'País',v:ef.pais},{k:'area',label:'Área',v:ef.area},{k:'sucursal',label:'Sucursal',v:ef.sucursal}];
+    const campos=[{k:'asesor',label:'Nombre',v:ef.nombre},{k:'puesto',label:'Puesto',v:ef.puesto},{k:'pais',label:'País',v:ef.pais}];
     campos.forEach(({k,label,v})=>{if(v!==null&&v!==p[k]){updates[k]=v;cambios.push({campo:label,anterior:p[k]||'—',nuevo:v,autor:userProfile.nombre,fecha:fechaStr});}});
   }
   if(editFormData._ef_fortalezas!==undefined&&editFormData._ef_fortalezas!==p.fortalezas){updates.fortalezas=editFormData._ef_fortalezas;cambios.push({campo:'Fortalezas',anterior:'(anterior)',nuevo:'(actualizado)',autor:userProfile.nombre,fecha:fechaStr});}
@@ -3087,10 +3071,12 @@ function renderUauTab(t){
     const inds=uauData.indicadores||{};
     const pptVal=inds.metaUtilidad>0?((inds.utilidadGenerada||0)/(inds.metaUtilidad)*100).toFixed(1):'—';
     const mcVal=inds.montoCotizado>0?((inds.facturacion||0)/(inds.montoCotizado)*100).toFixed(1):'—';
+    const sym=getCurrSymbol(userProfile.pais);
+    const dynLbl=k=>UAU_IND_LABELS[k].replace('($)',`(${sym})`);
     c.innerHTML=`<div class="uau-ind-grid">
       ${UAU_INDS.map(k=>`
       <div class="form-group">
-        <label>${UAU_IND_LABELS[k]}</label>
+        <label>${dynLbl(k)}</label>
         <input type="number" id="uau_${k}" min="0" step="any" value="${inds[k]||0}"
           oninput="calcUauPPT();calcUauMC()">
       </div>`).join('')}
@@ -3218,12 +3204,12 @@ function renderUauSegTab(t){
         <div style="flex:1"><label>Año</label>
           <input type="number" id="uauSegAño" min="2020" max="2099" value="${uauSegData.año||new Date().getFullYear()}"></div>
       </div>
-      ${UAU_INDS.map(k=>`
+      ${(()=>{const sym=getCurrSymbol(activePlanData?.pais||userProfile.pais);const dl=k=>UAU_IND_LABELS[k].replace('($)',`(${sym})`);return UAU_INDS.map(k=>`
       <div class="form-group">
-        <label>${UAU_IND_LABELS[k]}</label>
+        <label>${dl(k)}</label>
         <input type="number" id="uauSeg_${k}" min="0" step="any" value="${inds[k]||0}"
           oninput="calcSegUauPPT();calcSegUauMC()">
-      </div>`).join('')}
+      </div>`).join('');})()}
       <div class="form-group uau-calc-field">
         <label>% PPT <span style="font-weight:400;font-size:9px;opacity:.7;display:block;margin-top:1px">Utilidad Generada ÷ Meta Utilidad × 100</span></label>
         <div class="uau-calc-val" id="uauSegPPTVal">—</div>
@@ -3275,10 +3261,11 @@ window.saveUauSeg=async()=>{
       archivos:[]
     };
     const segs=[...(activePlanData.seguimientos||[]),seg];
-    await updateDoc(doc(db,'unoauno',activePlanId),{seguimientos:segs});
-    activePlanData.seguimientos=segs;
+    const uauUpdates={seguimientos:segs,estado:'En seguimiento'};
+    await updateDoc(doc(db,'unoauno',activePlanId),uauUpdates);
+    Object.assign(activePlanData,uauUpdates);
     const idx=allPlanes.findIndex(x=>x.id===activePlanId);
-    if(idx>=0) allPlanes[idx].seguimientos=segs;
+    if(idx>=0) Object.assign(allPlanes[idx],uauUpdates);
     closeUauSeg();
     showToast('✅ Seguimiento guardado correctamente.');
     setDetailTab('graficas',null,1);
@@ -3372,22 +3359,39 @@ function buildUauPrintDoc(p){
     return `<tr><td style="font-weight:600;background:#fffbeb">${fieldLabelsPrint[k]||k}</td>${cells}</tr>`;
   }).join('');
 
-  // Capturar gráficas como imágenes (si Chart.js ya renderizó)
-  let chartsHtml='';
-  if(Object.keys(uauChartInstances).length>0){
-    chartsHtml='<div style="margin-top:24px"><h3 style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Gráficas Históricas</h3>';
-    chartsHtml+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
-    Object.entries(uauChartInstances).forEach(([k,ch])=>{
-      try{
-        const img=ch.toBase64Image('image/png',1);
-        const lbl={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'}[k]||k;
-        chartsHtml+=`<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#fff">
-          <p style="font-size:9px;font-weight:700;margin-bottom:6px;color:#374151">${lbl}</p>
-          <img src="${img}" style="width:100%;height:auto">
-        </div>`;
-      }catch(ex){}
-    });
-    chartsHtml+='</div></div>';
+  // Tabla comparativa Avances (semana anterior vs actual)
+  const sym=getCurrSymbol(p.pais);
+  const MFLDS=['metaUtilidad','utilidadGenerada','montoCotizado','facturacion'];
+  const fmtM=n=>sym+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+  let avancesHtml='';
+  if(entries.length>=2){
+    const prev=entries[entries.length-2];
+    const curr=entries[entries.length-1];
+    const lblAv={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
+    Object.keys(lblAv).forEach(k=>{lblAv[k]=lblAv[k].replace('($)',`(${sym})`);});
+    const allFAv=[...UAU_INDS,'ppt','margenConversion'];
+    const avRows=allFAv.map(k=>{
+      let pV,cV,diffStr,pos;
+      if(k==='ppt'){
+        const pm=prev.metaUtilidad||0;pV=pm>0?((prev.utilidadGenerada||0)/pm*100):0;
+        const cm=curr.metaUtilidad||0;cV=cm>0?((curr.utilidadGenerada||0)/cm*100):0;
+        const d=cV-pV;pos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+        return `<tr><td style="font-weight:600;background:#fffbeb;padding:4px 8px">${lblAv[k]}</td><td style="padding:4px 8px;text-align:right">${pV.toFixed(1)}%</td><td style="padding:4px 8px;text-align:right">${cV.toFixed(1)}%</td><td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+      } else if(k==='margenConversion'){
+        const pc=prev.montoCotizado||0;pV=pc>0?((prev.facturacion||0)/pc*100):0;
+        const cc=curr.montoCotizado||0;cV=cc>0?((curr.facturacion||0)/cc*100):0;
+        const d=cV-pV;pos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+        return `<tr><td style="font-weight:600;background:#fffbeb;padding:4px 8px">${lblAv[k]}</td><td style="padding:4px 8px;text-align:right">${pV.toFixed(1)}%</td><td style="padding:4px 8px;text-align:right">${cV.toFixed(1)}%</td><td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+      } else {
+        pV=prev[k]||0;cV=curr[k]||0;const d=cV-pV;pos=d>=0;
+        const isMon=MFLDS.includes(k);
+        const fv=v=>isMon?fmtM(v):Number(v).toLocaleString('en-US');
+        const fd=v=>isMon?sym+Math.abs(v).toLocaleString('en-US'):Math.abs(v).toLocaleString('en-US');
+        diffStr=(d>=0?'▲ +':'▼ ')+fd(d);
+        return `<tr><td style="font-weight:600;background:#fffbeb;padding:4px 8px">${lblAv[k]}</td><td style="padding:4px 8px;text-align:right">${fv(pV)}</td><td style="padding:4px 8px;text-align:right">${fv(cV)}</td><td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+      }
+    }).join('');
+    avancesHtml=`<div style="margin-top:24px"><h3 style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Avances — S${prev.semana} ${prev.año} → S${curr.semana} ${curr.año}</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px"><thead style="background:#1e293b;color:#fff"><tr><th style="padding:6px 8px;text-align:left">Indicador</th><th style="padding:6px 8px;text-align:right">S${prev.semana} ${prev.año}</th><th style="padding:6px 8px;text-align:right">S${curr.semana} ${curr.año}</th><th style="padding:6px 8px;text-align:right">Avances</th></tr></thead><tbody>${avRows}</tbody></table></div></div>`;
   }
 
   // Seguimientos narrativos
@@ -3427,7 +3431,7 @@ function buildUauPrintDoc(p){
     ${p.compromisosAsesor?`<div class="psec">COMPROMISOS DEL ASESOR</div><div class="pbox">${p.compromisosAsesor}</div>`:''}
     ${p.compromisosGerente?`<div class="psec">COMPROMISOS DEL GERENTE</div><div class="pbox">${p.compromisosGerente}</div>`:''}
     ${segsHtml?`<div class="psec" style="background:#f59e0b;color:#1e293b">SEGUIMIENTOS REGISTRADOS</div>${segsHtml}`:''}
-    ${chartsHtml}
+    ${avancesHtml}
     <div class="psigs"><div><div class="psig">${p.asesor||'Asesor'}</div></div><div><div class="psig">${p.lider||'Líder'}</div></div></div>
   </div>`;
 }
