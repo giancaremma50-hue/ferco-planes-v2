@@ -433,7 +433,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
       <div class="page-title" id="pageTitle">Dashboard</div>
       <div class="notif-wrap">
         <button class="notif-btn" id="notifBtn" onclick="toggleNotif(event)">
-          <span id="notifIcon">🔔</span>
+          <span id="notifIcon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
           <span class="notif-badge" id="notifBadge" style="display:none">0</span>
         </button>
         <div class="notif-panel" id="notifPanel">
@@ -484,9 +484,9 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="fm-head">
       <div><div class="fm-title" id="fm-title">Detalle</div><div class="fm-sub" id="fm-sub"></div></div>
       <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-sm" id="fm-edit-btn" onclick="openEditModal()" style="display:none">✏️ Editar</button>
-        <button class="btn btn-gold btn-sm" onclick="printActivePlan()">🖨 Imprimir plan</button>
-        <button class="btn btn-sm btn-danger" onclick="closeDetail()">✕</button>
+        <button class="btn btn-sm" id="fm-edit-btn" onclick="openEditModal()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Editar</button>
+        <button class="btn btn-gold btn-sm" onclick="printActivePlan()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="closeDetail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
     </div>
     <div class="fm-tabs" id="fmTabsEl"></div>
@@ -511,7 +511,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
       <button class="btn" onclick="closeModal()">Cancelar</button>
       <button class="btn" id="btnPrev" onclick="prevTab()" style="display:none">← Anterior</button>
       <button class="btn btn-primary" id="btnNext" onclick="nextTab()">Siguiente →</button>
-      <button class="btn btn-gold" id="btnSave" onclick="savePlan()" style="display:none">💾 Guardar e Imprimir</button>
+      <button class="btn btn-gold" id="btnSave" onclick="savePlan()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar plan</button>
     </div>
   </div>
 </div>
@@ -541,7 +541,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
         <input type="date" id="extendFecha">
         <div class="extend-box-actions">
           <button class="btn btn-sm" onclick="document.getElementById('extendBox').style.display='none'">Cancelar</button>
-          <button class="btn btn-gold btn-sm" onclick="confirmarExtender()">✅ Confirmar extensión</button>
+          <button class="btn btn-gold btn-sm" onclick="confirmarExtender()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M20 6 9 17l-5-5"/></svg>Confirmar extensión</button>
         </div>
       </div>
     </div>
@@ -554,7 +554,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="form-group">
       <label>Archivos de avances / Respaldo (opcional)</label>
       <div class="file-zone" onclick="document.getElementById('segFiles').click()">
-        <div style="font-size:24px">📎</div>
+        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
         <p>Arrastra, pega (Ctrl+V) o haz clic para subir archivos<br><span style="font-size:11px">Imágenes, PDF, Excel — cualquier formato</span></p>
       </div>
       <input type="file" id="segFiles" multiple style="display:none" onchange="previewSegFiles(this)">
@@ -564,7 +564,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="err-msg" id="segErrMsg"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeSeg()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveSeg()">🖨 Guardar e imprimir anexo</button>
+      <button class="btn btn-gold" onclick="saveSeg()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar seguimiento</button>
     </div>
   </div>
 </div>
@@ -572,7 +572,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 <!-- MODAL CIERRE CON JUSTIFICACIÓN -->
 <div class="overlay" id="cierreOverlay">
   <div class="modal" style="max-width:500px">
-    <div class="modal-title">✅ Cerrar plan</div>
+    <div class="modal-title">Cerrar plan</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Para cerrar el plan debes registrar la justificación. Esto quedará guardado como respaldo del cierre.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
       <div class="form-group">
@@ -582,7 +582,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
       <div class="form-group">
         <label>Archivo de respaldo (opcional)</label>
         <div class="file-zone" onclick="document.getElementById('cierreFile').click()">
-          <div style="font-size:24px">📎</div>
+          <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
           <p>Adjuntar evidencia del cierre<br><span style="font-size:11px">PDF, imagen, Excel</span></p>
         </div>
         <input type="file" id="cierreFile" style="display:none" onchange="previewCierreFile(this)">
@@ -592,7 +592,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="err-msg" id="cierreErrMsg"></div>
     <div class="modal-footer">
       <button class="btn" onclick="document.getElementById('cierreOverlay').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarCierre()">✅ Confirmar cierre</button>
+      <button class="btn btn-primary" onclick="confirmarCierre()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M20 6 9 17l-5-5"/></svg>Confirmar cierre</button>
     </div>
   </div>
 </div>
@@ -600,7 +600,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 <!-- MODAL EDITAR PLAN -->
 <div class="overlay" id="editOverlay">
   <div class="modal" style="width:860px;max-width:98vw">
-    <div class="modal-title">✏️ Editar Plan de Fortalecimiento</div>
+    <div class="modal-title">Editar Plan de Fortalecimiento</div>
     <div class="mtabs" id="editTabs">
       <div class="mtab active" onclick="goEditTab(0,this)">1. Datos generales</div>
       <div class="mtab" onclick="goEditTab(1,this)">2. Fortalezas</div>
@@ -611,7 +611,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="err-msg" id="editErrMsg"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeEditModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveEdit()">💾 Guardar cambios</button>
+      <button class="btn btn-gold" onclick="saveEdit()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -630,8 +630,8 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
         <div class="form-group"><label>Correo FERCO *</label><input type="email" id="uEmail" placeholder="correo@ferco.com.gt"></div>
       </div>
       <div class="form-group"><label>Contraseña temporal *</label><input type="password" id="uPass" placeholder="Mínimo 6 caracteres — el usuario podrá reestablecerla"></div>
-      <div class="form-grid">
-        <div class="form-group"><label>País *</label>
+      <div class="form-grid" id="uPaisRow">
+        <div class="form-group"><label>País</label>
           <select id="uPais" onchange="updateUserRoles()">
             <option value="">— Selecciona —</option>
             <option value="gt">Guatemala</option>
@@ -645,6 +645,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
             <option value="">— Selecciona —</option>
             <option value="comercial">Comercial</option>
             <option value="administracion">Administración</option>
+            <option value="rh_global">RH Global (Super Admin)</option>
           </select>
         </div>
       </div>
@@ -722,7 +723,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
       <button class="btn" onclick="closeUauModal()">Cancelar</button>
       <button class="btn" id="uauBtnPrev" onclick="prevUauTab()" style="display:none">← Anterior</button>
       <button class="btn btn-primary" id="uauBtnNext" onclick="nextUauTab()">Siguiente →</button>
-      <button class="btn btn-gold" id="uauBtnSave" onclick="saveUnoAUno()" style="display:none">💾 Guardar</button>
+      <button class="btn btn-gold" id="uauBtnSave" onclick="saveUnoAUno()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar</button>
     </div>
   </div>
 </div>
@@ -742,7 +743,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="err-msg" id="uauSegErrMsg"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeUauSeg()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveUauSeg()">💾 Guardar seguimiento</button>
+      <button class="btn btn-gold" onclick="saveUauSeg()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar seguimiento</button>
     </div>
   </div>
 </div>
@@ -798,6 +799,47 @@ let notifications=[];
 let currentSubView='mis'; // 'mis' | 'reportes'
 let storageAvailable=true;
 
+// ── LUCIDE ICON HELPER ────────────────────────────────────────────────────────
+function lIcon(name,size=14){
+  const P={
+    printer:`<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>`,
+    pencil:`<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>`,
+    x:`<path d="M18 6 6 18"/><path d="m6 6 12 12"/>`,
+    save:`<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>`,
+    plus:`<path d="M5 12h14"/><path d="M12 5v14"/>`,
+    'message-circle':`<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>`,
+    paperclip:`<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>`,
+    clipboard:`<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>`,
+    'check-circle':`<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>`,
+    'rotate-cw':`<path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/>`,
+    'arrow-left':`<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>`,
+    'arrow-right':`<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>`,
+    'file-text':`<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>`,
+    'user-plus':`<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>`,
+    users:`<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+    'bar-chart-2':`<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>`,
+    'trash-2':`<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>`,
+    bell:`<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>`,
+    'log-out':`<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>`,
+    'plus-circle':`<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>`,
+    calendar:`<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>`,
+    'trending-up':`<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>`,
+    filter:`<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>`,
+    search:`<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>`,
+    mail:`<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>`,
+    'alert-triangle':`<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>`,
+    'eye':`<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`,
+    'download':`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>`,
+    'external-link':`<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`,
+    history:`<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>`,
+    'layers':`<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>`,
+    'check':`<path d="M20 6 9 17l-5-5"/>`,
+    'shield':`<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>`,
+  };
+  const path=P[name]||'';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;pointer-events:none">${path}</svg>`;
+}
+
 // ── UTILIDADES DE FECHA ───────────────────────────────────────────────────────
 function fmtDate(d){ // YYYY-MM-DD o Date → DD/MM/YYYY
   if(!d) return '—';
@@ -848,7 +890,14 @@ function getISOWeek(date=new Date()){
   const y=new Date(Date.UTC(d.getUTCFullYear(),0,1));
   return Math.ceil((((d-y)/86400000)+1)/7);
 }
-function fileIcon(n){const e=(n||'').split('.').pop().toLowerCase();return ['jpg','jpeg','png','gif','webp'].includes(e)?'🖼':e==='pdf'?'📄':['xlsx','xls','csv'].includes(e)?'📊':'📎';}
+function fileIcon(n){
+  const e=(n||'').split('.').pop().toLowerCase();
+  const s=(p,c='#64748b')=>`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle">${p}</svg>`;
+  if(['jpg','jpeg','png','gif','webp'].includes(e)) return s('<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>','#3b82f6');
+  if(e==='pdf') return s('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>','#ef4444');
+  if(['xlsx','xls','csv'].includes(e)) return s('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/>','#22c55e');
+  return s('<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>');
+}
 function fmt$(n){if(!n&&n!==0) return '—';return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
 function getVal(id){const el=document.getElementById(id);return el?el.value:'';}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display='block';}}
@@ -933,7 +982,9 @@ function renderNotifications(){
   const icon=document.getElementById('notifIcon');
   const btn=document.getElementById('notifBtn');
   if(badge){ badge.textContent=unread; badge.style.display=unread>0?'flex':'none'; }
-  if(icon) icon.textContent=unread>0?'🔔':'🔕';
+  if(icon) icon.innerHTML=unread>0
+    ?`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`
+    :`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;opacity:.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
   if(btn){ btn.style.borderColor=unread>0?'#991b1b':'var(--border)'; btn.style.color=unread>0?'#991b1b':'var(--dark)'; }
   const list=document.getElementById('notifList');
   if(!list) return;
@@ -1367,9 +1418,9 @@ function renderKanban(plans,hayAtr){
           ${avenc.filter(a=>a.vencido).map(a=>`<div style="font-size:10px;color:var(--atr);font-weight:700;background:var(--atrbg);padding:2px 6px;border-radius:4px;margin-bottom:2px">⚠ Acuerdo #${a.idx+1} vencido</div>`).join('')}
         </div>`:''}
         <div class="pc-counts">
-          <span class="pc-count">📋 ${segsN} seg.</span>
-          <span class="pc-count">📎 ${archN} arch.</span>
-          <span class="pc-count">💬 ${comN} com.</span>
+          <span class="pc-count">${lIcon('clipboard',11)} ${segsN} seg.</span>
+          <span class="pc-count">${lIcon('paperclip',11)} ${archN} arch.</span>
+          <span class="pc-count">${lIcon('message-circle',11)} ${comN} com.</span>
         </div>
       </div>`;
     }
@@ -1467,7 +1518,7 @@ window.setDetailTab=(tab,el,idx)=>{
           ['% PPT',ppt+'%'],
           ['Monto Cotizado',fmt$(ind.montoCotizado)],
           ['Facturación',fmt$(ind.facturacion)],
-          ['Margen de Conversión',mc+'%'],
+          ['Tasa de Conversión',mc+'%'],
           ['Clientes Atendidos',ind.clientesAtendidos??'—'],
           ['Cotizaciones',ind.cotizaciones??'—'],
           ['Facturas',ind.facturas??'—'],
@@ -1483,12 +1534,13 @@ window.setDetailTab=(tab,el,idx)=>{
       <div class="fm-field" style="margin-bottom:10px"><label>Compromisos / Despeje Gerente</label><p>${p.compromisosGerente||'—'}</p></div>
       ${canAct&&p.estado!=='Cierre'?`<div class="fm-section" style="margin-top:14px">Estado del plan</div>
         <div class="stage-sel">
-          <button class="stage-opt sel-cierre" onclick="changeStage('${p.id}','Cierre')">✅ Cerrar Uno a Uno</button>
+          <button class="stage-opt sel-cierre" onclick="changeStage('${p.id}','Cierre')">${lIcon('check-circle',14)} Cerrar Uno a Uno</button>
         </div>`:''}`;
     foot.innerHTML=`
-      ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-gold" onclick="openUauSeg()">+ Agregar seguimiento</button>`:''}
-      <button class="btn" onclick="setDetailTab('comentarios',null,4)">💬 Comentar</button>
-      <span style="font-size:11px;color:var(--muted);flex:1;margin-left:8px">${(p.seguimientos||[]).length} seg.</span>`;
+      ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-gold" onclick="openUauSeg()">${lIcon('plus',13)} Seguimiento</button>`:''}
+      <button class="btn" onclick="setDetailTab('comentarios',null,4)">${lIcon('message-circle',13)} Comentar</button>
+      <button class="btn" onclick="printActivePlan()" title="Generar PDF">${lIcon('file-text',13)} PDF</button>
+      <span style="font-size:11px;color:var(--muted);flex:1;margin-left:4px">${(p.seguimientos||[]).length} seg.</span>`;
     return;
   }
 
@@ -1585,12 +1637,13 @@ window.setDetailTab=(tab,el,idx)=>{
       }).join('')}
       ${canAct&&p.estado!=='Cierre'?`<div class="fm-section" style="margin-top:14px">Marcar plan como cerrado</div>
         <div class="stage-sel">
-          <button class="stage-opt sel-cierre" onclick="changeStage('${p.id}','Cierre')">✅ Cerrar plan (brecha resuelta)</button>
+          <button class="stage-opt sel-cierre" onclick="changeStage('${p.id}','Cierre')">${lIcon('check-circle',14)} Cerrar plan</button>
         </div>`:''}`;
     foot.innerHTML=`
-      ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-primary" onclick="openSeg()">+ Agregar seguimiento</button>`:''}
-      <button class="btn" onclick="setDetailTab('comentarios',null,3)">💬 Comentar</button>
-      <span style="font-size:11px;color:var(--muted);flex:1;margin-left:8px">${(p.seguimientos||[]).length} seg. · ${(p.archivos||[]).length} arch. · ${(p.comentarios||[]).length} com.</span>`;
+      ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-primary" onclick="openSeg()">${lIcon('plus',13)} Seguimiento</button>`:''}
+      <button class="btn" onclick="setDetailTab('comentarios',null,3)">${lIcon('message-circle',13)} Comentar</button>
+      <button class="btn" onclick="printActivePlan()" title="Generar PDF">${lIcon('file-text',13)} PDF</button>
+      <span style="font-size:11px;color:var(--muted);flex:1;margin-left:4px">${(p.seguimientos||[]).length} seg. · ${(p.archivos||[]).length} arch.</span>`;
   }
 
   else if(tab==='seguimientos'){
@@ -1661,7 +1714,7 @@ window.setDetailTab=(tab,el,idx)=>{
     const archs=p.archivos||[];
     body.innerHTML=`<div class="fm-section">Archivos adjuntos del plan</div>
       <div class="file-zone" id="planFileZone" onclick="document.getElementById('planFileInput').click()" style="margin-bottom:14px">
-        <div style="font-size:28px">📎</div>
+        <div><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></div>
         <p>Arrastra, pega (Ctrl+V) o haz clic para subir archivos<br><span style="font-size:11px">Imágenes, PDF, Excel — cualquier formato</span></p>
       </div>
       <input type="file" id="planFileInput" multiple style="display:none" onchange="uploadPlanFiles(this)">
@@ -1670,8 +1723,8 @@ window.setDetailTab=(tab,el,idx)=>{
           <span style="font-size:18px">${fileIcon(a.nombre)}</span>
           <span class="file-item-name">${a.nombre}</span>
           <span class="file-item-meta">${fmtDate(a.fecha)||''}</span>
-          <a href="${a.url}" target="_blank" class="btn btn-sm">⬇ Descargar</a>
-          ${canAct?`<button class="btn btn-sm" style="color:#991b1b" onclick="deletePlanFile('${a.url}')">✕</button>`:''}
+          <a href="${a.url}" target="_blank" class="btn btn-sm">${lIcon('download',11)} Descargar</a>
+          ${canAct?`<button class="btn btn-sm" style="color:#991b1b" title="Eliminar" onclick="deletePlanFile('${a.url}')">${lIcon('trash-2',11)}</button>`:''}
         </div>`).join('')}
       </div>`;
     // Habilitar paste en zona de archivos
@@ -1719,7 +1772,7 @@ function renderComments(p,body,foot){
               <span class="c-author">${r.autor||'—'}</span>
               <span class="c-role" style="background:${rolBg(r.rol)}">${rolLabel(r.rol)}</span>
               <span class="c-time">${r.fecha||''}</span>
-              ${esMio?`<button class="c-action edit-btn" onclick="editComment('${path}')">✏️</button>`:''}
+              ${esMio?`<button class="c-action edit-btn" title="Editar" onclick="editComment('${path}')">${lIcon('pencil',12)}</button>`:''}
             </div>
             <div class="c-text" id="ctxt_${path}">${renderMentions(escHtml(r.texto))}</div>
             <div class="c-actions">
@@ -2496,10 +2549,12 @@ window.savePlan=async()=>{
     if(planData.smart.some(s=>s.archivos?.length)){
       await updateDoc(doc(db,'planes',r.id),{smart:planData.smart});
     }
+    planData.tipo='fortalecimiento';
     allPlanes.unshift(planData);
-    closeModal();renderAll();
-    buildPrintDoc(planData,null);
-    setTimeout(()=>window.print(),400);
+    closeModal();
+    currentSubView='mis';
+    renderAll();
+    showToast('Plan de Fortalecimiento creado. Haz clic en la tarjeta para abrirlo.');
   }catch(e){showErr('errMsg','Error al guardar: '+e.message);}
 };
 
@@ -2748,7 +2803,7 @@ async function loadUsers(){
       <td><span class="rol-badge" style="${areaColor}">${areaLabel}</span></td>
       <td><span class="rol-badge ${rolCss}">${rolLabel(u.rol)}</span></td>
       <td style="font-size:12px;color:var(--muted)">${hier}</td>
-      <td><button class="btn btn-sm" style="font-size:10px" onclick="resetUserPassword('${u.email}','${escHtml(u.nombre||'')}')">↺ Contraseña</button></td>
+      <td><button class="btn btn-sm" style="font-size:10px;gap:4px;display:inline-flex;align-items:center" onclick="resetUserPassword('${u.email}','${escHtml(u.nombre||'')}')"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg> Contraseña</button></td>
     </tr>`;
   });
   document.getElementById('usersLoading').style.display='none';
@@ -2762,7 +2817,21 @@ window.updateUserRoles=()=>{
   const country=document.getElementById('uPais').value;
   const area=document.getElementById('uArea')?.value||'';
   const sel=document.getElementById('uRol');
+  const paisRow=document.getElementById('uPaisRow');
   sel.innerHTML='<option value="">— Selecciona —</option>';
+  const gtC=document.getElementById('gtCascade');
+  const otC=document.getElementById('otherCascade');
+
+  // RH Global: no necesita país ni geografía
+  if(area==='rh_global'){
+    if(paisRow) paisRow.style.opacity='0.4';
+    if(gtC) gtC.style.display='none';
+    if(otC) otC.style.display='none';
+    const o=document.createElement('option');o.value='rh';o.textContent='RH Global (Super Admin)';sel.appendChild(o);
+    sel.value='rh';
+    return;
+  }
+  if(paisRow) paisRow.style.opacity='1';
   if(!country||!area){return;}
 
   const isAdmin=area==='administracion';
@@ -2770,15 +2839,10 @@ window.updateUserRoles=()=>{
   if(isAdmin){
     roles=[{v:'dir_admin',l:'Director'},{v:'gerente_admin',l:'Gerente'},{v:'jefe_admin',l:'Jefe'},{v:'supervisor_admin',l:'Supervisor'},{v:'coordinador_admin',l:'Coordinador'}];
   } else {
-    // Comercial
     if(country==='gt') roles=[{v:'director',l:'Director Comercial'},{v:'regional',l:'Gerente Regional'},{v:'zona',l:'Gerente de Zona'},{v:'sucursal',l:'Gerente de Sucursal'}];
     else roles=[{v:'sucursal',l:'Gerente de Sucursal'}];
   }
   roles.forEach(r=>{const o=document.createElement('option');o.value=r.v;o.textContent=r.l;sel.appendChild(o);});
-
-  // Ocultar jerarquía geográfica para admin
-  const gtC=document.getElementById('gtCascade');
-  const otC=document.getElementById('otherCascade');
   if(isAdmin){if(gtC)gtC.style.display='none';if(otC)otC.style.display='none';}
 };
 
@@ -2827,10 +2891,12 @@ window.saveUser=async()=>{
   const rol=document.getElementById('uRol').value;
   const country=document.getElementById('uPais').value;
   const area=document.getElementById('uArea')?.value||'comercial';
-  if(!nombre||!email||!pass||!rol||!country||!area){showErr('userErrMsg','Completa todos los campos.');return;}
+  const isRHGlobal=area==='rh_global';
+  // RH Global no requiere país; los demás sí
+  if(!nombre||!email||!pass||!rol||!area){showErr('userErrMsg','Completa nombre, correo, contraseña y área.');return;}
+  if(!isRHGlobal&&!country){showErr('userErrMsg','Selecciona el país del usuario.');return;}
   if(pass.length<6){showErr('userErrMsg','La contraseña debe tener al menos 6 caracteres.');return;}
   try{
-    // Crear usuario con secondary app para NO cerrar sesión del admin
     const secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
     const secondaryAuth=getAuth(secondaryApp);
     const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
@@ -2839,17 +2905,19 @@ window.saveUser=async()=>{
     await deleteApp(secondaryApp);
 
     const isAdminRol=ADMIN_HIERARCHY.includes(rol);
-    const profile={nombre,email,rol,area,pais:country,
-      region:(!isAdminRol&&document.getElementById('uRegion')?.value)||'',
-      zona:(!isAdminRol&&document.getElementById('uZona')?.value)||'',
-      sucursal:(!isAdminRol&&(document.getElementById('uSucursal')?.value||document.getElementById('uSucursalSimple')?.value))||''
+    const profile={
+      nombre,email,rol,
+      area:isRHGlobal?'rh_global':area,
+      pais:isRHGlobal?'Global':country,
+      region:(!isAdminRol&&!isRHGlobal&&document.getElementById('uRegion')?.value)||'',
+      zona:(!isAdminRol&&!isRHGlobal&&document.getElementById('uZona')?.value)||'',
+      sucursal:(!isAdminRol&&!isRHGlobal&&(document.getElementById('uSucursal')?.value||document.getElementById('uSucursalSimple')?.value))||''
     };
     await setDoc(doc(db,'users',uid),profile);
     allUsers.push({uid,...profile});
     closeUserModal();
     loadUsers();
-    // Toast de éxito
-    showToast(`✅ Usuario "${nombre}" creado. La sesión del admin se mantiene activa.`);
+    showToast(`Usuario "${nombre}" creado correctamente.`);
   }catch(e){showErr('userErrMsg','Error: '+e.message);}
 };
 
@@ -3027,11 +3095,11 @@ function renderUauTab(t){
           oninput="calcUauPPT();calcUauMC()">
       </div>`).join('')}
       <div class="form-group uau-calc-field">
-        <label>% PPT (Calculado)</label>
+        <label>% PPT <span style="font-weight:400;font-size:9px;opacity:.7;display:block;margin-top:1px">Utilidad Generada ÷ Meta Utilidad × 100</span></label>
         <div class="uau-calc-val" id="uauPPTVal">${pptVal !== '—' ? pptVal+'%' : '—'}</div>
       </div>
       <div class="form-group uau-calc-field">
-        <label>Margen de Conversión % (Calculado)</label>
+        <label>Tasa de Conversión % <span style="font-weight:400;font-size:9px;opacity:.7;display:block;margin-top:1px">Facturación ÷ Monto Cotizado × 100</span></label>
         <div class="uau-calc-val" id="uauMCVal">${mcVal !== '—' ? mcVal+'%' : '—'}</div>
       </div>
     </div>`;
@@ -3088,11 +3156,12 @@ window.saveUnoAUno=async()=>{
       comentarios:[],
       creadoEn:serverTimestamp()
     };
-    const ref=await addDoc(collection(db,'unoauno'),payload);
+    await addDoc(collection(db,'unoauno'),payload);
     closeUauModal();
-    showToast('✅ Uno a Uno guardado correctamente.');
+    currentSubView='mis';
     await loadPlanes();
     renderAll();
+    showToast('Uno a Uno creado. Haz clic en la tarjeta para abrirlo.');
   }catch(e){showErr('uauErrMsg','Error al guardar: '+e.message);}
 };
 
@@ -3156,11 +3225,11 @@ function renderUauSegTab(t){
           oninput="calcSegUauPPT();calcSegUauMC()">
       </div>`).join('')}
       <div class="form-group uau-calc-field">
-        <label>% PPT (Calculado)</label>
+        <label>% PPT <span style="font-weight:400;font-size:9px;opacity:.7;display:block;margin-top:1px">Utilidad Generada ÷ Meta Utilidad × 100</span></label>
         <div class="uau-calc-val" id="uauSegPPTVal">—</div>
       </div>
       <div class="form-group uau-calc-field">
-        <label>Margen de Conversión % (Calculado)</label>
+        <label>Tasa de Conversión % <span style="font-weight:400;font-size:9px;opacity:.7;display:block;margin-top:1px">Facturación ÷ Monto Cotizado × 100</span></label>
         <div class="uau-calc-val" id="uauSegMCVal">—</div>
       </div>
     </div>`;
@@ -3239,7 +3308,7 @@ function renderUauCharts(p){
 
   const labels=entries.map(e=>`S${e.semana} ${e.año}`);
   const allFields=[...UAU_INDS,'ppt','margenConversion'];
-  const fieldLabels={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Margen de Conversión %'};
+  const fieldLabels={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
 
   container.innerHTML=allFields.map(k=>`
     <div class="chart-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
@@ -3291,7 +3360,7 @@ function buildUauPrintDoc(p){
   // Tabla de indicadores por semana
   const indHeaders=`<tr><th>Indicador</th>${entries.map(e=>`<th>S${e.semana} ${e.año}</th>`).join('')}</tr>`;
   const allFieldsPrint=[...UAU_INDS,'ppt','margenConversion'];
-  const fieldLabelsPrint={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Margen Conversión %'};
+  const fieldLabelsPrint={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
   const indRows=allFieldsPrint.map(k=>{
     const cells=entries.map(e=>{
       let v;
@@ -3311,7 +3380,7 @@ function buildUauPrintDoc(p){
     Object.entries(uauChartInstances).forEach(([k,ch])=>{
       try{
         const img=ch.toBase64Image('image/png',1);
-        const lbl={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Margen Conversión %'}[k]||k;
+        const lbl={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'}[k]||k;
         chartsHtml+=`<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#fff">
           <p style="font-size:9px;font-weight:700;margin-bottom:6px;color:#374151">${lbl}</p>
           <img src="${img}" style="width:100%;height:auto">
