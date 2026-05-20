@@ -356,7 +356,8 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 .hier-node{margin-bottom:8px}
 .hier-node .hier-node{margin-top:6px;margin-left:24px;margin-bottom:0}
 .hier-node .hier-node .hier-node{margin-left:24px}
-.hier-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:box-shadow .15s,transform .15s;user-select:none}
+.hier-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s,transform .15s;user-select:none}
+.hier-card-top{display:flex;align-items:center;gap:8px}
 .hier-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);transform:translateY(-1px)}
 .hier-card.open{border-color:#1e40af;background:#eff6ff}
 .hier-lvl-badge{font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;white-space:nowrap}
@@ -364,7 +365,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 .hier-lvl-zona{background:#0891b2;color:#fff}
 .hier-lvl-sucursal{background:#0d9488;color:#fff}
 .hier-name{font-size:13px;font-weight:800;color:var(--dark);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hier-stats{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.hier-stats{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .hier-stat{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
 .hs-total{background:var(--soft);color:var(--dark)}
 .hs-ec{background:var(--midbg);color:var(--mid)}
@@ -700,7 +701,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
         <div style="display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:6px;align-items:center">
           <div class="form-group"><label>Región</label>
             <select id="uRegion" onchange="updateZonasUser()">
-              <option value="">Todas</option>
+              <option value="">— Selecciona —</option>
               <option>Freddy</option><option>Keny</option><option>Marlon</option>
               <option>Sandra</option><option>Juan Manuel</option><option>Carlos Noriega</option>
             </select>
@@ -819,12 +820,18 @@ const storage = getStorage(app);
 
 // ── DATOS GT ──────────────────────────────────────────────────────────────────
 const GT_DATA = {
-  Freddy:{Giovany:['Barillas','Camojá','Cuilco','Huehuetenango','MCP Huehuetenango'],Freddy:['Caes','Deco City','Majadas'],Diego:['Chimaltenango','Sololá'],Jose:['Joyabaj','Nebaj','Quiché'],Selvin:['Poptun','San Benito Petén']},
+  Freddy:{
+    Giovany:['Barillas','Camojá','Cuilco','Huehuetenango','MCP Huehuetenango'],
+    Freddy:['Caes','Deco City','Majadas'],
+    Diego:['Chimaltenango','Sololá'],
+    Jose:['Joyabaj','Nebaj','Quiche'],
+    Selvin:['Poptun','San Benito Peten']
+  },
   Keny:{Keny:['CC','Dubai','Israel','Lisboa','Roma','Tokio']},
   Marlon:{Marlon:['Chiquimula','Cobán','Escuintla','Jalapa','Jutiapa','Morales','Puerto Barrios','Rey Roosevelt','Salama','Tactic','Villa Nueva','Zona 5']},
-  Sandra:{Sandra:['Coatepeque','Malacatan','Mazatenango','Retalhuleu','San Marcos'],Eva:['Totonicapan','Xela']},
-  'Juan Manuel':{Eva:['Rey Xela'],'Juan Manuel':['Studio']},
-  'Carlos Noriega':{'Carlos Noriega':['San Juan','Zona 10']}
+  Sandra:{Sandra:['Coatepeque','Malacatan','Mazatenango','Retalhuleu','San Marcos']},
+  'Juan Manuel':{Eva:['Rey Xela','Totonicapan','Xela']},
+  'Carlos Noriega':{'Carlos Noriega':['San Juan','Studio','Zona 10']}
 };
 const HN_SUCS=['Choluteca','Comayagua','Juticalpa','La Ceiba','Proyectos','Roatan','San Lorenzo','San Pedro Sula','Tegucigalpa'];
 const SV_SUCS=['Chalatenango','Juan Pablo II','Nejapa','San Benito','San Miguel','Santa Ana','Sonsonate','Usulután'];
@@ -1264,7 +1271,9 @@ function updateSubViewCounts(){
   const activos=p=>['En curso','En seguimiento'].includes(p.estado);
   const creadorDe=p=>p.creadoPor||p.liderUid||'';
   const misPlanesCount=allPlanes.filter(p=>creadorDe(p)===currentUser.uid&&activos(p)).length;
-  const misReportesCount=allPlanes.filter(p=>subUids.includes(creadorDe(p))&&activos(p)).length;
+  const misReportesCount=['director','regional','zona'].includes(rol)
+    ?allPlanes.filter(p=>creadorDe(p)!==currentUser.uid&&activos(p)).length
+    :allPlanes.filter(p=>subUids.includes(creadorDe(p))&&activos(p)).length;
   document.querySelectorAll('.vt-btn').forEach(btn=>{
     if(btn.getAttribute('onclick')?.includes("'mis'")) btn.textContent=`Mis planes (${misPlanesCount})`;
     if(btn.getAttribute('onclick')?.includes("'reportes'")) btn.textContent=`Mis reportes (${misReportesCount})`;
@@ -1314,7 +1323,17 @@ window.clearFilters=()=>{
 async function buildQuery(colName){
   const rol=userProfile.rol;
   if(rol==='rh') return getDocs(collection(db,colName));
-  if(rol==='director') return getDocs(query(collection(db,colName),where('pais','==','Guatemala')));
+  if(rol==='director'){
+    // Doble consulta: por pais Y por region, por si el pais no está guardado correctamente
+    const pais=userProfile.pais||'Guatemala';
+    const regNames=Object.keys(GT_DATA);
+    const [s1,s2]=await Promise.all([
+      getDocs(query(collection(db,colName),where('pais','==',pais))),
+      getDocs(query(collection(db,colName),where('region','in',regNames)))
+    ]);
+    const map=new Map([...s1.docs,...s2.docs].map(d=>[d.id,d]));
+    return {docs:[...map.values()]};
+  }
   if(rol==='regional') return getDocs(query(collection(db,colName),where('region','==',userProfile.region)));
   if(rol==='zona') return getDocs(query(collection(db,colName),where('zona','==',userProfile.zona)));
   if(ADMIN_HIERARCHY.includes(rol)) return getDocs(query(collection(db,colName),where('pais','==',userProfile.pais||'')));
@@ -1397,10 +1416,12 @@ function hierNode(id,levelCls,label,name,ps,childrenHtml){
   const st=planStats(ps);
   return `<div class="hier-node">
     <div class="hier-card" onclick="toggleHN('${id}')">
-      <span class="hier-lvl-badge ${levelCls}">${label}</span>
-      <span class="hier-name">${name}</span>
+      <div class="hier-card-top">
+        <span class="hier-lvl-badge ${levelCls}">${label}</span>
+        <span class="hier-name">${name}</span>
+        <span class="hier-chevron" id="hc_${id}">▶</span>
+      </div>
       <div class="hier-stats">${hierBadges(st)}</div>
-      <span class="hier-chevron" id="hc_${id}">▶</span>
     </div>
     <div class="hier-children" id="hn_${id}">${childrenHtml}</div>
   </div>`;
@@ -1477,7 +1498,13 @@ function filteredPlans(){
     if(currentSubView==='mis'){
       base=allPlanes.filter(p=>creadorDe(p)===currentUser.uid);
     } else {
-      base=allPlanes.filter(p=>subUids.includes(creadorDe(p)));
+      // Director/Regional/Zona: field-based (cubre todos los niveles de la jerarquía)
+      // RH y Admin: UID-based con subordinados directos
+      if(['director','regional','zona'].includes(rol)){
+        base=allPlanes.filter(p=>creadorDe(p)!==currentUser.uid);
+      } else {
+        base=allPlanes.filter(p=>subUids.includes(creadorDe(p)));
+      }
     }
   }
 
