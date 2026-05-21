@@ -3478,7 +3478,9 @@ function renderUauCharts(p){
 
   const labels=entries.map(e=>`S${e.semana} ${e.año}`);
   const allFields=[...UAU_INDS,'ppt','margenConversion'];
+  const sym=getCurrSymbol(p.pais);
   const fieldLabels={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
+  Object.keys(fieldLabels).forEach(k=>{fieldLabels[k]=fieldLabels[k].replace('($)',`(${sym})`);});
 
   container.innerHTML=allFields.map(k=>`
     <div class="chart-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
@@ -3530,7 +3532,9 @@ function buildUauPrintDoc(p){
   // Tabla de indicadores por semana
   const indHeaders=`<tr><th>Indicador</th>${entries.map(e=>`<th>S${e.semana} ${e.año}</th>`).join('')}</tr>`;
   const allFieldsPrint=[...UAU_INDS,'ppt','margenConversion'];
+  const symPrint=getCurrSymbol(p.pais);
   const fieldLabelsPrint={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
+  Object.keys(fieldLabelsPrint).forEach(k=>{fieldLabelsPrint[k]=fieldLabelsPrint[k].replace('($)',`(${symPrint})`);});
   const indRows=allFieldsPrint.map(k=>{
     const cells=entries.map(e=>{
       let v;
