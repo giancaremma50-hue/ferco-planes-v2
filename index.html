@@ -152,7 +152,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 /* ── DETAIL MODAL (foverlay) ── */
 .foverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;align-items:center;justify-content:center;padding:16px}
 .foverlay.open{display:flex}
-.fmodal{background:#fff;border-radius:18px;width:860px;max-width:98vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.fmodal{background:#fff;border-radius:18px;width:1100px;max-width:98vw;max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
 .fm-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--dark);flex-shrink:0}
 .fm-title{font-size:17px;font-weight:800;color:#fff}
 .fm-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
@@ -351,6 +351,22 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 .uau-seg-modal{background:#fff;border-radius:16px;padding:22px;width:640px;max-width:96vw;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
 .uau-seg-modal .mtabs{margin-bottom:12px}
 
+/* ── SEGUIMIENTO COMPARATIVA ── */
+.seg-block{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.seg-block-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.seg-cmp{overflow-x:auto;margin:0 0 14px}
+.seg-cmp table{width:100%;border-collapse:collapse;font-size:11px;min-width:500px}
+.seg-cmp thead tr{background:#1e293b;color:#fff}
+.seg-cmp th{padding:7px 10px;font-size:10px;font-weight:700;text-align:left}
+.seg-cmp th:not(:first-child){text-align:right}
+.seg-cmp td{padding:5px 10px;border-bottom:1px solid var(--border)}
+.seg-cmp td.cmp-lbl{font-weight:700;background:#fffbeb;white-space:nowrap}
+.seg-cmp td:not(.cmp-lbl){text-align:right;font-variant-numeric:tabular-nums}
+.seg-cmp tr:hover td{background:#f8fafc}.seg-cmp tr:hover td.cmp-lbl{background:#fef9ec}
+.cmp-pos{color:#166534!important;font-weight:700}
+.cmp-neg{color:#991b1b!important;font-weight:700}
+.seg-txt-box{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55;margin-bottom:8px}
+.seg-txt-box label{font-size:9px;font-weight:800;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
 /* ── JERARQUÍA REPORTES ── */
 .hierarchy-view{padding:4px 0}
 .hier-node{margin-bottom:8px}
@@ -1741,32 +1757,35 @@ window.setDetailTab=(tab,el,idx)=>{
   // ── UNO A UNO: Seguimientos tab ─────────────────────────────────────────
   if(tab==='seguimientos'&&isUaU){
     const segs=p.seguimientos||[];
-    let html='<div class="fm-section">Seguimientos semanales</div>';
-    const sorted=[...segs].reverse();
-    html+=sorted.length===0?'<div style="text-align:center;color:var(--muted);font-size:12px;padding:30px">Sin seguimientos aún.</div>':'';
-    html+=`<div class="tl">${sorted.map(sg=>{
-      const ind=sg.indicadores||{};
-      const ppt=ind.metaUtilidad>0?((ind.utilidadGenerada||0)/ind.metaUtilidad*100).toFixed(1):0;
-      const mc=ind.montoCotizado>0?((ind.facturacion||0)/ind.montoCotizado*100).toFixed(1):0;
-      return `<div class="tl-item"><div class="tld tld-done" style="background:var(--gold)"></div>
-        <div style="flex:1">
-          <div class="tl-date"><span style="background:var(--gold);color:var(--dark);padding:1px 7px;border-radius:4px;font-weight:800;font-size:10px">Semana ${sg.semana}</span>
-            <span style="font-size:10px;color:var(--muted);margin-left:6px">Por <b>${sg.autor||'—'}</b> · ${sg.registradoEn||''}</span>
+    let html='<div class="fm-section">Seguimientos semanales — comparativa de indicadores</div>';
+    if(!segs.length){
+      html+='<div style="text-align:center;color:var(--muted);font-size:12px;padding:30px">Sin seguimientos aún. Agrega el primero con el botón de abajo.</div>';
+    } else {
+      // Ordenar cronológico, mostrar más reciente primero
+      const sortedSegs=[...segs].sort((a,b)=>a.año!==b.año?a.año-b.año:a.semana-b.semana);
+      const baseEntry={semana:p.semana,año:p.año,...(p.indicadores||{})};
+      const allEntries=[baseEntry,...sortedSegs.map(s=>({semana:s.semana,año:s.año,...(s.indicadores||{})}))];
+      const displaySegs=[...sortedSegs].reverse();
+      html+=displaySegs.map((sg,dispIdx)=>{
+        const chronoIdx=sortedSegs.length-1-dispIdx;
+        const prevEntry=allEntries[chronoIdx];
+        const currEntry=allEntries[chronoIdx+1];
+        const archs=(sg.archivos||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          ${sg.archivos.map(a=>`<a href="${a.url}" target="_blank" style="font-size:11px;background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:3px 8px;text-decoration:none;color:var(--dark)">${fileIcon(a.nombre)} ${a.nombre}</a>`).join('')}
+        </div>`:'';
+        return `<div class="seg-block">
+          <div class="seg-block-head">
+            <span style="background:var(--gold);color:var(--dark);padding:3px 12px;border-radius:6px;font-weight:800;font-size:11px">Semana ${sg.semana} · ${sg.año}</span>
+            <span style="font-size:11px;color:var(--muted)">Por <b>${sg.autor||'—'}</b> · ${sg.registradoEn||sg.fecha||''}</span>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0;font-size:11px">
-            <div class="ind-calc"><label>PPT</label><span class="calc-val">${ppt}%</span></div>
-            <div class="ind-calc"><label>Margen</label><span class="calc-val">${mc}%</span></div>
-            <div style="background:var(--soft);border-radius:8px;padding:8px;font-size:11px"><label style="font-size:10px;font-weight:800;color:var(--muted)">Facturación</label><div style="font-weight:700;margin-top:2px">${fmt$(ind.facturacion,p.pais)}</div></div>
-            <div style="background:var(--soft);border-radius:8px;padding:8px;font-size:11px"><label style="font-size:10px;font-weight:800;color:var(--muted)">Clientes</label><div style="font-weight:700;margin-top:2px">${ind.clientesAtendidos||0}</div></div>
-          </div>
-          ${sg.resumen?`<div class="tl-text"><b>Resumen:</b> ${sg.resumen}</div>`:''}
-          ${sg.compromisosAsesor?`<div style="font-size:12px;color:var(--muted);margin-top:2px"><b>Compromisos Asesor:</b> ${sg.compromisosAsesor}</div>`:''}
-          ${(sg.archivos||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-            ${sg.archivos.map(a=>`<a href="${a.url}" target="_blank" style="font-size:11px;background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:3px 8px;text-decoration:none;color:var(--dark)">${fileIcon(a.nombre)} ${a.nombre}</a>`).join('')}
-          </div>`:''}
-        </div>
-      </div>`;
-    }).join('')}</div>`;
+          ${buildSegCompTable(prevEntry,currEntry,p.pais)}
+          ${sg.resumen?`<div class="seg-txt-box"><label>Resumen del Uno a Uno</label>${sg.resumen}</div>`:''}
+          ${sg.compromisosAsesor?`<div class="seg-txt-box"><label>Compromisos del Asesor</label>${sg.compromisosAsesor}</div>`:''}
+          ${sg.compromisosGerente?`<div class="seg-txt-box"><label>Compromisos / Despeje del Gerente</label>${sg.compromisosGerente}</div>`:''}
+          ${archs}
+        </div>`;
+      }).join('');
+    }
     body.innerHTML=html;
     foot.innerHTML=`${canAct&&p.estado!=='Cierre'?`<button class="btn btn-gold" onclick="openUauSeg()">+ Agregar seguimiento</button>`:''}
       <span style="font-size:11px;color:var(--muted);flex:1;margin-left:8px">${segs.length} seguimiento(s)</span>`;
@@ -3465,6 +3484,41 @@ function buildChartData(p){
   return entries.sort((a,b)=>a.año!==b.año?a.año-b.año:a.semana-b.semana);
 }
 
+// Genera tabla comparativa anterior vs actual para un seguimiento
+function buildSegCompTable(prev, curr, pais){
+  const sym=getCurrSymbol(pais);
+  const MFLDS=['metaUtilidad','utilidadGenerada','montoCotizado','facturacion'];
+  const fmtM=n=>sym+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+  const lbl={...UAU_IND_LABELS,ppt:'% PPT',margenConversion:'Tasa de Conversión %'};
+  Object.keys(lbl).forEach(k=>{lbl[k]=lbl[k].replace('($)',`(${sym})`);});
+  const allF=[...UAU_INDS,'ppt','margenConversion'];
+  const rows=allF.map(k=>{
+    let pV,cV,diffStr,isPos;
+    if(k==='ppt'){
+      const pm=prev.metaUtilidad||0;pV=pm>0?(prev.utilidadGenerada||0)/pm*100:0;
+      const cm=curr.metaUtilidad||0;cV=cm>0?(curr.utilidadGenerada||0)/cm*100:0;
+      const d=cV-pV;isPos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+      return `<tr><td class="cmp-lbl">${lbl[k]}</td><td>${pV.toFixed(1)}%</td><td>${cV.toFixed(1)}%</td><td class="${isPos?'cmp-pos':'cmp-neg'}">${diffStr}</td></tr>`;
+    } else if(k==='margenConversion'){
+      const pc=prev.montoCotizado||0;pV=pc>0?(prev.facturacion||0)/pc*100:0;
+      const cc=curr.montoCotizado||0;cV=cc>0?(curr.facturacion||0)/cc*100:0;
+      const d=cV-pV;isPos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+      return `<tr><td class="cmp-lbl">${lbl[k]}</td><td>${pV.toFixed(1)}%</td><td>${cV.toFixed(1)}%</td><td class="${isPos?'cmp-pos':'cmp-neg'}">${diffStr}</td></tr>`;
+    } else {
+      pV=prev[k]||0;cV=curr[k]||0;const d=cV-pV;isPos=d>=0;
+      const isMon=MFLDS.includes(k);
+      const fv=v=>isMon?fmtM(v):Number(v||0).toLocaleString('en-US');
+      const fd=v=>isMon?sym+Math.abs(v).toLocaleString('en-US'):Math.abs(v).toLocaleString('en-US');
+      diffStr=(d>=0?'▲ +':'▼ ')+fd(d);
+      return `<tr><td class="cmp-lbl">${lbl[k]}</td><td>${fv(pV)}</td><td>${fv(cV)}</td><td class="${isPos?'cmp-pos':'cmp-neg'}">${diffStr}</td></tr>`;
+    }
+  }).join('');
+  return `<div class="seg-cmp"><table>
+    <thead><tr><th>Indicador</th><th>S${prev.semana} ${prev.año} (anterior)</th><th>S${curr.semana} ${curr.año} (actual)</th><th>Diferencia</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
 function renderUauCharts(p){
   const container=document.getElementById('chartGrid');
   if(!container) return;
@@ -3581,14 +3635,56 @@ function buildUauPrintDoc(p){
     avancesHtml=`<div style="margin-top:24px"><h3 style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Avances — S${prev.semana} ${prev.año} → S${curr.semana} ${curr.año}</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px"><thead style="background:#1e293b;color:#fff"><tr><th style="padding:6px 8px;text-align:left">Indicador</th><th style="padding:6px 8px;text-align:right">S${prev.semana} ${prev.año}</th><th style="padding:6px 8px;text-align:right">S${curr.semana} ${curr.año}</th><th style="padding:6px 8px;text-align:right">Avances</th></tr></thead><tbody>${avRows}</tbody></table></div></div>`;
   }
 
-  // Seguimientos narrativos
-  const segsHtml=(p.seguimientos||[]).map((seg,i)=>`
-    <div style="border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:10px;background:#fffbeb">
-      <p style="font-size:9px;font-weight:700;color:#92400e;margin-bottom:6px">Seguimiento S${seg.semana} ${seg.año} — ${seg.fecha||''} · Por: ${seg.autor||'—'}</p>
-      ${seg.resumen?`<p style="font-size:9px;margin-bottom:4px"><b>Resumen:</b> ${seg.resumen}</p>`:''}
-      ${seg.compromisosAsesor?`<p style="font-size:9px;margin-bottom:4px"><b>Compromisos Asesor:</b> ${seg.compromisosAsesor}</p>`:''}
-      ${seg.compromisosGerente?`<p style="font-size:9px"><b>Compromisos Gerente:</b> ${seg.compromisosGerente}</p>`:''}
-    </div>`).join('');
+  // Seguimientos con comparativa completa por semana
+  const segsHtml=(()=>{
+    const pSegs=(p.seguimientos||[]);
+    if(!pSegs.length) return '';
+    const sortedS=[...pSegs].sort((a,b)=>a.año!==b.año?a.año-b.año:a.semana-b.semana);
+    const baseE={semana:p.semana,año:p.año,...(p.indicadores||{})};
+    const allE=[baseE,...sortedS.map(s=>({semana:s.semana,año:s.año,...(s.indicadores||{})}))];
+    return sortedS.map((seg,i)=>{
+      const prev=allE[i],curr=allE[i+1];
+      const allFSeg=[...UAU_INDS,'ppt','margenConversion'];
+      const MFLDS2=['metaUtilidad','utilidadGenerada','montoCotizado','facturacion'];
+      const fmtM2=n=>sym+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+      const segRows=allFSeg.map(k=>{
+        let pV,cV,diffStr,isPos;
+        if(k==='ppt'){
+          const pm=prev.metaUtilidad||0;pV=pm>0?(prev.utilidadGenerada||0)/pm*100:0;
+          const cm=curr.metaUtilidad||0;cV=cm>0?(curr.utilidadGenerada||0)/cm*100:0;
+          const d=cV-pV;isPos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+          return `<tr><td style="font-weight:700;background:#fffbeb;padding:4px 7px;font-size:8px">${fieldLabelsPrint[k]||k}</td><td style="text-align:right;padding:4px 7px;font-size:8px">${pV.toFixed(1)}%</td><td style="text-align:right;padding:4px 7px;font-size:8px">${cV.toFixed(1)}%</td><td style="text-align:right;padding:4px 7px;font-size:8px;font-weight:700;color:${isPos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+        } else if(k==='margenConversion'){
+          const pc=prev.montoCotizado||0;pV=pc>0?(prev.facturacion||0)/pc*100:0;
+          const cc=curr.montoCotizado||0;cV=cc>0?(curr.facturacion||0)/cc*100:0;
+          const d=cV-pV;isPos=d>=0;diffStr=(d>=0?'▲ +':'▼ ')+Math.abs(d).toFixed(1)+' pts';
+          return `<tr><td style="font-weight:700;background:#fffbeb;padding:4px 7px;font-size:8px">${fieldLabelsPrint[k]||k}</td><td style="text-align:right;padding:4px 7px;font-size:8px">${pV.toFixed(1)}%</td><td style="text-align:right;padding:4px 7px;font-size:8px">${cV.toFixed(1)}%</td><td style="text-align:right;padding:4px 7px;font-size:8px;font-weight:700;color:${isPos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+        } else {
+          pV=prev[k]||0;cV=curr[k]||0;const d=cV-pV;isPos=d>=0;
+          const isMon=MFLDS2.includes(k);
+          const fv=v=>isMon?fmtM2(v):Number(v||0).toLocaleString('en-US');
+          const fd=v=>isMon?sym+Math.abs(v).toLocaleString('en-US'):Math.abs(v).toLocaleString('en-US');
+          diffStr=(d>=0?'▲ +':'▼ ')+fd(d);
+          return `<tr><td style="font-weight:700;background:#fffbeb;padding:4px 7px;font-size:8px">${fieldLabelsPrint[k]||k}</td><td style="text-align:right;padding:4px 7px;font-size:8px">${fv(pV)}</td><td style="text-align:right;padding:4px 7px;font-size:8px">${fv(cV)}</td><td style="text-align:right;padding:4px 7px;font-size:8px;font-weight:700;color:${isPos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
+        }
+      }).join('');
+      return `<div style="border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:12px;background:#fffbeb;page-break-inside:avoid">
+        <p style="font-size:10px;font-weight:800;color:#92400e;margin-bottom:8px">📋 Seguimiento S${seg.semana} ${seg.año} · ${seg.fecha||''} · Por: ${seg.autor||'—'}</p>
+        <div style="overflow-x:auto;margin-bottom:8px">
+          <table style="width:100%;border-collapse:collapse">
+            <thead style="background:#1e293b;color:#fff">
+              <tr><th style="padding:5px 7px;text-align:left;font-size:8px">Indicador</th><th style="padding:5px 7px;text-align:right;font-size:8px">S${prev.semana} ${prev.año} (ant.)</th><th style="padding:5px 7px;text-align:right;font-size:8px">S${curr.semana} ${curr.año}</th><th style="padding:5px 7px;text-align:right;font-size:8px">Diferencia</th></tr>
+            </thead>
+            <tbody>${segRows}</tbody>
+          </table>
+        </div>
+        ${seg.resumen?`<p style="font-size:9px;margin-bottom:4px"><b>Resumen:</b> ${seg.resumen}</p>`:''}
+        ${seg.compromisosAsesor?`<p style="font-size:9px;margin-bottom:4px"><b>Compromisos Asesor:</b> ${seg.compromisosAsesor}</p>`:''}
+        ${seg.compromisosGerente?`<p style="font-size:9px;margin-bottom:2px"><b>Compromisos Gerente:</b> ${seg.compromisosGerente}</p>`:''}
+        ${(seg.archivos||[]).length?`<p style="font-size:9px;margin-top:4px"><b>Archivos:</b> ${seg.archivos.map(a=>a.nombre).join(', ')}</p>`:''}
+      </div>`;
+    }).join('');
+  })();
 
   document.getElementById('printArea').innerHTML=`<div class="print-doc">
     <div class="ph">
@@ -3618,7 +3714,6 @@ function buildUauPrintDoc(p){
     ${p.compromisosAsesor?`<div class="psec">COMPROMISOS DEL ASESOR</div><div class="pbox">${p.compromisosAsesor}</div>`:''}
     ${p.compromisosGerente?`<div class="psec">COMPROMISOS DEL GERENTE</div><div class="pbox">${p.compromisosGerente}</div>`:''}
     ${segsHtml?`<div class="psec" style="background:#f59e0b;color:#1e293b">SEGUIMIENTOS REGISTRADOS</div>${segsHtml}`:''}
-    ${avancesHtml}
     <div class="psigs"><div><div class="psig">${p.asesor||'Asesor'}</div></div><div><div class="psig">${p.lider||'Líder'}</div></div></div>
   </div>`;
 }
