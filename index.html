@@ -3540,7 +3540,7 @@ async function sendPlanEmail(plan,trigger){
     (allUsers.find(u=>u.uid===(plan.liderUid||plan.creadoPor||''))?.email||'');
   const pdfBase64=await generatePlanPdfBase64(plan).catch(()=>null);
   try{
-    await fetch('/.netlify/functions/send-email',{
+    await fetch('/api/send-email',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
