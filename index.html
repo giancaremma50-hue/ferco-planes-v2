@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Planes FERCO v3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --dark:#0f172a;--gold:#F0BE1A;--border:#e2e8f0;--soft:#f8fafc;--muted:#64748b;
@@ -2490,7 +2488,6 @@ window.saveSeg=async()=>{
   refreshTabHeaders(activePlanData);
   setDetailTab('seguimientos',null,1);
   renderAll();
-  sendPlanEmail(activePlanData,'seguimiento');
 
   // Imprimir anexo
   buildSegPrint(seg, activePlanData);
@@ -2561,7 +2558,6 @@ const TABS=[
     return `<div class="form-grid">
       <div class="form-group"><label>Nombre completo del colaborador *</label><input type="text" id="f_nombre" placeholder="Nombre y apellidos" value="${formData.nombre||''}"></div>
       <div class="form-group"><label>Puesto *</label><input type="text" id="f_puesto" placeholder="Ej. Coordinador Administrativo" value="${formData.puesto||''}"></div>
-      <div class="form-group"><label>Correo del Colaborador</label><input type="email" id="f_correoAsesor" data-optional placeholder="colaborador@ferco.com" value="${formData.correoAsesor||''}"></div>
       <div class="form-group"><label>País *</label><select id="f_pais">
         <option value="">— Selecciona —</option>
         <option ${formData.pais==='Guatemala'?'selected':''}>Guatemala</option>
@@ -2601,7 +2597,7 @@ window.prevTab=()=>{saveTabData();currentTab--;renderTab(currentTab);updateNav()
 
 function saveTabData(){
   const g=id=>document.getElementById(id)?.value||'';
-  if(currentTab===0){formData.nombre=g('f_nombre');formData.puesto=g('f_puesto');formData.correoAsesor=g('f_correoAsesor');formData.pais=g('f_pais');}
+  if(currentTab===0){formData.nombre=g('f_nombre');formData.puesto=g('f_puesto');formData.pais=g('f_pais');}
   else if(currentTab===1){formData.fortalezas=g('f_fortalezas');}
   else if(currentTab===2){formData.areas=g('f_areas');}
 }
@@ -2617,7 +2613,7 @@ function updateNav(){
 }
 function validateTab(){
   hideErr('errMsg');let ok=true;
-  document.querySelectorAll('#tabContent input:not([type=button]):not([type=file]):not([data-optional]),#tabContent select,#tabContent textarea').forEach(f=>{
+  document.querySelectorAll('#tabContent input:not([type=button]):not([type=file]),#tabContent select,#tabContent textarea').forEach(f=>{
     f.classList.remove('err');
     if(f.closest('.sc-body.coll')) return;
     if(!f.value.trim()){f.classList.add('err');ok=false;}
@@ -2714,7 +2710,7 @@ window.savePlan=async()=>{
   }
   const up=userProfile;
   const planData={
-  asesor:formData.nombre||'',puesto:formData.puesto||'',correoAsesor:formData.correoAsesor||'',lider:userProfile.nombre||currentUser.email,
+  asesor:formData.nombre||'',puesto:formData.puesto||'',lider:userProfile.nombre||currentUser.email,
     liderUid:currentUser.uid,creadoPor:currentUser.uid,
     fecha:new Date().toISOString().slice(0,10),pais:formData.pais||'',
     proxSeg:'',region:up.region||'',zona:up.zona||'',
@@ -2752,7 +2748,6 @@ window.savePlan=async()=>{
     currentSubView='mis';
     renderAll();
     showToast('Plan de Fortalecimiento creado. Haz clic en la tarjeta para abrirlo.');
-    sendPlanEmail(planData,'creacion');
   }catch(e){showErr('errMsg','Error al guardar: '+e.message);}
 };
 
@@ -3241,7 +3236,6 @@ function validateUauTab(){
 function saveUauTabData(){
   if(uauTab===0){
     uauData.asesor=document.getElementById('uauAsesor')?.value.trim()||'';
-    uauData.correoAsesor=document.getElementById('uauCorreoAsesor')?.value.trim()||'';
     uauData.semana=parseInt(document.getElementById('uauSemana')?.value)||getISOWeek();
     uauData.año=parseInt(document.getElementById('uauAño')?.value)||new Date().getFullYear();
     uauData.sucursal=document.getElementById('uauSucursal')?.value||'';
@@ -3268,8 +3262,6 @@ function renderUauTab(t){
     c.innerHTML=`<div class="form-grid">
       <div class="form-group" style="grid-column:1/-1"><label>Nombre del Asesor *</label>
         <input type="text" id="uauAsesor" placeholder="Nombre completo" value="${escHtml(uauData.asesor||'')}"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Correo del Asesor</label>
-        <input type="email" id="uauCorreoAsesor" placeholder="asesor@ferco.com" value="${escHtml(uauData.correoAsesor||'')}"></div>
       <div class="form-group"><label>Número de Semana *</label>
         <input type="number" id="uauSemana" min="1" max="53" value="${uauData.semana||getISOWeek()}"></div>
       <div class="form-group"><label>Año</label>
@@ -3330,11 +3322,9 @@ window.saveUnoAUno=async()=>{
   saveUauTabData();
   if(!uauData.asesor){showErr('uauErrMsg','Completa los datos del asesor.');return;}
   try{
-    const liderEmail=allUsers.find(u=>u.uid===currentUser.uid)?.email||'';
     const payload={
       tipo:'unoauno',
       asesor:uauData.asesor,
-      correoAsesor:uauData.correoAsesor||'',
       semana:uauData.semana,
       año:uauData.año,
       sucursal:uauData.sucursal,
@@ -3360,7 +3350,6 @@ window.saveUnoAUno=async()=>{
     await loadPlanes();
     renderAll();
     showToast('Uno a Uno creado. Haz clic en la tarjeta para abrirlo.');
-    sendPlanEmail({...payload,correoLider:liderEmail},'creacion');
   }catch(e){showErr('uauErrMsg','Error al guardar: '+e.message);}
 };
 
@@ -3483,82 +3472,8 @@ window.saveUauSeg=async()=>{
     showToast('✅ Seguimiento guardado correctamente.');
     setDetailTab('graficas',null,1);
     renderUauCharts(activePlanData);
-    const liderEmailSeg=allUsers.find(u=>u.uid===activePlanData.liderUid)?.email||'';
-    sendPlanEmail({...activePlanData,correoLider:liderEmailSeg},'seguimiento');
   }catch(e){showErr('uauSegErrMsg','Error: '+e.message);}
 };
-
-// ── EMAIL CON PDF ADJUNTO ─────────────────────────────────────────────────────
-async function generatePlanPdfBase64(plan){
-  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined') return null;
-  const printArea=document.getElementById('printArea');
-  if(!printArea) return null;
-  try{
-    // Poblar printArea con el contenido del plan (mismo flujo que imprimir)
-    activePlanData=plan;
-    if(plan.tipo==='unoauno'){ buildUauPrintDoc(plan); }
-    else { buildPrintDoc(); }
-    // Convertir canvas de Chart.js a img (igual que el flujo de print)
-    printArea.querySelectorAll('canvas').forEach(c=>{
-      const img=document.createElement('img');
-      img.src=c.toDataURL('image/png');
-      img.style.cssText='max-width:100%;display:block;margin:4px 0';
-      c.replaceWith(img);
-    });
-    // Posicionar off-screen pero visible para html2canvas
-    printArea.setAttribute('style',
-      'position:fixed!important;left:-9999px!important;top:0!important;'+
-      'display:block!important;width:794px!important;z-index:-1!important;background:#fff!important');
-    await new Promise(r=>setTimeout(r,280));
-    const canvas=await html2canvas(printArea,{
-      scale:1.5,useCORS:true,logging:false,windowWidth:794,backgroundColor:'#ffffff'
-    });
-    printArea.removeAttribute('style');
-    const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const pdfW=pdf.internal.pageSize.getWidth();
-    const pdfH=pdf.internal.pageSize.getHeight();
-    const imgData=canvas.toDataURL('image/jpeg',0.88);
-    const totalH=(canvas.height/canvas.width)*pdfW;
-    let y=0;
-    while(y<totalH){
-      if(y>0) pdf.addPage();
-      pdf.addImage(imgData,'JPEG',0,-y,pdfW,totalH);
-      y+=pdfH;
-    }
-    return pdf.output('datauristring').split(',')[1];
-  }catch(e){
-    console.warn('generatePlanPdfBase64 failed',e.message);
-    try{ printArea.removeAttribute('style'); }catch(_){}
-    return null;
-  }
-}
-
-async function sendPlanEmail(plan,trigger){
-  if(!plan.correoAsesor) return;
-  const correoLider=plan.correoLider||
-    (allUsers.find(u=>u.uid===(plan.liderUid||plan.creadoPor||''))?.email||'');
-  const pdfBase64=await generatePlanPdfBase64(plan).catch(()=>null);
-  try{
-    await fetch('/api/send-email',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        planData:{
-          tipo:plan.tipo||'', asesor:plan.asesor||'', correoAsesor:plan.correoAsesor,
-          correoLider, lider:plan.lider||'', semana:plan.semana, año:plan.año,
-          pais:plan.pais||'', sucursal:plan.sucursal||'', estado:plan.estado||'',
-          indicadores:plan.indicadores||{}, seguimientos:plan.seguimientos||[],
-          resumen:plan.resumen||'', compromisosAsesor:plan.compromisosAsesor||'',
-          compromisosGerente:plan.compromisosGerente||'',
-          fortalezas:plan.fortalezas||'', areas:plan.areas||'', smart:plan.smart||[]
-        },
-        trigger,
-        pdfBase64
-      })
-    });
-  }catch(e){ console.warn('sendPlanEmail: non-critical failure',e.message); }
-}
 
 // ── GRÁFICAS UNO A UNO ────────────────────────────────────────────────────────
 function buildChartData(p){
