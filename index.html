@@ -811,7 +811,8 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail }
+  createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail,
+  setPersistence, browserSessionPersistence }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc,
   updateDoc, deleteDoc, query, where, serverTimestamp, orderBy }
@@ -831,6 +832,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+setPersistence(auth, browserSessionPersistence);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
@@ -2980,8 +2982,8 @@ async function loadUsers(){
   snap.forEach(d=>{
     const u=d.data();
     const rolCss=`rol-${u.rol}`.replace('_','-');
-    const areaLabel=u.area==='administracion'?'Administración':u.area==='comercial'?'Comercial':'Comercial';
-    const areaColor=u.area==='administracion'?'background:#fce7f3;color:#9d174d':'background:#dcfce7;color:#166534';
+    const areaLabel=(u.rol==='rh'||u.area==='rh_global')?'Administración':u.area==='administracion'?'Administración':'Comercial';
+    const areaColor=(u.rol==='rh'||u.area==='rh_global'||u.area==='administracion')?'background:#fce7f3;color:#9d174d':'background:#dcfce7;color:#166534';
     const hier=ADMIN_HIERARCHY.includes(u.rol)?u.pais||'—':[u.region,u.zona,u.sucursal].filter(Boolean).join(' › ')||u.pais||'—';
     tbody.innerHTML+=`<tr>
       <td style="font-weight:700">${u.nombre||'—'}</td>
@@ -3104,7 +3106,13 @@ window.saveUser=async()=>{
     closeUserModal();
     loadUsers();
     showToast(`Usuario "${nombre}" creado correctamente.`);
-  }catch(e){showErr('userErrMsg','Error: '+e.message);}
+  }catch(e){
+    if(e.code==='auth/email-already-in-use'){
+      showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
+    }else{
+      showErr('userErrMsg','Error al crear usuario: '+e.message);
+    }
+  }
 };
 
 window.resetUserPassword=async(email,nombre)=>{
