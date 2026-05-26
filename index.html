@@ -2934,7 +2934,7 @@ window.printActivePlan=()=>{
 window.sendActivePlanByEmail=async()=>{
   if(!activePlanData) return;
   const btns = document.querySelectorAll('[onclick="sendActivePlanByEmail()"]');
-  btns.forEach(b => { b.innerHTML = \`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Enviando...\`; b.disabled = true; });
+  btns.forEach(b => { b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Enviando...`; b.disabled = true; });
   
   if(activePlanData.tipo==='unoauno'){buildUauPrintDoc(activePlanData);}
   else{buildPrintDoc(activePlanData,activePlanData.seguimientos||[]);}
@@ -2944,7 +2944,7 @@ window.sendActivePlanByEmail=async()=>{
   
   const opt = {
     margin:       10,
-    filename:     \`Plan_\${activePlanData.asesor||'Fortalecimiento'}.pdf\`,
+    filename:     `Plan_${activePlanData.asesor||'Fortalecimiento'}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -2954,7 +2954,7 @@ window.sendActivePlanByEmail=async()=>{
     const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
     element.style.display = 'none';
 
-    const storageRef = ref(storage, \`pdfs/\${activePlanData.id}_\${Date.now()}.pdf\`);
+    const storageRef = ref(storage, `pdfs/${activePlanData.id}_${Date.now()}.pdf`);
     await uploadBytes(storageRef, pdfBlob);
     const downloadUrl = await getDownloadURL(storageRef);
 
@@ -2972,11 +2972,11 @@ window.sendActivePlanByEmail=async()=>{
       await addDoc(collection(db, 'mail'), {
         to: to,
         message: {
-          subject: \`PDF: Plan de Fortalecimiento - \${activePlanData.asesor}\`,
-          html: \`<p>Hola,</p>
-                 <p>Adjunto encontrarás el enlace para descargar el PDF del plan o Uno a Uno de <b>\${activePlanData.asesor}</b>.</p>
-                 <p><a href="\${downloadUrl}" style="background:#0f172a;color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
-                 <p>Saludos.</p>\`
+          subject: `PDF: Plan de Fortalecimiento - ${activePlanData.asesor}`,
+          html: `<p>Hola,</p>
+                 <p>Adjunto encontrarás el enlace para descargar el PDF del plan o Uno a Uno de <b>${activePlanData.asesor}</b>.</p>
+                 <p><a href="${downloadUrl}" style="background:#0f172a;color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
+                 <p>Saludos.</p>`
         }
       });
       showToast('✅ Correo con PDF enviado correctamente.');
@@ -2988,7 +2988,7 @@ window.sendActivePlanByEmail=async()=>{
     showToast('❌ Error enviando PDF: ' + e.message);
   } finally {
     element.style.display = 'none';
-    btns.forEach(b => { b.innerHTML = \`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Enviar PDF\`; b.disabled = false; });
+    btns.forEach(b => { b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Enviar PDF`; b.disabled = false; });
   }
 };
 
