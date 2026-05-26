@@ -451,7 +451,7 @@ body{font-family:Arial,sans-serif;font-size:14px;color:var(--dark);background:#f
     <div class="login-sub">Planes de Fortalecimiento v2 · Inicia sesión</div>
     <div class="login-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="usuario@ferco.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="login-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="loginErr">Correo o contraseña incorrectos.</div>
   </div>
 </div>
@@ -1228,16 +1228,38 @@ window.doLogin=async()=>{
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
   const err=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
   err.style.display='none';
   if(!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
-  try{await signInWithEmailAndPassword(auth,email,pass);}
-  catch(e){err.textContent='Correo o contraseña incorrectos.';err.style.display='block';}
+  
+  if(btn){
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Ingresando...';
+    btn.disabled=true;
+  }
+
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+  }
+  catch(e){
+    err.textContent='Correo o contraseña incorrectos.';
+    err.style.display='block';
+    if(btn){ btn.innerHTML='Ingresar'; btn.disabled=false; }
+  }
 };
 
 window.doLogout=async()=>{
   notifications=[];
   allUsers=[];
   renderNotifications();
+
+  // Clear fields and reset button
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  const btn = document.getElementById('loginBtn');
+  if(btn) { btn.innerHTML = 'Ingresar'; btn.disabled = false; }
+  const err=document.getElementById('loginErr');
+  if(err) err.style.display='none';
+
   await signOut(auth);
 };
 
