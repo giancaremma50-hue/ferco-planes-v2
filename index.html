@@ -1991,9 +1991,10 @@ html, body {
 .area-node .uh-children { padding: 10px 12px 10px 24px; }
 
 /* Tarjetas de Usuarios */
-.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
-.user-card-premium { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 1px 2px var(--shadow-color); transition: all 0.2s ease; position: relative; }
-.user-card-premium:hover { box-shadow: 0 4px 12px var(--shadow-color); border-color: var(--ring); }
+.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 12px; }
+@keyframes cascadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.user-card-premium { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px var(--shadow-color); transition: box-shadow 0.2s ease, transform 0.2s ease; position: relative; min-height: 118px; opacity: 0; animation: cascadeIn 0.32s ease forwards; }
+.user-card-premium:hover { box-shadow: 0 4px 14px var(--shadow-color); transform: translateY(-2px); border-color: var(--ring); }
 .uc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
 .uc-info { flex: 1; min-width: 0; }
 .uc-name { font-weight: 700; font-size: 13px; color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2280,9 +2281,21 @@ html, body {
           </select>
         </div>
       </div>
-      <!-- Niveles dinámicos en grid 2 columnas -->
-      <div id="uNivelRows" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
-      <!-- Cargo asignado (read-only, visible cuando hay selección) -->
+      <!-- Fila 3: Dirección (nivel3) -->
+      <div class="form-group" id="uDireccionWrap" style="display:none">
+        <label>Dirección *</label>
+        <select id="uDireccion" onchange="onDireccionChange()">
+          <option value="">— Selecciona el área primero —</option>
+        </select>
+      </div>
+      <!-- Fila 4: Rol/Puesto (lista plana de todos los roles bajo esa Dirección) -->
+      <div class="form-group" id="uRolWrap" style="display:none">
+        <label>Rol / Puesto *</label>
+        <select id="uRolPuesto" onchange="onRolPuestoChange()">
+          <option value="">— Selecciona la dirección primero —</option>
+        </select>
+      </div>
+      <!-- Cargo asignado (read-only, visible cuando hay rol seleccionado) -->
       <div class="form-group" id="uCargoWrap" style="display:none">
         <label>Cargo asignado</label>
         <input type="text" id="uCargo" readonly style="background:#f8fafc;font-weight:600;color:#0f172a">
@@ -2515,7 +2528,7 @@ const FERCO_HIERARCHY={
     "Comercial":{
       "Director Comercial GT":{
         "Gerente Mayoreo":          {sub:{"KAM":{}}},
-        "Director Retail":          {sub:{"Regional":{sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}}}},
+        "Director Retail":          {sub:{"Regional":{sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}}}},
         "Gerente de Proyectos":     {sub:{"KAM":{}}},
         "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"AC":{}}}}}
       }
@@ -2584,7 +2597,7 @@ const FERCO_HIERARCHY={
   "El Salvador":{
     "Comercial":{
       "Director Comercial SV":{
-        "Regional":             {sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}},
+        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -2598,8 +2611,8 @@ const FERCO_HIERARCHY={
   "Honduras":{
     "Comercial":{
       "Director Comercial HN":{
-        "Sucursal":             {sub:{"AC":{}}},
-        "Regional":             {sub:{"Sucursal":{sub:{"AC":{}}}}},
+        "Gerente de Sucursal":             {sub:{"AC":{}}},
+        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}}
       }
     },
@@ -2612,7 +2625,7 @@ const FERCO_HIERARCHY={
   "México":{
     "Comercial":{
       "Director Comercial MX":{
-        "Regional":             {sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}},
+        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -3118,21 +3131,28 @@ async function buildQuery(colName){
   }
   if(rol==='regional') return getDocs(query(collection(db,colName),where('region','==',userProfile.region)));
   if(rol==='zona') return getDocs(query(collection(db,colName),where('zona','==',userProfile.zona)));
-  if(ADMIN_HIERARCHY.includes(rol)) return getDocs(query(collection(db,colName),where('pais','==',userProfile.pais||'')));
+  if(ADMIN_HIERARCHY.includes(rol)){const _pais=userProfile.pais||'';if(!_pais)return{docs:[]};return getDocs(query(collection(db,colName),where('pais','==',_pais)));  }
   return getDocs(query(collection(db,colName),where('liderUid','==',currentUser.uid)));
 }
 
 async function loadPlanes(){
   document.getElementById('kanbanArea').innerHTML='<div class="loading"><div class="spinner"></div> Cargando...</div>';
+  const safeQuery=async(col)=>{
+    try{return await buildQuery(col);}catch(e){
+      console.warn('buildQuery fallback para',col,e);
+      try{return await getDocs(query(collection(db,col),where('liderUid','==',currentUser.uid)));}
+      catch(e2){console.error('buildQuery fallback error',e2);return{docs:[]};}
+    }
+  };
   try{
     const rol=userProfile.rol;
     const isRH=rol==='rh';
     const isAdmin=isAdminArea(userProfile);
     const isCom=!isAdmin||isRH;
     const promises=[];
-    if(isRH||isAdmin) promises.push(buildQuery('planes').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'fortalecimiento'}))));
+    if(isRH||isAdmin) promises.push(safeQuery('planes').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'fortalecimiento'}))));
     else promises.push(Promise.resolve([]));
-    if(isRH||isCom) promises.push(buildQuery('unoauno').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'unoauno'}))));
+    if(isRH||isCom) promises.push(safeQuery('unoauno').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'unoauno'}))));
     else promises.push(Promise.resolve([]));
     const [fort,uau]=await Promise.all(promises);
     allPlanes=[...fort,...uau];
@@ -4874,7 +4894,7 @@ async function loadUsers(){
         const areaKey = countryKey + '_a_' + aIdx;
         
         let usersHtml = '<div class="user-grid">';
-        users.forEach(u => {
+        users.forEach((u, uIdx) => {
           // Cargo: usar u.cargo si existe, si no el rolLabel del rol legacy
           const cargoDisplay = u.cargo || rolLabel(u.rol) || u.rol || '—';
           // Área badge con color
@@ -4894,7 +4914,7 @@ async function loadUsers(){
           }
 
           usersHtml += `
-            <div class="user-card-premium">
+            <div class="user-card-premium" style="animation-delay:${uIdx*55}ms">
               <div class="uc-top">
                 <div class="uc-info">
                   <div class="uc-name">${escHtml(u.nombre||'—')}</div>
@@ -4968,107 +4988,154 @@ async function loadUsers(){
 window.openUserModal=()=>{
   document.getElementById('userModalOverlay').classList.add('open');
   hideErr('userErrMsg');
-  // Limpiar campos básicos
-  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  // Resetear País y Área
+  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.dataset)el.dataset.path='';}});
   document.getElementById('uPais').value='';
   const areaSel=document.getElementById('uArea');
-  areaSel.value='';
-  areaSel.disabled=true;
+  areaSel.value='';areaSel.disabled=true;
   areaSel.innerHTML='<option value="">— Selecciona el país primero —</option>';
-  // Limpiar niveles dinámicos y cargo
-  document.getElementById('uNivelRows').innerHTML='';
+  document.getElementById('uDireccion').innerHTML='<option value="">— Selecciona el área primero —</option>';
+  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
+  document.getElementById('uDireccionWrap').style.display='none';
+  document.getElementById('uRolWrap').style.display='none';
   document.getElementById('uCargoWrap').style.display='none';
   document.getElementById('uEsRhGlobal').checked=false;
-  // Mostrar checkbox RH Global solo a usuarios rh / esRhGlobal
   document.getElementById('uRhGlobalWrap').style.display=
     (userProfile?.rol==='rh'||userProfile?.esRhGlobal)?'':'none';
   populateReportaA();
 };
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
-// Poblar el selector Reporta A
-function populateReportaA(){
-  const sel=document.getElementById('uReportaA');
-  sel.innerHTML='<option value="">— Sin asignación —</option>';
-  allUsers.forEach(u=>{
-    const o=document.createElement('option');
-    o.value=u.uid;
-    o.textContent=`${u.nombre} (${u.cargo||rolLabel(u.rol)||u.rol||'—'})`;
-    sel.appendChild(o);
-  });
+// Extrae lista plana {label,path} de todos los roles bajo un nodo
+function flattenRoles(node,path){
+  if(!path) path=[];
+  const result=[];
+  const hasSub='sub' in Object(node);
+  const children=hasSub?node.sub:node;
+  if(!children||typeof children!=='object') return result;
+  for(const[key,val] of Object.entries(children)){
+    const newPath=[...path,key];
+    result.push({label:key,path:newPath});
+    const subNode=val&&typeof val==='object'&&'sub' in val?val.sub:val;
+    if(subNode&&typeof subNode==='object'&&Object.keys(subNode).length>0)
+      result.push(...flattenRoles(val,newPath));
+  }
+  return result;
 }
 
-// Manejo de cambio en cualquier nivel de jerarquía (arranca en nivel 3)
-window.onNivelChange=(nivel)=>{
-  // Eliminar niveles posteriores
-  for(let n=nivel+1;n<=8;n++){
-    const el=document.getElementById(`uNivel${n}Row`);if(el)el.remove();
-  }
-  updateCargoBadge();
-  // Navegar por el árbol: País → Área → nivel3…nivelN
-  const pais=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea').value;
-  let node=FERCO_HIERARCHY[pais]?.[area];
-  for(let n=3;n<=nivel;n++){
-    const val=document.getElementById(`uNivel${n}`)?.value;
-    if(!val) return;
-    node=node?.[val]?.sub||node?.[val];
-    if(!node) return;
-  }
-  // Renderizar siguiente nivel si hay hijos
-  const children=node?.sub||(typeof node==='object'&&!node.sub?node:null);
-  if(children&&Object.keys(children).length>0) renderNivelRow(nivel+1,children);
-  updateCargoBadge();
-};
-
-function updateCargoBadge(){
-  let cargo='';
-  for(let n=8;n>=3;n--){
-    const v=document.getElementById(`uNivel${n}`)?.value;
-    if(v){cargo=v;break;}
-  }
-  const wrap=document.getElementById('uCargoWrap');
-  if(cargo){document.getElementById('uCargo').value=cargo;wrap.style.display='';}
-  else wrap.style.display='none';
-}
-
-function renderNivelRow(nivel,nodeOrSub){
-  const children=nodeOrSub?.sub||nodeOrSub;
-  if(!children||Object.keys(children).length===0) return;
-  const row=document.createElement('div');
-  row.id=`uNivel${nivel}Row`;
-  row.className='form-group';
-  row.innerHTML=`<label>Nivel ${nivel}</label>
-    <select id="uNivel${nivel}" onchange="onNivelChange(${nivel})">
-      <option value="">— Selecciona —</option>
-      ${Object.keys(children).map(k=>`<option value="${escHtml(k)}">${escHtml(k)}</option>`).join('')}
-    </select>`;
-  document.getElementById('uNivelRows').appendChild(row);
-}
-
+// País cambia → habilitar Área
 window.onPaisChange=()=>{
   const pais=document.getElementById('uPais').value;
   const areaSel=document.getElementById('uArea');
   areaSel.innerHTML='<option value="">— Selecciona el área —</option>';
-  document.getElementById('uNivelRows').innerHTML='';
-  updateCargoBadge();
+  document.getElementById('uDireccion').innerHTML='<option value="">— Selecciona el área primero —</option>';
+  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
+  document.getElementById('uDireccionWrap').style.display='none';
+  document.getElementById('uRolWrap').style.display='none';
+  document.getElementById('uCargoWrap').style.display='none';
+  document.getElementById('uCargo').value='';
   if(!pais){areaSel.disabled=true;return;}
   const areas=Object.keys(FERCO_HIERARCHY[pais]||{});
   areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   areaSel.disabled=false;
+  populateReportaA();
 };
 
+// Área cambia → poblar Dirección
 window.onAreaChange=()=>{
   const pais=document.getElementById('uPais').value;
   const area=document.getElementById('uArea').value;
-  document.getElementById('uNivelRows').innerHTML='';
-  updateCargoBadge();
+  const dirSel=document.getElementById('uDireccion');
+  dirSel.innerHTML='<option value="">— Selecciona —</option>';
+  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
+  document.getElementById('uDireccionWrap').style.display='none';
+  document.getElementById('uRolWrap').style.display='none';
+  document.getElementById('uCargoWrap').style.display='none';
+  document.getElementById('uCargo').value='';
   if(!area) return;
-  const node=FERCO_HIERARCHY[pais]?.[area];
-  if(!node) return;
-  renderNivelRow(3,node);
+  const areaNode=FERCO_HIERARCHY[pais]?.[area];
+  if(!areaNode) return;
+  Object.keys(areaNode).forEach(dir=>{const o=document.createElement('option');o.value=dir;o.textContent=dir;dirSel.appendChild(o);});
+  document.getElementById('uDireccionWrap').style.display='';
+  populateReportaA();
 };
+
+// Dirección cambia → poblar Rol/Puesto con lista plana
+window.onDireccionChange=()=>{
+  const pais=document.getElementById('uPais').value;
+  const area=document.getElementById('uArea').value;
+  const dir=document.getElementById('uDireccion').value;
+  const rolSel=document.getElementById('uRolPuesto');
+  rolSel.innerHTML='<option value="">— Selecciona el rol —</option>';
+  document.getElementById('uRolWrap').style.display='none';
+  document.getElementById('uCargoWrap').style.display='none';
+  document.getElementById('uCargo').value='';
+  if(!dir) return;
+  const dirNode=FERCO_HIERARCHY[pais]?.[area]?.[dir];
+  // La Dirección es también un cargo asignable
+  const o0=document.createElement('option');
+  o0.value=dir;o0.textContent=dir;o0.dataset.path=JSON.stringify([dir]);
+  rolSel.appendChild(o0);
+  // Añadir todos los roles subordinados (lista plana)
+  if(dirNode){
+    flattenRoles(dirNode,[dir]).forEach(function(item){
+      const o=document.createElement('option');
+      o.value=item.label;o.textContent=item.label;
+      o.dataset.path=JSON.stringify(item.path);
+      rolSel.appendChild(o);
+    });
+  }
+  document.getElementById('uRolWrap').style.display='';
+  populateReportaA();
+};
+
+// Rol/Puesto cambia → mostrar cargo y filtrar Reporta a
+window.onRolPuestoChange=()=>{
+  const rolSel=document.getElementById('uRolPuesto');
+  const selected=rolSel.options[rolSel.selectedIndex];
+  const cargo=rolSel.value;
+  const cargoInput=document.getElementById('uCargo');
+  if(!cargo){
+    document.getElementById('uCargoWrap').style.display='none';
+    cargoInput.value='';
+    if(cargoInput.dataset) cargoInput.dataset.path='';
+    populateReportaA();
+    return;
+  }
+  cargoInput.value=cargo;
+  document.getElementById('uCargoWrap').style.display='';
+  const path=selected&&selected.dataset&&selected.dataset.path?JSON.parse(selected.dataset.path):[cargo];
+  cargoInput.dataset.path=JSON.stringify(path);
+  populateReportaA(cargo,path);
+};
+
+// Poblar selector Reporta A, filtrado por jerarquía superior al cargo
+function populateReportaA(cargo,path){
+  const sel=document.getElementById('uReportaA');
+  sel.innerHTML='<option value="">— Sin asignación —</option>';
+  const pais=document.getElementById('uPais')?.value||'';
+  const area=document.getElementById('uArea')?.value||'';
+  const dir=document.getElementById('uDireccion')?.value||'';
+  if(!cargo||!path){
+    allUsers.forEach(function(u){
+      const o=document.createElement('option');
+      o.value=u.uid;
+      o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
+      sel.appendChild(o);
+    });
+    return;
+  }
+  const superiorCargos=new Set(path.slice(0,-1));
+  if(dir&&cargo!==dir) superiorCargos.add(dir);
+  allUsers.forEach(function(u){
+    const mismaJerarquia=u.pais===pais&&u.area===area&&superiorCargos.has(u.cargo);
+    const esAdmin=['rh','rh_global','ceo','director'].includes(u.rol);
+    if(!mismaJerarquia&&!esAdmin) return;
+    const o=document.createElement('option');
+    o.value=u.uid;
+    o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
+    sel.appendChild(o);
+  });
+}
 
 // Mapea cargo + área → rol legacy (compatibilidad con getSubordinateUids)
 function deriveRolLegacy(cargo,area,nivel3){
@@ -5077,7 +5144,7 @@ function deriveRolLegacy(cargo,area,nivel3){
     if(cargo==='Director Retail') return 'regional';
     if(cargo==='Regional') return 'regional';
     if(cargo==='Zona') return 'zona';
-    if(cargo==='Sucursal'||cargo==='AC'||cargo==='KAM') return 'sucursal';
+    if(cargo==='Gerente de Sucursal'||cargo==='AC'||cargo==='KAM') return 'sucursal';
     return 'regional';
   }
   const map={'Recursos Humanos':'jefe_admin','Finanzas':'gerente_admin',
@@ -5091,22 +5158,25 @@ window.saveUser=async()=>{
   const email=document.getElementById('uEmail').value.trim();
   const pais=document.getElementById('uPais')?.value||'';
   const area=document.getElementById('uArea')?.value||'';
+  const dir=document.getElementById('uDireccion')?.value||'';
   const cargo=document.getElementById('uCargo')?.value||'';
   const esRhGlobal=document.getElementById('uEsRhGlobal')?.checked||false;
   const reportaA=document.getElementById('uReportaA')?.value||'';
 
-  // Recopilar path jerárquico (niveles 3-8)
+  // Leer path jerárquico desde dataset del input de cargo
+  const pathRaw=document.getElementById('uCargo')?.dataset?.path;
+  const rolPath=pathRaw?JSON.parse(pathRaw):(cargo?[cargo]:[]);
+  // Guardar nivel3..nivelN (nivel3 siempre es la Dirección)
   const jerarquia={};
-  for(let n=3;n<=8;n++){
-    const v=document.getElementById(`uNivel${n}`)?.value;
-    if(v) jerarquia[`nivel${n}`]=v;
-  }
-  const nivel3=jerarquia.nivel3||'';
+  rolPath.forEach(function(v,i){jerarquia['nivel'+(i+3)]=v;});
+  if(dir&&!jerarquia.nivel3) jerarquia.nivel3=dir;
+  const nivel3=dir;
 
   // Validaciones
   if(!nombre||!email){showErr('userErrMsg','Completa el nombre y correo del usuario.');return;}
   if(!pais||!area){showErr('userErrMsg','Selecciona el país y el área.');return;}
-  if(!cargo){showErr('userErrMsg','Selecciona el cargo en la jerarquía.');return;}
+  if(!dir){showErr('userErrMsg','Selecciona la dirección.');return;}
+  if(!cargo){showErr('userErrMsg','Selecciona el rol o puesto.');return;}
 
   // Derivar rol legacy para compatibilidad con acceso control
   const rolLegacy=esRhGlobal?'rh':deriveRolLegacy(cargo,area,nivel3);
@@ -5128,6 +5198,7 @@ window.saveUser=async()=>{
     const profile={
       nombre,email,
       cargo,
+      direccion:dir,
       area:esRhGlobal?'rh_global':area,
       ...jerarquia,
       pais:esRhGlobal?'Global':(pais||''),
