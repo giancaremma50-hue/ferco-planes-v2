@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Reglas para la carpeta de planes PDF
+    match /pdfs/{allPaths=**} {
+      // Permitir la lectura y subida únicamente a usuarios autenticados en el sistema
+      allow read, write: if request.auth != null;
+    }
+  }
+}

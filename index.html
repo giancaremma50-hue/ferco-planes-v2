@@ -1277,7 +1277,10 @@ window.doChangePass=async()=>{
     await updatePassword(auth.currentUser, newPass);
     closeChPass();
     alert('✅ Contraseña actualizada correctamente.');
-  }catch(e){showErr('chpassErr','Error: '+e.message);}
+  }catch(e){
+    console.error('Error actualizando contraseña:', e);
+    showErr('chpassErr','No se pudo actualizar la contraseña. Por favor, vuelve a intentarlo.');
+  }
 };
 
 onAuthStateChanged(auth, async user=>{
@@ -1441,7 +1444,10 @@ async function loadPlanes(){
     checkOverdueNotifications();
     updateSubViewCounts();
     renderAll();
-  }catch(e){document.getElementById('kanbanArea').innerHTML=`<div class="loading">Error: ${e.message}</div>`;}
+  }catch(e){
+    console.error('Error cargando planes/dashboard:', e);
+    document.getElementById('kanbanArea').innerHTML=`<div class="loading" style="color:var(--danger)">⚠️ Error al cargar los planes. Por favor, recarga la página.</div>`;
+  }
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
@@ -2817,7 +2823,10 @@ window.savePlan=async()=>{
     currentSubView='mis';
     renderAll();
     showToast('Plan de Fortalecimiento creado. Haz clic en la tarjeta para abrirlo.');
-  }catch(e){showErr('errMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error guardando plan:',e);
+    showErr('errMsg','No se pudo guardar el plan. Por favor, verifica tu conexión e inténtalo de nuevo.');
+  }
 };
 
 // ── EDICIÓN ───────────────────────────────────────────────────────────────────
@@ -2921,7 +2930,10 @@ window.saveEdit=async()=>{
     document.getElementById('fm-title').textContent=p.asesor||'Plan';
     setDetailTab('cambios',null,4);
     renderAll();
-  }catch(e){showErr('editErrMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error editando plan:',e);
+    showErr('editErrMsg','No se pudieron guardar los cambios. Inténtalo de nuevo.');
+  }
 };
 
 // ── IMPRESIÓN ─────────────────────────────────────────────────────────────────
@@ -2984,8 +2996,8 @@ window.sendActivePlanByEmail=async()=>{
       showToast('⚠️ No se encontraron correos para enviar.');
     }
   } catch(e) {
-    console.error(e);
-    showToast('❌ Error enviando PDF: ' + e.message);
+    console.error('Error enviando PDF por correo:', e);
+    showToast('❌ No se pudo enviar el PDF. Inténtalo más tarde.');
   } finally {
     element.style.display = 'none';
     btns.forEach(b => { b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Enviar PDF`; b.disabled = false; });
@@ -3276,7 +3288,8 @@ window.saveUser=async()=>{
     if(e.code==='auth/email-already-in-use'){
       showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
     }else{
-      showErr('userErrMsg','Error al crear usuario: '+e.message);
+      console.error('Error creando usuario:', e);
+      showErr('userErrMsg','No se pudo crear el usuario. Por favor, verifica los campos e inténtalo de nuevo.');
     }
   }
 };
@@ -3286,7 +3299,10 @@ window.resetUserPassword=async(email,nombre)=>{
   try{
     await sendPasswordResetEmail(auth,email);
     showToast(`📧 Correo enviado a ${email}`);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){
+    console.error('Error al resetear contraseña:', e);
+    alert('No se pudo enviar el correo de restablecimiento. Inténtalo de nuevo.');
+  }
 };
 
 function showToast(msg,duration=3500){
@@ -3524,7 +3540,10 @@ window.saveUnoAUno=async()=>{
     await loadPlanes();
     renderAll();
     showToast('Uno a Uno creado. Haz clic en la tarjeta para abrirlo.');
-  }catch(e){showErr('uauErrMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error guardando UAU:', e);
+    showErr('uauErrMsg','No se pudo guardar el Uno a Uno. Por favor, inténtalo de nuevo.');
+  }
 };
 
 // ── UAU SEGUIMIENTO ────────────────────────────────────────────────────────────
@@ -3646,7 +3665,10 @@ window.saveUauSeg=async()=>{
     showToast('✅ Seguimiento guardado correctamente.');
     setDetailTab('graficas',null,1);
     renderUauCharts(activePlanData);
-  }catch(e){showErr('uauSegErrMsg','Error: '+e.message);}
+  }catch(e){
+    console.error('Error guardando seguimiento UAU:', e);
+    showErr('uauSegErrMsg','No se pudo guardar el seguimiento. Inténtalo de nuevo.');
+  }
 };
 
 // ── GRÁFICAS UNO A UNO ────────────────────────────────────────────────────────

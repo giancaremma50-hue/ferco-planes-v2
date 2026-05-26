@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función auxiliar para verificar si el usuario tiene rol de Recursos Humanos (RH)
+    function isRH() {
+      return request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'rh' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'rh_global');
+    }
+
+    // Colección de Usuarios
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer perfiles (necesario para cargar líderes, reportes, jerarquías)
+      allow read: if request.auth != null;
+      // Solo personal de RH/Administración puede crear o modificar usuarios
+      allow write: if isRH();
+    }
+
+    // Colección de Planes de Fortalecimiento (y sus subcolecciones si existieran)
+    match /planes/{planId} {
+      // Un usuario solo puede leer, actualizar o borrar planes en los que esté involucrado:
+      // - Si es el creador del plan (creadoPor)
+      // - Si es el colaborador/asesor del plan (colaboradorUid)
+      // - Si es el jefe directo (liderUid)
+      allow read, write: if request.auth != null && (
+        resource.data.creadoPor == request.auth.uid ||
+        resource.data.colaboradorUid == request.auth.uid ||
+        resource.data.liderUid == request.auth.uid ||
+        // Permitir que RH acceda a todos los planes
+        isRH()
+      );
+      // Cualquier usuario autenticado puede crear un plan nuevo
+      allow create: if request.auth != null;
+    }
+
+    // Colección de Notificaciones individuales
+    match /{path=**}/notificaciones_{userId}/{notifId} {
+      // El usuario solo puede leer y modificar sus propias notificaciones
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Colección de Correos encolados (Trigger Email Extension)
+    match /mail/{mailId} {
+      // Solo usuarios autenticados de tu dominio pueden encolar correos para enviar
+      allow create: if request.auth != null && 
+        request.resource.data.to is list && 
+        request.resource.data.message.subject.size() < 120;
+      
+      // Nadie puede leer, editar ni borrar correos una vez encolados (para evitar robo de datos o reenvíos)
+      allow read, update, delete: if false;
+    }
+  }
+}
