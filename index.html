@@ -18,6 +18,7 @@
   })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* ── PREMIUM BASE & VARIABES ── */
 :root {
@@ -1972,6 +1973,37 @@ html, body {
   padding-top: 6px;
   margin-top: 48px;
 }
+/* --- CASCADA DE USUARIOS --- */
+.users-hier-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.uh-node { margin-bottom: 4px; }
+.uh-node.country-node { border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); box-shadow: 0 1px 3px var(--shadow-color); }
+.uh-card { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.2s, transform 0.2s; border-radius: var(--radius-sm); gap: 12px; }
+.uh-card:hover { background: var(--secondary); }
+.country-card { font-weight: 700; font-size: 14px; color: var(--foreground); background: var(--muted); border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+.country-card.open { border-bottom: 1px solid var(--border); }
+.area-card { font-weight: 600; font-size: 13px; color: var(--foreground); margin-left: 12px; border-left: 3px solid var(--ring); background: var(--card); margin-top: 6px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.area-card:hover { background: var(--secondary); }
+.uh-icon { font-size: 16px; }
+.uh-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uh-count { font-size: 11px; color: var(--muted-foreground); background: var(--secondary); padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.uh-chevron { font-size: 10px; color: var(--muted-foreground); transition: transform 0.2s; transform-origin: center; }
+.uh-children { display: none; padding: 8px 16px 12px 16px; }
+.area-node .uh-children { padding: 10px 12px 10px 24px; }
+
+/* Tarjetas de Usuarios */
+.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
+.user-card-premium { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 1px 2px var(--shadow-color); transition: all 0.2s ease; position: relative; }
+.user-card-premium:hover { box-shadow: 0 4px 12px var(--shadow-color); border-color: var(--ring); }
+.uc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+.uc-info { flex: 1; min-width: 0; }
+.uc-name { font-weight: 700; font-size: 13px; color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uc-email { font-size: 11px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+.uc-pass-btn { background: var(--secondary); border: none; color: var(--foreground); width: 26px; height: 26px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, color 0.2s; flex-shrink: 0; }
+.uc-pass-btn:hover { background: var(--border); color: var(--ring); }
+.uc-details { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
+.uc-detail-item { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+.uc-label { color: var(--muted-foreground); font-weight: 500; }
+.uc-val { color: var(--foreground); font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
 </style>
 </head>
 <body>
@@ -1985,7 +2017,7 @@ html, body {
     <div class="login-sub">Planes de Fortalecimiento v2 · Inicia sesión</div>
     <div class="login-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="usuario@ferco.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="login-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="loginErr">Correo o contraseña incorrectos.</div>
   </div>
 </div>
@@ -2070,10 +2102,7 @@ html, body {
       </div>
       <div class="users-wrap">
         <div id="usersLoading" class="loading"><div class="spinner"></div> Cargando...</div>
-        <table class="users-table" id="usersTable" style="display:none">
-          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Jerarquía</th><th>Estado</th></tr></thead>
-          <tbody id="usersTbody"></tbody>
-        </table>
+        <div id="usersHierarchyArea" style="display:none" class="users-hier-wrap"></div>
       </div>
     </div>
   </div>
@@ -2086,6 +2115,7 @@ html, body {
       <div><div class="fm-title" id="fm-title">Detalle</div><div class="fm-sub" id="fm-sub"></div></div>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-sm" id="fm-edit-btn" onclick="openEditModal()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Editar</button>
+        <button class="btn btn-sm" id="fm-email-btn" onclick="sendActivePlanByEmail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Enviar PDF</button>
         <button class="btn btn-gold btn-sm" onclick="printActivePlan()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>PDF</button>
         <button class="btn btn-sm btn-danger" onclick="closeDetail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
@@ -2223,14 +2253,13 @@ html, body {
     <div class="modal-title">Nuevo usuario</div>
     <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#1e40af;display:flex;gap:8px">
       <span style="font-size:16px">📧</span>
-      <span>RH crea el usuario directamente. El usuario recibirá su contraseña temporal y podrá reestablecerla.</span>
+      <span>Al crear al usuario, se generará una contraseña segura automáticamente y recibirá un correo oficial de Firebase para configurarla.</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <div class="form-grid">
         <div class="form-group"><label>Nombre completo *</label><input type="text" id="uNombre" placeholder="Nombre y apellidos"></div>
         <div class="form-group"><label>Correo FERCO *</label><input type="email" id="uEmail" placeholder="correo@ferco.com.gt"></div>
       </div>
-      <div class="form-group"><label>Contraseña temporal *</label><input type="password" id="uPass" placeholder="Mínimo 6 caracteres — el usuario podrá reestablecerla"></div>
       <div class="form-grid" id="uPaisRow">
         <div class="form-group"><label>País</label>
           <select id="uPais" onchange="updateUserRoles()">
@@ -2245,15 +2274,28 @@ html, body {
           <select id="uArea" onchange="updateUserRoles()">
             <option value="">— Selecciona —</option>
             <option value="comercial">Comercial</option>
-            <option value="administracion">Administración</option>
+            <option value="operaciones">Operaciones (COO)</option>
+            <option value="chro">Recursos Humanos (CHRO)</option>
+            <option value="cpo">Producto (CPO)</option>
+            <option value="finanzas">Finanzas</option>
+            <option value="construccion">Desarrollo y Construcción</option>
+            <option value="transformacion">Transformación Digital</option>
+            <option value="ceo">Dirección General (CEO)</option>
             <option value="rh_global">RH Global (Super Admin)</option>
           </select>
         </div>
       </div>
-      <div class="form-group"><label>Rol *</label>
-        <select id="uRol" onchange="updateUserHierarchy()">
-          <option value="">— Selecciona país y área —</option>
-        </select>
+      <div class="form-grid">
+        <div class="form-group"><label>Rol *</label>
+          <select id="uRol" onchange="updateUserHierarchy()">
+            <option value="">— Selecciona área —</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Reporta A (Jefe Directo)</label>
+          <select id="uReportaA">
+            <option value="">— Opcional (Nadie) —</option>
+          </select>
+        </div>
       </div>
       <div id="gtCascade" style="display:none">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">Jerarquía en Guatemala</div>
@@ -2378,6 +2420,21 @@ const auth = getAuth(app);
 setPersistence(auth, browserSessionPersistence);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// ── UTILIDADES DE CORREO ──────────────────────────────────────────────────────
+async function sendEmailNotification(to, subject, html) {
+  try {
+    await addDoc(collection(db, 'mail'), {
+      to: [to],
+      message: {
+        subject: subject,
+        html: html
+      }
+    });
+  } catch(e) {
+    console.error('Error al enviar correo:', e);
+  }
+}
 
 // ── DATOS GT ──────────────────────────────────────────────────────────────────
 const GT_DATA = {
@@ -2523,39 +2580,53 @@ function renderMentions(txt){
 // ── JERARQUÍA Y MENCIONABLES ──────────────────────────────────────────────────
 function getSubordinateUids(){
   const rol=userProfile.rol;
-  const subordinados=[];
+  const myUid = currentUser.uid;
+  const subs = new Set();
+
+  function findSubordinates(uid) {
+    allUsers.forEach(u => {
+      if (u.reportaA === uid && !subs.has(u.uid)) {
+        subs.add(u.uid);
+        findSubordinates(u.uid);
+      }
+    });
+  }
+  findSubordinates(myUid);
+
   for(const u of allUsers){
-    if(u.uid===currentUser.uid) continue;
-    // Jerarquía comercial
-    if(rol==='director'&&u.rol==='regional') subordinados.push(u.uid);
-    else if(rol==='regional'&&u.rol==='zona'&&u.region===userProfile.region) subordinados.push(u.uid);
-    else if(rol==='zona'&&u.rol==='sucursal'&&u.zona===userProfile.zona) subordinados.push(u.uid);
-    // Jerarquía administración: por nivel en el mismo país
-    else if(ADMIN_HIERARCHY.includes(rol)){
+    if(u.uid===myUid || subs.has(u.uid)) continue;
+    if(rol==='director'&&u.rol==='regional') subs.add(u.uid);
+    else if(rol==='regional'&&u.rol==='zona'&&u.region===userProfile.region) subs.add(u.uid);
+    else if(rol==='zona'&&u.rol==='sucursal'&&u.zona===userProfile.zona) subs.add(u.uid);
+    else if(typeof ADMIN_HIERARCHY!=='undefined' && ADMIN_HIERARCHY.includes(rol)){
       const myIdx=ADMIN_HIERARCHY.indexOf(rol);
       const uIdx=ADMIN_HIERARCHY.indexOf(u.rol);
-      if(uIdx>myIdx&&u.pais===userProfile.pais) subordinados.push(u.uid);
+      if(uIdx>myIdx&&u.pais===userProfile.pais) subs.add(u.uid);
     }
-    else if(rol==='rh') subordinados.push(u.uid);
+    else if(rol==='rh'||rol==='rh_global'||rol==='ceo') subs.add(u.uid);
   }
-  return subordinados;
+  return Array.from(subs);
 }
 
 function getMentionableUsers(){
   const rol=userProfile.rol;
   const up=userProfile;
+  const mySubs = getSubordinateUids();
+  
   return allUsers.filter(u=>{
     if(u.uid===currentUser.uid) return false;
-    if(rol==='rh') return true;
-    if(rol==='director'){return ['rh'].includes(u.rol)||u.rol==='regional';}
-    if(rol==='regional'){return ['director','rh'].includes(u.rol)||(u.rol==='zona'&&u.region===up.region);}
-    if(rol==='zona'){return ['regional','director','rh'].includes(u.rol)||(u.rol==='sucursal'&&u.zona===up.zona);}
-    if(rol==='sucursal'){return ['zona','regional','director','rh'].includes(u.rol);}
-    // Jerarquía admin: puede mencionar superior inmediato y subordinados directos del mismo país
-    if(ADMIN_HIERARCHY.includes(rol)){
+    if(['rh','rh_global','ceo'].includes(u.rol) || ['rh','rh_global','ceo'].includes(rol)) return true;
+    if(up.reportaA === u.uid) return true;
+    if(mySubs.includes(u.uid)) return true;
+    
+    if(rol==='director'){return u.rol==='regional';}
+    if(rol==='regional'){return ['director'].includes(u.rol)||(u.rol==='zona'&&u.region===up.region);}
+    if(rol==='zona'){return ['regional','director'].includes(u.rol)||(u.rol==='sucursal'&&u.zona===up.zona);}
+    if(rol==='sucursal'){return ['zona','regional','director'].includes(u.rol);}
+    
+    if(typeof ADMIN_HIERARCHY!=='undefined' && ADMIN_HIERARCHY.includes(rol)){
       const myIdx=ADMIN_HIERARCHY.indexOf(rol);
       const uIdx=ADMIN_HIERARCHY.indexOf(u.rol);
-      if(u.rol==='rh') return true;
       if(u.pais!==up.pais) return false;
       return uIdx===myIdx-1||uIdx===myIdx+1;
     }
@@ -2728,16 +2799,38 @@ window.doLogin=async()=>{
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
   const err=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
   err.style.display='none';
   if(!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
-  try{await signInWithEmailAndPassword(auth,email,pass);}
-  catch(e){err.textContent='Correo o contraseña incorrectos.';err.style.display='block';}
+  
+  if(btn){
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Ingresando...';
+    btn.disabled=true;
+  }
+
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+  }
+  catch(e){
+    err.textContent='Correo o contraseña incorrectos.';
+    err.style.display='block';
+    if(btn){ btn.innerHTML='Ingresar'; btn.disabled=false; }
+  }
 };
 
 window.doLogout=async()=>{
   notifications=[];
   allUsers=[];
   renderNotifications();
+
+  // Clear fields and reset button
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  const btn = document.getElementById('loginBtn');
+  if(btn) { btn.innerHTML = 'Ingresar'; btn.disabled = false; }
+  const err=document.getElementById('loginErr');
+  if(err) err.style.display='none';
+
   await signOut(auth);
 };
 
@@ -2755,7 +2848,10 @@ window.doChangePass=async()=>{
     await updatePassword(auth.currentUser, newPass);
     closeChPass();
     alert('✅ Contraseña actualizada correctamente.');
-  }catch(e){showErr('chpassErr','Error: '+e.message);}
+  }catch(e){
+    console.error('Error actualizando contraseña:', e);
+    showErr('chpassErr','No se pudo actualizar la contraseña. Por favor, vuelve a intentarlo.');
+  }
 };
 
 onAuthStateChanged(auth, async user=>{
@@ -2924,7 +3020,10 @@ async function loadPlanes(){
     checkOverdueNotifications();
     updateSubViewCounts();
     renderAll();
-  }catch(e){document.getElementById('kanbanArea').innerHTML=`<div class="loading">Error: ${e.message}</div>`;}
+  }catch(e){
+    console.error('Error cargando planes/dashboard:', e);
+    document.getElementById('kanbanArea').innerHTML=`<div class="loading" style="color:var(--danger)">⚠️ Error al cargar los planes. Por favor, recarga la página.</div>`;
+  }
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
@@ -3289,6 +3388,7 @@ window.setDetailTab=(tab,el,idx)=>{
     foot.innerHTML=`
       ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-gold" onclick="openUauSeg()">${lIcon('plus',13)} Seguimiento</button>`:''}
       <button class="btn" onclick="setDetailTab('comentarios',null,4)">${lIcon('message-circle',13)} Comentar</button>
+      <button class="btn" onclick="sendActivePlanByEmail()" title="Enviar PDF por correo">${lIcon('mail',13)} Enviar PDF</button>
       <button class="btn" onclick="printActivePlan()" title="Generar PDF">${lIcon('file-text',13)} PDF</button>
       <span style="font-size:11px;color:var(--muted);flex:1;margin-left:4px">${(p.seguimientos||[]).length} seg.</span>`;
     return;
@@ -3395,6 +3495,7 @@ window.setDetailTab=(tab,el,idx)=>{
     foot.innerHTML=`
       ${canAct&&p.estado!=='Cierre'?`<button class="btn btn-primary" onclick="openSeg()">${lIcon('plus',13)} Seguimiento</button>`:''}
       <button class="btn" onclick="setDetailTab('comentarios',null,3)">${lIcon('message-circle',13)} Comentar</button>
+      <button class="btn" onclick="sendActivePlanByEmail()" title="Enviar PDF por correo">${lIcon('mail',13)} Enviar PDF</button>
       <button class="btn" onclick="printActivePlan()" title="Generar PDF">${lIcon('file-text',13)} PDF</button>
       <span style="font-size:11px;color:var(--muted);flex:1;margin-left:4px">${(p.seguimientos||[]).length} seg. · ${(p.archivos||[]).length} arch.</span>`;
   }
@@ -4298,7 +4399,10 @@ window.savePlan=async()=>{
     currentSubView='mis';
     renderAll();
     showToast('Plan de Fortalecimiento creado. Haz clic en la tarjeta para abrirlo.');
-  }catch(e){showErr('errMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error guardando plan:',e);
+    showErr('errMsg','No se pudo guardar el plan. Por favor, verifica tu conexión e inténtalo de nuevo.');
+  }
 };
 
 // ── EDICIÓN ───────────────────────────────────────────────────────────────────
@@ -4402,7 +4506,10 @@ window.saveEdit=async()=>{
     document.getElementById('fm-title').textContent=p.asesor||'Plan';
     setDetailTab('cambios',null,4);
     renderAll();
-  }catch(e){showErr('editErrMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error editando plan:',e);
+    showErr('editErrMsg','No se pudieron guardar los cambios. Inténtalo de nuevo.');
+  }
 };
 
 // ── IMPRESIÓN ─────────────────────────────────────────────────────────────────
@@ -4410,6 +4517,67 @@ window.printActivePlan=()=>{
   if(activePlanData?.tipo==='unoauno'){buildUauPrintDoc(activePlanData);}
   else{buildPrintDoc(activePlanData,activePlanData.seguimientos||[]);}
   setTimeout(()=>window.print(),400);
+};
+
+window.sendActivePlanByEmail=async()=>{
+  if(!activePlanData) return;
+  const btns = document.querySelectorAll('[onclick="sendActivePlanByEmail()"]');
+  btns.forEach(b => { b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Enviando...`; b.disabled = true; });
+  
+  if(activePlanData.tipo==='unoauno'){buildUauPrintDoc(activePlanData);}
+  else{buildPrintDoc(activePlanData,activePlanData.seguimientos||[]);}
+  
+  const element = document.getElementById('printArea');
+  element.style.display = 'block';
+  
+  const opt = {
+    margin:       10,
+    filename:     `Plan_${activePlanData.asesor||'Fortalecimiento'}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+    element.style.display = 'none';
+
+    const storageRef = ref(storage, `pdfs/${activePlanData.id}_${Date.now()}.pdf`);
+    await uploadBytes(storageRef, pdfBlob);
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    const uidsToSend = new Set([activePlanData.creadoPor, activePlanData.liderUid, currentUser.uid]);
+    const emails = [];
+    for(const id of uidsToSend){
+      if(id){
+        const userObj = allUsers.find(u => u.uid === id);
+        if(userObj && userObj.email) emails.push(userObj.email);
+      }
+    }
+    
+    const to = [...new Set(emails)];
+    if(to.length > 0) {
+      await addDoc(collection(db, 'mail'), {
+        to: to,
+        message: {
+          subject: `PDF: Plan de Fortalecimiento - ${activePlanData.asesor}`,
+          html: `<p>Hola,</p>
+                 <p>Adjunto encontrarás el enlace para descargar el PDF del plan o Uno a Uno de <b>${activePlanData.asesor}</b>.</p>
+                 <p><a href="${downloadUrl}" style="background:#0f172a;color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
+                 <p>Saludos.</p>`
+        }
+      });
+      showToast('✅ Correo con PDF enviado correctamente.');
+    } else {
+      showToast('⚠️ No se encontraron correos para enviar.');
+    }
+  } catch(e) {
+    console.error('Error enviando PDF por correo:', e);
+    showToast('❌ No se pudo enviar el PDF. Inténtalo más tarde.');
+  } finally {
+    element.style.display = 'none';
+    btns.forEach(b => { b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Enviar PDF`; b.disabled = false; });
+  }
 };
 
 function buildSegPrint(seg,p){
@@ -4519,91 +4687,243 @@ window.showView=(v,el)=>{
 };
 
 // ── USUARIOS ──────────────────────────────────────────────────────────────────
+window.toggleUH=(id)=>{
+  const el=document.getElementById('uhn_'+id);
+  const chev=document.getElementById('uhc_'+id);
+  const card=el?.previousElementSibling;
+  if(!el) return;
+  const isOpen=el.style.display==='block';
+  el.style.display=isOpen?'none':'block';
+  if(chev) chev.style.transform=isOpen?'':'rotate(90deg)';
+  if(card) card.classList.toggle('open',!isOpen);
+};
+
 async function loadUsers(){
   document.getElementById('usersLoading').style.display='flex';
-  document.getElementById('usersTable').style.display='none';
-  const snap=await getDocs(collection(db,'users'));
-  const tbody=document.getElementById('usersTbody');tbody.innerHTML='';
-  // Update table header
-  const thead=document.querySelector('.users-table thead tr');
-  if(thead) thead.innerHTML='<th>Nombre</th><th>Correo</th><th>Área</th><th>Rol</th><th>Jerarquía</th><th>Acciones</th>';
-  snap.forEach(d=>{
-    const u=d.data();
-    const rolCss=`rol-${u.rol}`.replace('_','-');
-    const areaLabel=(u.rol==='rh'||u.area==='rh_global')?'Administración':u.area==='administracion'?'Administración':'Comercial';
-    const areaColor=(u.rol==='rh'||u.area==='rh_global'||u.area==='administracion')?'background:#fce7f3;color:#9d174d':'background:#dcfce7;color:#166534';
-    const hier=ADMIN_HIERARCHY.includes(u.rol)?u.pais||'—':[u.region,u.zona,u.sucursal].filter(Boolean).join(' › ')||u.pais||'—';
-    tbody.innerHTML+=`<tr>
-      <td style="font-weight:700">${u.nombre||'—'}</td>
-      <td style="font-size:12px;color:var(--muted)">${u.email||'—'}</td>
-      <td><span class="rol-badge" style="${areaColor}">${areaLabel}</span></td>
-      <td><span class="rol-badge ${rolCss}">${rolLabel(u.rol)}</span></td>
-      <td style="font-size:12px;color:var(--muted)">${hier}</td>
-      <td><button class="btn btn-sm" style="font-size:10px;gap:4px;display:inline-flex;align-items:center" onclick="resetUserPassword('${u.email}','${escHtml(u.nombre||'')}')"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg> Contraseña</button></td>
-    </tr>`;
-  });
-  document.getElementById('usersLoading').style.display='none';
-  document.getElementById('usersTable').style.display='table';
+  const areaContainer = document.getElementById('usersHierarchyArea');
+  areaContainer.style.display='none';
+  areaContainer.innerHTML='';
+  
+  try {
+    const snap=await getDocs(collection(db,'users'));
+    const list=snap.docs.map(d=>({uid:d.id,...d.data()}));
+    allUsers=list; // populate global memory
+    
+    // Helper mappings
+    const paisLabel = p => {
+      const key = String(p||'Global').toLowerCase().trim();
+      if(key === 'gt') return 'Guatemala';
+      if(key === 'hn') return 'Honduras';
+      if(key === 'sv') return 'El Salvador';
+      if(key === 'mx') return 'México';
+      if(key === 'global') return 'Global';
+      return p || 'Global';
+    };
+
+    const areaLabel = a => {
+      const key = String(a||'').toLowerCase().trim();
+      if(key === 'ceo') return 'Dirección General (CEO)';
+      if(key === 'rh_global') return 'Recursos Humanos Global';
+      if(key === 'comercial') return 'Comercial';
+      if(key === 'operaciones') return 'Operaciones (COO)';
+      if(key === 'chro') return 'Recursos Humanos (CHRO)';
+      if(key === 'cpo') return 'Cadena de Suministros (CPO)';
+      if(key === 'finanzas') return 'Finanzas';
+      if(key === 'construccion') return 'Construcción y Mantenimiento';
+      if(key === 'transformacion') return 'Transformación Digital';
+      if(key === 'administracion') return 'Administración';
+      return a || 'Otros';
+    };
+
+    // Agrupación jerárquica: País -> Área -> Usuarios
+    const grouped = {};
+    list.forEach(u => {
+      const p = paisLabel(u.pais);
+      const a = areaLabel(u.area);
+      if(!grouped[p]) grouped[p] = {};
+      if(!grouped[p][a]) grouped[p][a] = [];
+      grouped[p][a].push(u);
+    });
+
+    // Ordenar países (Global primero, luego alfabéticamente)
+    const sortedCountries = Object.keys(grouped).sort((a,b) => {
+      if(a === 'Global') return -1;
+      if(b === 'Global') return 1;
+      return a.localeCompare(b);
+    });
+
+    let html = '';
+    sortedCountries.forEach((country, cIdx) => {
+      const countryKey = 'c_' + cIdx;
+      const areas = grouped[country];
+      const countryUserCount = Object.values(areas).reduce((acc, val) => acc + val.length, 0);
+      
+      let areasHtml = '';
+      Object.entries(areas).sort((a,b) => a[0].localeCompare(b[0])).forEach(([areaName, users], aIdx) => {
+        const areaKey = countryKey + '_a_' + aIdx;
+        
+        let usersHtml = '<div class="user-grid">';
+        users.forEach(u => {
+          const rolCss = `rol-${u.rol}`.replace(/_/g, '-');
+          const hier = ADMIN_HIERARCHY.includes(u.rol) ? (u.pais || '—') : [u.region, u.zona, u.sucursal].filter(Boolean).join(' › ') || u.pais || '—';
+          
+          // Buscar nombre del jefe/lider (Reporta a)
+          let bossName = 'Nadie';
+          if(u.reportaA) {
+            const boss = list.find(x => x.uid === u.reportaA);
+            if(boss) bossName = `${boss.nombre} (${rolLabel(boss.rol)})`;
+          }
+          
+          usersHtml += `
+            <div class="user-card-premium">
+              <div class="uc-top">
+                <div class="uc-info">
+                  <div class="uc-name">${escHtml(u.nombre || '—')}</div>
+                  <div class="uc-email">${escHtml(u.email || '—')}</div>
+                </div>
+                <button class="uc-pass-btn" title="Restablecer Contraseña" onclick="resetUserPassword('${u.email}','${escHtml(u.nombre||'')}')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </button>
+              </div>
+              <div class="uc-details">
+                <div class="uc-detail-item">
+                  <span class="uc-label">Rol:</span>
+                  <span class="rol-badge ${rolCss}">${rolLabel(u.rol)}</span>
+                </div>
+                <div class="uc-detail-item">
+                  <span class="uc-label">Reporta a:</span>
+                  <span class="uc-val" title="${escHtml(bossName)}">${escHtml(bossName)}</span>
+                </div>
+                <div class="uc-detail-item">
+                  <span class="uc-label">Jerarquía:</span>
+                  <span class="uc-val" title="${escHtml(hier)}">${escHtml(hier)}</span>
+                </div>
+              </div>
+            </div>`;
+        });
+        usersHtml += '</div>';
+
+        areasHtml += `
+          <div class="uh-node area-node">
+            <div class="uh-card area-card" onclick="toggleUH('${areaKey}')">
+              <span class="uh-icon">💼</span>
+              <span class="uh-title">${areaName}</span>
+              <span class="uh-count">${users.length} usuarios</span>
+              <span class="uh-chevron" id="uhc_${areaKey}">▶</span>
+            </div>
+            <div class="uh-children" id="uhn_${areaKey}" style="display:none">
+              ${usersHtml}
+            </div>
+          </div>`;
+      });
+
+      html += `
+        <div class="uh-node country-node">
+          <div class="uh-card country-card" onclick="toggleUH('${countryKey}')">
+            <span class="uh-icon">🌎</span>
+            <span class="uh-title">${country}</span>
+            <span class="uh-count">${countryUserCount} usuarios</span>
+            <span class="uh-chevron" id="uhc_${countryKey}">▶</span>
+          </div>
+          <div class="uh-children" id="uhn_${countryKey}" style="display:none">
+            ${areasHtml}
+          </div>
+        </div>`;
+    });
+
+    areaContainer.innerHTML = html;
+    document.getElementById('usersLoading').style.display='none';
+    areaContainer.style.display='flex';
+  } catch(e) {
+    console.error('Error cargando usuarios:', e);
+    areaContainer.innerHTML = `<div style="color:var(--danger);text-align:center;padding:20px;font-weight:700">⚠️ Error al cargar los usuarios. Por favor, recarga la página.</div>`;
+    document.getElementById('usersLoading').style.display='none';
+    areaContainer.style.display='block';
+  }
 }
 
 window.openUserModal=()=>{document.getElementById('userModalOverlay').classList.add('open');hideErr('userErrMsg');};
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
 window.updateUserRoles=()=>{
-  const country=document.getElementById('uPais').value;
   const area=document.getElementById('uArea')?.value||'';
   const sel=document.getElementById('uRol');
+  const repSel=document.getElementById('uReportaA');
   const paisRow=document.getElementById('uPaisRow');
-  sel.innerHTML='<option value="">— Selecciona —</option>';
   const gtC=document.getElementById('gtCascade');
   const otC=document.getElementById('otherCascade');
 
-  // RH Global: no necesita país ni geografía
-  if(area==='rh_global'){
-    if(paisRow) paisRow.style.opacity='0.4';
-    if(gtC) gtC.style.display='none';
-    if(otC) otC.style.display='none';
-    const o=document.createElement('option');o.value='rh';o.textContent='RH Global (Super Admin)';sel.appendChild(o);
-    sel.value='rh';
-    return;
-  }
-  if(paisRow) paisRow.style.opacity='1';
-  if(!country||!area){return;}
+  sel.innerHTML='<option value="">— Selecciona —</option>';
+  repSel.innerHTML='<option value="">— Opcional (Nadie) —</option>';
+  
+  if(paisRow) paisRow.style.opacity = area === 'rh_global' || area === 'ceo' ? '0.4' : '1';
+  if(gtC) gtC.style.display='none';
+  if(otC) otC.style.display='none';
 
-  const isAdmin=area==='administracion';
-  let roles=[];
-  if(isAdmin){
-    roles=[{v:'dir_admin',l:'Director'},{v:'gerente_admin',l:'Gerente'},{v:'jefe_admin',l:'Jefe'},{v:'supervisor_admin',l:'Supervisor'},{v:'coordinador_admin',l:'Coordinador'}];
-  } else {
-    if(country==='gt') roles=[{v:'director',l:'Director Comercial'},{v:'regional',l:'Gerente Regional'},{v:'zona',l:'Gerente de Zona'},{v:'sucursal',l:'Gerente de Sucursal'}];
-    else roles=[{v:'sucursal',l:'Gerente de Sucursal'}];
-  }
-  roles.forEach(r=>{const o=document.createElement('option');o.value=r.v;o.textContent=r.l;sel.appendChild(o);});
-  if(isAdmin){if(gtC)gtC.style.display='none';if(otC)otC.style.display='none';}
+  if(!area){return;}
+
+  const rolesByArea = {
+    ceo: ['CEO'],
+    rh_global: ['RH Global'],
+    comercial: ['Director Comercial','Gerente Regional','Gerente de Zona','Gerente de Sucursal','Gerente Proyectos','Gerente Canales Digitales','Líder de Mesa','KAM','Gerente Mayoreo','AC'],
+    operaciones: ['Gerente Operaciones','Gerente HUB','Jefe de CEDI','Encargado de Bodega','Supervisor','Auxiliar de Bodega','Coordinador de Servicio al Cliente','Servicio al Cliente','Gerente de Logística','Coordinador de Transporte','Planificador de Rutas','Chofer','Ayudante de Chofer'],
+    chro: ['Gerente de Atracción de Talento','Analista de Atracción de Talento','Gerente de Compensaciones','Jefe de Desarrollo Organizacional','Coach Comercial','Coordinador de Relaciones Laborales','Analista de Servicios al Colaborador','HRBP'],
+    cpo: ['Gerente de Categorías','Especialista de Categorías','Administrador de Categorías','Gerente de Comercio Internacional','Analista de Importaciones y Exportaciones','Analista de Inventarios','Gerente de Mercadeo','Coordinador de Mercadeo','Coordinador de Diseño','Diseñador','Fotógrafo','Gerente de Cadena de Suministros','Especialista de Compras bajo pedido','Jefe de Resurtido','Jefe de Proyectos','Analista de Back Office Comercial','Analista de Resurtido','Analista de Proyectos'],
+    finanzas: ['Gerente Financiero','Contador Corporativo','Contador General','Analista de Costos','Asistente de contabilidad','Asistente de Cuentas por Pagar','Analista de Impuestos','Coordinador Administrativo','Auxiliar Administrativo','Analista de Nómina','Gerente Administrativo y Financiero','Jefe de Créditos y Cobros','Contador Nominista','Auxiliar de Limpieza','Guardia de Seguridad','Jefe de Auditoría Interna','Coordinador de Auditoría Interna','Auditor Interno','Asistente de Créditos','Mensajero – Cobrador','Jefe de Compras','Servicio al Cliente Administrativo','Servicio al Cliente Técnico','Jefe de Tesorería Corporativo','Jefe de Cajas','Cajero Regional','Cajero','Analista de Cuentas por Pagar','Cajero Virtual','Analista de Planificación Financiera'],
+    construccion: ['Gerente de Desarrollo y Construcción','PM Construcción','Arquitecto Diseñador','Coordinador de Cuantificaciones y Licitaciones','Supervisor de Instalaciones','Arquitecto Retail','Jefe de Mantenimiento','Auxiliar de Mantenimiento'],
+    transformacion: ['Gerente de Transformación Digital','PMO Eficiencia de Negocios y Tecnología','Soporte Técnico Lisa, WMA & TMS','PMO Inteligencia de Procesos y Negocios','Product Owner SAP','Analista de Inteligencia de Negocios','Analista de Soporte','Gerente de Infraestructura y Soporte','Coordinador de Infraestructura','Coordinador de Soporte Técnico','Analista de Soporte Técnico','Project Manager','Analista de Datos Sr.']
+  };
+
+  const roles = rolesByArea[area] || [];
+  roles.forEach(r => {
+    const o=document.createElement('option');
+    o.value=r.toLowerCase().replace(/\s+/g,'_');
+    o.textContent=r;
+    sel.appendChild(o);
+  });
+  if(area==='rh_global') sel.value='rh_global';
+  if(area==='ceo') sel.value='ceo';
+
+  // Populate Reporta A with filtered users (same area + global leaders/CEO)
+  allUsers.forEach(u => {
+    const isSameArea = u.area === area;
+    const isGlobalLeader = ['ceo', 'rh_global', 'rh'].includes(u.rol) || u.area === 'rh_global' || u.area === 'ceo';
+    if (isSameArea || isGlobalLeader || area === 'ceo' || area === 'rh_global') {
+      const o=document.createElement('option');
+      o.value=u.uid;
+      o.textContent=`${u.nombre} (${rolLabel(u.rol) || u.rol})`;
+      repSel.appendChild(o);
+    }
+  });
 };
 
 window.updateUserHierarchy=()=>{
+  const area=document.getElementById('uArea')?.value;
   const country=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea')?.value||'comercial';
-  const rol=document.getElementById('uRol').value;
-  const isAdmin=area==='administracion';
-  const isGT=country==='gt';
-
+  const rol=document.getElementById('uRol').options[document.getElementById('uRol').selectedIndex]?.textContent;
+  
   const gtC=document.getElementById('gtCascade');
   const otC=document.getElementById('otherCascade');
 
-  if(isAdmin){
-    if(gtC)gtC.style.display='none';
-    if(otC)otC.style.display='none';
+  if(area !== 'comercial'){
+    if(gtC) gtC.style.display='none';
+    if(otC) otC.style.display='none';
     return;
   }
-  if(gtC)gtC.style.display=isGT&&rol&&rol!=='director'?'block':'none';
-  if(otC)otC.style.display=!isGT&&rol?'block':'none';
-  if(!isGT&&rol){
+  
+  const needsGeocascade = ['Gerente Regional','Gerente de Zona','Gerente de Sucursal','AC'].includes(rol);
+  const isGT = country === 'gt';
+
+  if(gtC) gtC.style.display = isGT && needsGeocascade && rol !== 'Gerente Regional' ? 'block' : 'none';
+  if(otC) otC.style.display = !isGT && needsGeocascade ? 'block' : 'none';
+
+  if(!isGT && needsGeocascade){
     const sucs={hn:HN_SUCS,sv:SV_SUCS,mx:MX_SUCS}[country]||[];
     const sel=document.getElementById('uSucursalSimple');
-    if(sel){sel.innerHTML='<option value="">— Selecciona —</option>';
-    sucs.forEach(s=>{const o=document.createElement('option');o.textContent=s;sel.appendChild(o);});}
+    if(sel){
+      sel.innerHTML='<option value="">— Selecciona —</option>';
+      sucs.forEach(s=>{const o=document.createElement('option');o.textContent=s;sel.appendChild(o);});
+    }
   }
 };
 
@@ -4623,42 +4943,61 @@ window.updateSucursalesUser=()=>{
 window.saveUser=async()=>{
   const nombre=document.getElementById('uNombre').value.trim();
   const email=document.getElementById('uEmail').value.trim();
-  const pass=document.getElementById('uPass').value.trim();
   const rol=document.getElementById('uRol').value;
   const country=document.getElementById('uPais').value;
   const area=document.getElementById('uArea')?.value||'comercial';
   const isRHGlobal=area==='rh_global';
   // RH Global no requiere país; los demás sí
-  if(!nombre||!email||!pass||!rol||!area){showErr('userErrMsg','Completa nombre, correo, contraseña y área.');return;}
+  if(!nombre||!email||!rol||!area){showErr('userErrMsg','Completa nombre, correo y área.');return;}
   if(!isRHGlobal&&!country){showErr('userErrMsg','Selecciona el país del usuario.');return;}
-  if(pass.length<6){showErr('userErrMsg','La contraseña debe tener al menos 6 caracteres.');return;}
+  
+  // Generar contraseña aleatoria de 16 caracteres
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let pass = '';
+  for(let i=0; i<16; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+
   try{
     const secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
     const secondaryAuth=getAuth(secondaryApp);
     const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
     const uid=cred.user.uid;
+    // Enviar correo de reseteo de contraseña inmediatamente
+    await sendPasswordResetEmail(secondaryAuth, email);
     await signOut(secondaryAuth);
     await deleteApp(secondaryApp);
 
     const isAdminRol=ADMIN_HIERARCHY.includes(rol);
+    const reportaA=document.getElementById('uReportaA')?.value||'';
     const profile={
       nombre,email,rol,
       area:isRHGlobal?'rh_global':area,
       pais:isRHGlobal?'Global':country,
       region:(!isAdminRol&&!isRHGlobal&&document.getElementById('uRegion')?.value)||'',
       zona:(!isAdminRol&&!isRHGlobal&&document.getElementById('uZona')?.value)||'',
-      sucursal:(!isAdminRol&&!isRHGlobal&&(document.getElementById('uSucursal')?.value||document.getElementById('uSucursalSimple')?.value))||''
+      sucursal:(!isAdminRol&&!isRHGlobal&&(document.getElementById('uSucursal')?.value||document.getElementById('uSucursalSimple')?.value))||'',
+      reportaA: reportaA
     };
     await setDoc(doc(db,'users',uid),profile);
     allUsers.push({uid,...profile});
     closeUserModal();
     loadUsers();
-    showToast(`Usuario "${nombre}" creado correctamente.`);
+    showToast(`Usuario "${nombre}" creado correctamente. Se ha enviado el correo para configurar la contraseña.`);
+    
+    // Correo de bienvenida usando Firebase Trigger Email (Opcional extra info)
+    await sendEmailNotification(
+      email,
+      '¡Bienvenido a Ferco Planes de Fortalecimiento!',
+      `<p>Hola ${nombre},</p>
+      <p>Tu cuenta ha sido creada con el rol de <b>${rolLabel(rol)}</b>.</p>
+      <p>Has recibido otro correo oficial para configurar tu contraseña. Una vez la configures, podrás acceder a la plataforma.</p>
+      <p>Saludos,<br>El equipo de Recursos Humanos</p>`
+    );
   }catch(e){
     if(e.code==='auth/email-already-in-use'){
       showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
     }else{
-      showErr('userErrMsg','Error al crear usuario: '+e.message);
+      console.error('Error creando usuario:', e);
+      showErr('userErrMsg','No se pudo crear el usuario. Por favor, verifica los campos e inténtalo de nuevo.');
     }
   }
 };
@@ -4668,7 +5007,10 @@ window.resetUserPassword=async(email,nombre)=>{
   try{
     await sendPasswordResetEmail(auth,email);
     showToast(`📧 Correo enviado a ${email}`);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){
+    console.error('Error al resetear contraseña:', e);
+    alert('No se pudo enviar el correo de restablecimiento. Inténtalo de nuevo.');
+  }
 };
 
 function showToast(msg,duration=3500){
@@ -4906,7 +5248,10 @@ window.saveUnoAUno=async()=>{
     await loadPlanes();
     renderAll();
     showToast('Uno a Uno creado. Haz clic en la tarjeta para abrirlo.');
-  }catch(e){showErr('uauErrMsg','Error al guardar: '+e.message);}
+  }catch(e){
+    console.error('Error guardando UAU:', e);
+    showErr('uauErrMsg','No se pudo guardar el Uno a Uno. Por favor, inténtalo de nuevo.');
+  }
 };
 
 // ── UAU SEGUIMIENTO ────────────────────────────────────────────────────────────
@@ -5028,7 +5373,10 @@ window.saveUauSeg=async()=>{
     showToast('✅ Seguimiento guardado correctamente.');
     setDetailTab('graficas',null,1);
     renderUauCharts(activePlanData);
-  }catch(e){showErr('uauSegErrMsg','Error: '+e.message);}
+  }catch(e){
+    console.error('Error guardando seguimiento UAU:', e);
+    showErr('uauSegErrMsg','No se pudo guardar el seguimiento. Inténtalo de nuevo.');
+  }
 };
 
 // ── GRÁFICAS UNO A UNO ────────────────────────────────────────────────────────
