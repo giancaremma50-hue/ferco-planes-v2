@@ -678,7 +678,7 @@ function initApp(){
 
 function applyRoleUI(){
   const rol=userProfile.rol;
-  const isRH=rol==='rh';
+  const isRH=rol==='rh' || rol==='rh_global';
   const isAdmin=isAdminArea(userProfile);
   const isCom=!isAdmin||isRH;
 
@@ -804,7 +804,7 @@ async function loadPlanes(){
   };
   try{
     const rol=userProfile.rol;
-    const isRH=rol==='rh';
+    const isRH=rol==='rh' || rol==='rh_global';
     const isAdmin=isAdminArea(userProfile);
     const isCom=!isAdmin||isRH;
     const promises=[];
@@ -2670,13 +2670,6 @@ window.openUserModal=()=>{
   const sRol=document.getElementById('uCargo');
   sRol.innerHTML='<option value="">Seleccione rol...</option>';
   
-  sArea.onchange = () => {
-      const areaSelec = sArea.value;
-      const rolesArea = cfg.puestos.filter(p => p.area === areaSelec);
-      sRol.innerHTML='<option value="">Seleccione rol...</option>'+
-        rolesArea.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('');
-  };
-  
   // Limpiar otros selects
   ['uRegion','uZona','uSucursal'].forEach(id=>{
       const el=document.getElementById(id);
@@ -2710,7 +2703,7 @@ window.onAreaChange=()=>{
   };
   repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
   if(!area){ cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>'; cargoSelect.disabled=true; return; }
-  const rolesArea = cfg.puestos.filter(p => p.area === area);
+  const pais = document.getElementById('uPais').value; const rolesArea = cfg.puestos.filter(p => p.area === area && p.pais === pais);
   let cHtml = '<option value="">— Selecciona el puesto / rol —</option>';
   rolesArea.forEach(r => { cHtml += `<option value="${r.id}">${r.nombre}</option>`; });
   cargoSelect.innerHTML = cHtml;
@@ -2783,44 +2776,36 @@ window.saveUser=async()=>{
   const spinnerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Creando...</span>';
   if(btnCrear){btnCrear.disabled=true;btnCrear.innerHTML=spinnerHTML;}
 
-  let secondaryApp=null;
-  let createdUid=null;
   try{
-    secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
-    const secondaryAuth=getAuth(secondaryApp);
+    // 1. Crear cuenta con cliente temporal para no desloguear al admin
+    const tempSupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    const { data: authData, error: authErr } = await tempSupabase.auth.signUp({ email, password: pass });
+    if (authErr) throw authErr;
+    if (!authData.user) throw new Error("No se pudo crear el usuario");
+    
+    const createdUid = authData.user.id;
 
-    // 1. Crear cuenta en Firebase Auth
-    const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
-    createdUid=cred.user.uid;
-
-    // 2. Guardar perfil usando la db principal (Monica está autenticada)
-    //    Si falla por reglas, intentar con db del nuevo usuario
+    // 2. Guardar perfil
     const profile={
+      id: createdUid,
       nombre,email,cargo,
       area:esRhGlobal?'rh_global':area,
       pais:esRhGlobal?'Global':(pais||''),
-      esRhGlobal,rol:rolLegacy,reportaA
+      esRhGlobal,rol:rolLegacy,reportaA: reportaA || null
     };
-    let writeOk=false;
-    try{
-      await setDoc(doc(db,'users',createdUid),profile);
-      writeOk=true;
-    }catch(writeErr){
-      console.warn('Write con db primario falló, intentando con db secundario:',writeErr.code);
-      const secondaryDb=getFirestore(secondaryApp);
-      await setDoc(doc(secondaryDb,'users',createdUid),profile);
-      writeOk=true;
+    const { error: dbErr } = await supabase.from('perfiles').insert(profile);
+    if (dbErr) {
+      console.warn('Error guardando perfil:', dbErr);
+      throw dbErr;
     }
 
     // 3. Enviar reset de contraseña
-    try{await sendPasswordResetEmail(secondaryAuth,email);}catch(_){}
+    try{ await tempSupabase.auth.resetPasswordForEmail(email); }catch(_){}
+    
 
-    // 4. Cerrar sesión secundaria (fire-and-forget, no bloquea)
-    signOut(secondaryAuth).catch(()=>{});
-    deleteApp(secondaryApp).catch(()=>{});
-    secondaryApp=null;
-
-    if(writeOk){
+    if(true){
       allUsers.push({uid:createdUid,...profile});
       closeUserModal();
       loadUsers();
@@ -2844,7 +2829,7 @@ window.saveUser=async()=>{
     }
   }finally{
     // Siempre restaurar el botón y limpiar la app secundaria
-    if(secondaryApp){deleteApp(secondaryApp).catch(()=>{});}
+    
     if(btnCrear){btnCrear.disabled=false;btnCrear.innerHTML='Crear usuario';}
   }
 };
@@ -3617,3 +3602,9 @@ window.savePuesto = async () => {
     await saveConfigToDb();
     renderAdminConfig();
 };
+
+
+// --- DUMMY CONFIG FUNCTIONS PARA EVITAR ERRORES ---
+window.openPuestoModal = () => alert('Módulo de Puestos en construcción');
+window.openAreaModal = () => alert('Módulo de Áreas en construcción');
+window.addPais = () => alert('Módulo de Países en construcción');
