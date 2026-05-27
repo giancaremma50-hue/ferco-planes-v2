@@ -447,7 +447,8 @@ window.doLogin=async()=>{
     await signInWithEmailAndPassword(auth,email,pass);
   }
   catch(e){
-    err.textContent='Correo o contraseña incorrectos.';
+    console.error('LOGIN ERROR:', e);
+    err.textContent='Error: ' + e.message;
     err.style.display='block';
     if(btn){ btn.innerHTML='Ingresar'; btn.disabled=false; }
   }
