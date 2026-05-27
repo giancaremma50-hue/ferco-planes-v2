@@ -1,13 +1,88 @@
-import { db, auth, storage } from "./firebase-config.js";
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail,
-  setPersistence, browserSessionPersistence }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, doc, addDoc, getDoc, getDocs, setDoc,
-  updateDoc, deleteDoc, query, where, serverTimestamp, orderBy }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL, deleteObject }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+const db = {};
+const serverTimestamp = () => new Date().toISOString();
+
+function collection(db, name) { return { _type: 'collection', name }; }
+function doc(db, name, id) { return { _type: 'doc', collection: name, id }; }
+function query(col, ...clauses) { return { _type: 'query', col, clauses }; }
+function where(field, op, val) { return { _type: 'where', field, op, val }; }
+function orderBy(field, dir) { return { _type: 'orderBy', field, dir }; }
+
+async function getDocs(queryObj) {
+  let supabaseQuery;
+  let tableName;
+  if (queryObj._type === 'collection') {
+     tableName = queryObj.name;
+     supabaseQuery = supabase.from(tableName).select('*');
+  } else if (queryObj._type === 'query') {
+     tableName = queryObj.col.name;
+     supabaseQuery = supabase.from(tableName).select('*');
+     queryObj.clauses.forEach(c => {
+         if (c._type === 'where') {
+             if (c.op === '==') supabaseQuery = supabaseQuery.eq(c.field, c.val);
+             if (c.op === 'in') supabaseQuery = supabaseQuery.in(c.field, c.val);
+         }
+         if (c._type === 'orderBy') {
+             supabaseQuery = supabaseQuery.order(c.field, { ascending: c.dir !== 'desc' });
+         }
+     });
+  }
+  const { data, error } = await supabaseQuery;
+  if (error) { console.error("getDocs error", error); throw error; }
+  return {
+     forEach: (cb) => {
+         (data || []).forEach(row => {
+             cb({ id: row.id, data: () => row });
+         });
+     },
+     docs: (data || []).map(row => ({ id: row.id, data: () => row }))
+  };
+}
+
+async function getDoc(docRef) {
+  const { data, error } = await supabase.from(docRef.collection).select('*').eq('id', docRef.id).single();
+  if (error && error.code !== 'PGRST116') { console.error("getDoc error", error); }
+  return {
+      exists: () => !!data,
+      id: docRef.id,
+      data: () => data
+  };
+}
+
+async function addDoc(colRef, data) {
+  const { data: ret, error } = await supabase.from(colRef.name).insert(data).select().single();
+  if (error) throw error;
+  return { id: ret.id };
+}
+
+async function setDoc(docRef, data, opts) {
+  const payload = { ...data, id: docRef.id };
+  const { error } = await supabase.from(docRef.collection).upsert(payload);
+  if (error) throw error;
+}
+
+async function updateDoc(docRef, data) {
+  const { error } = await supabase.from(docRef.collection).update(data).eq('id', docRef.id);
+  if (error) throw error;
+}
+
+async function deleteDoc(docRef) {
+  const { error } = await supabase.from(docRef.collection).delete().eq('id', docRef.id);
+  if (error) throw error;
+}
+
+// Para createUserWithEmailAndPassword (solo simulamos el Auth de supabase)
+async function createUserWithEmailAndPassword(auth, email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  return { user: data.user };
+}
+
+async function sendPasswordResetEmail(auth, email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) throw error;
+}
+
+
 
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -449,7 +524,7 @@ window.doLogin=async()=>{
   }
 
   try{
-    await signInWithEmailAndPassword(auth,email,pass);
+    await supabase.auth.signInWithPassword({email: email, password: pass});
   }
   catch(e){
     console.error('LOGIN ERROR:', e);
@@ -472,7 +547,7 @@ window.doLogout=async()=>{
   const err=document.getElementById('loginErr');
   if(err) err.style.display='none';
 
-  await signOut(auth);
+  await supabase.auth.signOut();
 };
 
 // Cambiar contraseña
