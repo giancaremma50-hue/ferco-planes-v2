@@ -22,51 +22,53 @@
 <style>
 /* ── PREMIUM BASE & VARIABES ── */
 :root {
-  --card: #ffffff;
-  --ring: #f59e0b;
-  --input: #f3f4f6;
-  --muted: #f9fafb;
-  --accent: #fffbeb;
-  --border: #e5e7eb;
-  --radius: 12px;
+--card: var(--card);
+  --ring: #a1a1a1;
+  --input: #e5e5e5;
+  --muted: #f5f5f5;
+  --accent: #f5f5f5;
+  --border: #e5e5e5;
+  --radius: 0.625rem;
+  --chart-1: #91c5ff;
+  --chart-2: #3a81f6;
+  --chart-3: #2563ef;
+  --chart-4: #1a4eda;
+  --chart-5: #1f3fad;
+  --popover: var(--card);
+  --primary: #171717;
+  --sidebar: #fafafa;
+  --spacing: 0.25rem;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --secondary: #f5f5f5;
+  --background: var(--card);
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --foreground: #0a0a0a;
+  --destructive: #e7000b;
+  --sidebar-ring: #a1a1a1;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-border: #e5e5e5;
+  --card-foreground: #0a0a0a;
+  --sidebar-primary: #171717;
+  --muted-foreground: #737373;
+  --accent-foreground: #171717;
+  --popover-foreground: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --sidebar-foreground: #0a0a0a;
+  --secondary-foreground: #171717;
+  --destructive-foreground: var(--card);
+  --sidebar-accent-foreground: #171717;
+  --sidebar-primary-foreground: #fafafa;
+
+  /* Preserved Variables */
   --radius-sm: 8px;
   --radius-lg: 20px;
-  --chart-1: #f59e0b;
-  --chart-2: #d97706;
-  --chart-3: #b45309;
-  --chart-4: #92400e;
-  --chart-5: #78350f;
-  --popover: #ffffff;
-  --primary: #f59e0b;
-  --sidebar: #f9fafb;
-  --spacing: 0.25rem;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Inter', sans-serif;
-  --secondary: #f3f4f6;
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --destructive: #ef4444;
   --shadow-blur: 16px;
   --shadow-color: rgba(0, 0, 0, 0.04);
-  --sidebar-ring: #f59e0b;
   --shadow-spread: -2px;
   --shadow-opacity: 0.05;
-  --sidebar-accent: #fffbeb;
-  --sidebar-border: #e5e7eb;
-  --card-foreground: #1e293b;
   --shadow-offset-x: 0px;
   --shadow-offset-y: 6px;
-  --sidebar-primary: #f59e0b;
-  --muted-foreground: #64748b;
-  --accent-foreground: #92400e;
-  --popover-foreground: #1e293b;
-  --primary-foreground: #ffffff;
-  --sidebar-foreground: #475569;
-  --secondary-foreground: #4b5563;
-  --destructive-foreground: #ffffff;
-  --sidebar-accent-foreground: #92400e;
-  --sidebar-primary-foreground: #ffffff;
-
   /* State colors (Light) */
   --good: #15803d;
   --goodbg: #dcfce7;
@@ -76,44 +78,44 @@
   --badbg: #fee2e2;
   --atr: #c2410c;
   --atrbg: #ffedd5;
-  
   --backdrop: rgba(15, 23, 42, 0.3);
 }
 
 .dark {
-  --card: #1e293b;
-  --ring: #f59e0b;
-  --input: #334155;
-  --muted: #0f172a;
-  --accent: rgba(245, 158, 11, 0.15);
-  --border: #334155;
-  --chart-1: #fbbf24;
-  --chart-2: #d97706;
-  --chart-3: #92400e;
-  --chart-4: #b45309;
-  --chart-5: #92400e;
-  --popover: #1e293b;
-  --primary: #f59e0b;
-  --sidebar: #0f172a;
-  --secondary: #1e293b;
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --destructive: #ef4444;
-  --sidebar-ring: #f59e0b;
-  --sidebar-accent: rgba(245, 158, 11, 0.1);
-  --sidebar-border: #1e293b;
-  --card-foreground: #e2e8f0;
-  --sidebar-primary: #f59e0b;
-  --muted-foreground: #94a3b8;
-  --accent-foreground: #fde68a;
-  --popover-foreground: #e2e8f0;
-  --primary-foreground: #ffffff;
-  --sidebar-foreground: #94a3b8;
-  --secondary-foreground: #e2e8f0;
-  --destructive-foreground: #ffffff;
-  --sidebar-accent-foreground: #fde68a;
-  --sidebar-primary-foreground: #ffffff;
+--card: #0a0a0a;
+  --ring: #525252;
+  --input: #262626;
+  --muted: #262626;
+  --accent: #262626;
+  --border: #262626;
+  --chart-1: #91c5ff;
+  --chart-2: #3a81f6;
+  --chart-3: #2563ef;
+  --chart-4: #1a4eda;
+  --chart-5: #1f3fad;
+  --popover: #0a0a0a;
+  --primary: #fafafa;
+  --sidebar: #0a0a0a;
+  --secondary: #262626;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --destructive: #e7000b;
+  --sidebar-ring: #525252;
+  --sidebar-accent: #262626;
+  --sidebar-border: #262626;
+  --card-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --muted-foreground: #a1a1a1;
+  --accent-foreground: #fafafa;
+  --popover-foreground: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --sidebar-foreground: #fafafa;
+  --secondary-foreground: #fafafa;
+  --destructive-foreground: var(--card);
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
 
+  /* Preserved Variables */
   /* State colors (Dark) */
   --good: #4ade80;
   --goodbg: rgba(21, 128, 61, 0.25);
@@ -123,7 +125,6 @@
   --badbg: rgba(185, 28, 28, 0.25);
   --atr: #fb923c;
   --atrbg: rgba(194, 65, 12, 0.25);
-  
   --shadow-color: rgba(0, 0, 0, 0.3);
   --backdrop: rgba(0, 0, 0, 0.6);
 }
@@ -169,7 +170,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground) 100%);
   z-index: 999;
 }
 .login-wrap::before {
@@ -188,7 +189,7 @@ html, body {
   position: absolute;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
   bottom: 10%;
   right: 15%;
   opacity: 0.12;
@@ -243,7 +244,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
   font-size: 14px;
-  color: #ffffff;
+  color: var(--card);
   transition: all 0.2s ease;
 }
 .login-field input:focus {
@@ -1878,14 +1879,14 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 3px solid #0f172a;
+  border-bottom: 3px solid var(--foreground);
   padding-bottom: 12px;
   margin-bottom: 12px;
 }
 .ph-logo {
   font-size: 24px;
   font-weight: 900;
-  color: #0f172a;
+  color: var(--foreground);
   letter-spacing: 2px;
 }
 .ph-logo span {
@@ -1899,7 +1900,7 @@ html, body {
 .ph-title h2 {
   font-size: 14px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--foreground);
   text-align: center;
 }
 .ph-title p {
@@ -1913,7 +1914,7 @@ html, body {
   display: grid;
   grid-template-columns: 110px 1fr 110px 1fr;
   gap: 6px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   padding: 10px;
   margin: 12px 0;
   font-size: 11px;
@@ -1923,7 +1924,7 @@ html, body {
   color: #64748b;
 }
 .psec {
-  background: #0f172a;
+  background: var(--foreground);
   color: #fff;
   font-size: 11.5px;
   font-weight: 800;
@@ -1934,7 +1935,7 @@ html, body {
   text-transform: uppercase;
 }
 .pbox {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   padding: 10px 12px;
   font-size: 11px;
   line-height: 1.7;
@@ -1948,15 +1949,15 @@ html, body {
   font-size: 10px;
 }
 .ptable th {
-  background: #0f172a;
+  background: var(--foreground);
   color: #fff;
   padding: 6px;
-  border: 1px solid #0f172a;
+  border: 1px solid var(--foreground);
   text-align: left;
 }
 .ptable td {
   padding: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   vertical-align: top;
   line-height: 1.5;
 }
@@ -2653,7 +2654,7 @@ const AREA_COLORS={
   'Recursos Humanos':        'background:#fce7f3;color:#9d174d',
   'Categorías':              'background:#fef3c7;color:#92400e',
   'Finanzas':                'background:#e0e7ff;color:#3730a3',
-  'Construcción y Desarrollo':'background:#f1f5f9;color:#475569',
+  'Construcción y Desarrollo':'background:var(--background);color:#475569',
   'IT':                      'background:#f0fdf4;color:#166534',
   'rh_global':               'background:#fce7f3;color:#9d174d'
 };
@@ -2671,8 +2672,8 @@ function rolLabel(r){return {
   dir_admin:'Director',gerente_admin:'Gerente',jefe_admin:'Jefe',supervisor_admin:'Supervisor',coordinador_admin:'Coordinador'
 }[r]||r;}
 function avatarBg(r){return {
-  rh:'#dcfce7',director:'#ede9fe',regional:'#dbeafe',zona:'#fef3c7',sucursal:'#f1f5f9',
-  dir_admin:'#fce7f3',gerente_admin:'#ede9fe',jefe_admin:'#dbeafe',supervisor_admin:'#dcfce7',coordinador_admin:'#f1f5f9'
+  rh:'#dcfce7',director:'#ede9fe',regional:'#dbeafe',zona:'#fef3c7',sucursal:'var(--background)',
+  dir_admin:'#fce7f3',gerente_admin:'#ede9fe',jefe_admin:'#dbeafe',supervisor_admin:'#dcfce7',coordinador_admin:'var(--background)'
 }[r]||'#dbeafe';}
 function avatarColor(r){return {
   rh:'#166534',director:'#5b21b6',regional:'#1e40af',zona:'#92400e',sucursal:'#64748b',
@@ -2681,7 +2682,7 @@ function avatarColor(r){return {
 function rolBg(r){return {
   rh:'#166534',director:'#5b21b6',regional:'#1e40af',zona:'#92400e',sucursal:'#64748b',
   dir_admin:'#9d174d',gerente_admin:'#5b21b6',jefe_admin:'#1e40af',supervisor_admin:'#166534',coordinador_admin:'#64748b'
-}[r]||'#0f172a';}
+}[r]||'var(--foreground)';}
 function isAdminArea(profile){return ADMIN_HIERARCHY.includes(profile?.rol);}
 function isComercialArea(profile){const r=profile?.rol;return r==='rh'||(!isAdminArea(profile)&&r!=='rh')||profile?.area==='comercial';}
 function getISOWeek(date=new Date()){
@@ -4704,7 +4705,7 @@ window.sendActivePlanByEmail=async()=>{
           subject: `PDF: Plan de Fortalecimiento - ${activePlanData.asesor}`,
           html: `<p>Hola,</p>
                  <p>Adjunto encontrarás el enlace para descargar el PDF del plan o Uno a Uno de <b>${activePlanData.asesor}</b>.</p>
-                 <p><a href="${downloadUrl}" style="background:#0f172a;color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
+                 <p><a href="${downloadUrl}" style="background:var(--foreground);color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
                  <p>Saludos.</p>`
         }
       });
@@ -4902,7 +4903,7 @@ async function loadUsers(){
           const areaKey2 = u.esRhGlobal ? 'rh_global' : (u.area||'');
           const areaBadgeStyle = u.esRhGlobal
             ? 'background:#fce7f3;color:#9d174d'
-            : (AREA_COLORS[areaKey2]||'background:#f1f5f9;color:#475569');
+            : (AREA_COLORS[areaKey2]||'background:var(--background);color:#475569');
           const areaDisplayLabel = u.esRhGlobal ? 'RH Global' : areaLabel(u.area||'');
           // Jerarquía: mostrar path desde nivel3 hasta cargo
           const hierParts=[u.nivel3,u.nivel4,u.nivel5,u.nivel6,u.nivel7,u.nivel8].filter(Boolean);
@@ -5261,7 +5262,7 @@ window.resetUserPassword=async(email,nombre)=>{
 function showToast(msg,duration=3500){
   let t=document.getElementById('toastEl');
   if(!t){t=document.createElement('div');t.id='toastEl';
-    t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .3s;pointer-events:none';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--foreground);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .3s;pointer-events:none';
     document.body.appendChild(t);}
   t.textContent=msg;t.style.opacity='1';
   clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0';},duration);
@@ -5686,7 +5687,7 @@ function renderUauCharts(p){
   Object.keys(fieldLabels).forEach(k=>{fieldLabels[k]=fieldLabels[k].replace('($)',`(${sym})`);});
 
   container.innerHTML=allFields.map(k=>`
-    <div class="chart-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+    <div class="chart-card" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
       <h4 style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:12px">${fieldLabels[k]||k}</h4>
       <div style="position:relative;height:160px"><canvas id="chart_${k}"></canvas></div>
     </div>`).join('');
@@ -5707,10 +5708,10 @@ function renderUauCharts(p){
           datasets:[{
             label:fieldLabels[k]||k,
             data:vals,
-            borderColor:'#f59e0b',
+            borderColor:'var(--primary)',
             backgroundColor:'rgba(245,158,11,0.12)',
             borderWidth:2.5,
-            pointBackgroundColor:'#f59e0b',
+            pointBackgroundColor:'var(--primary)',
             pointRadius:5,
             tension:0.35,
             fill:true,
@@ -5781,7 +5782,7 @@ function buildUauPrintDoc(p){
         return `<tr><td style="font-weight:600;background:#fffbeb;padding:4px 8px">${lblAv[k]}</td><td style="padding:4px 8px;text-align:right">${fv(pV)}</td><td style="padding:4px 8px;text-align:right">${fv(cV)}</td><td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos?'#166534':'#991b1b'}">${diffStr}</td></tr>`;
       }
     }).join('');
-    avancesHtml=`<div style="margin-top:24px"><h3 style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Avances — S${prev.semana} ${prev.año} → S${curr.semana} ${curr.año}</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px"><thead style="background:#1e293b;color:#fff"><tr><th style="padding:6px 8px;text-align:left">Indicador</th><th style="padding:6px 8px;text-align:right">S${prev.semana} ${prev.año}</th><th style="padding:6px 8px;text-align:right">S${curr.semana} ${curr.año}</th><th style="padding:6px 8px;text-align:right">Avances</th></tr></thead><tbody>${avRows}</tbody></table></div></div>`;
+    avancesHtml=`<div style="margin-top:24px"><h3 style="font-size:13px;font-weight:800;color:var(--foreground);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Avances — S${prev.semana} ${prev.año} → S${curr.semana} ${curr.año}</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px"><thead style="background:var(--foreground);color:#fff"><tr><th style="padding:6px 8px;text-align:left">Indicador</th><th style="padding:6px 8px;text-align:right">S${prev.semana} ${prev.año}</th><th style="padding:6px 8px;text-align:right">S${curr.semana} ${curr.año}</th><th style="padding:6px 8px;text-align:right">Avances</th></tr></thead><tbody>${avRows}</tbody></table></div></div>`;
   }
 
   // Seguimientos con comparativa completa por semana
@@ -5821,7 +5822,7 @@ function buildUauPrintDoc(p){
         <p style="font-size:10px;font-weight:800;color:#92400e;margin-bottom:8px">📋 Seguimiento S${seg.semana} ${seg.año} · ${seg.fecha||''} · Por: ${seg.autor||'—'}</p>
         <div style="overflow-x:auto;margin-bottom:8px">
           <table style="width:100%;border-collapse:collapse">
-            <thead style="background:#1e293b;color:#fff">
+            <thead style="background:var(--foreground);color:#fff">
               <tr><th style="padding:5px 7px;text-align:left;font-size:8px">Indicador</th><th style="padding:5px 7px;text-align:right;font-size:8px">S${prev.semana} ${prev.año} (ant.)</th><th style="padding:5px 7px;text-align:right;font-size:8px">S${curr.semana} ${curr.año}</th><th style="padding:5px 7px;text-align:right;font-size:8px">Diferencia</th></tr>
             </thead>
             <tbody>${segRows}</tbody>
@@ -5851,18 +5852,18 @@ function buildUauPrintDoc(p){
       <span class="ml">País:</span><span>${p.pais||''}</span>
       <span class="ml">Semana Inicial:</span><span>S${p.semana} ${p.año}</span>
     </div>
-    <div class="psec" style="background:#f59e0b;color:#1e293b">INDICADORES HISTÓRICOS</div>
+    <div class="psec" style="background:var(--primary);color:var(--foreground)">INDICADORES HISTÓRICOS</div>
     <div style="overflow-x:auto;margin-bottom:16px">
       <table style="width:100%;border-collapse:collapse;font-size:9px">
-        <thead style="background:#1e293b;color:#fff">${indHeaders}</thead>
+        <thead style="background:var(--foreground);color:#fff">${indHeaders}</thead>
         <tbody>${indRows}</tbody>
       </table>
     </div>
-    <div class="psec" style="background:#f59e0b;color:#1e293b">RESUMEN DE LA SESIÓN INICIAL</div>
+    <div class="psec" style="background:var(--primary);color:var(--foreground)">RESUMEN DE LA SESIÓN INICIAL</div>
     ${p.resumen?`<div class="pbox">${p.resumen}</div>`:'<div class="pbox" style="color:#94a3b8">Sin resumen registrado.</div>'}
     ${p.compromisosAsesor?`<div class="psec">COMPROMISOS DEL ASESOR</div><div class="pbox">${p.compromisosAsesor}</div>`:''}
     ${p.compromisosGerente?`<div class="psec">COMPROMISOS DEL GERENTE</div><div class="pbox">${p.compromisosGerente}</div>`:''}
-    ${segsHtml?`<div class="psec" style="background:#f59e0b;color:#1e293b">SEGUIMIENTOS REGISTRADOS</div>${segsHtml}`:''}
+    ${segsHtml?`<div class="psec" style="background:var(--primary);color:var(--foreground)">SEGUIMIENTOS REGISTRADOS</div>${segsHtml}`:''}
     <div class="psigs"><div><div class="psig">${p.asesor||'Asesor'}</div></div><div><div class="psig">${p.lider||'Líder'}</div></div></div>
   </div>`;
 }
