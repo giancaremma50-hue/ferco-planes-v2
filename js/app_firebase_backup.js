@@ -1,115 +1,13 @@
-const supabaseUrl = 'https://cgudnnlcwcotovcslgzu.supabase.co';
-const supabaseKey = 'sb_publishable_hE34ndDf80WDmA2QwkiRKQ_lS9zIBh7';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-const db = {};
-const serverTimestamp = () => new Date().toISOString();
-
-function collection(db, name) { 
-  let colName = name;
-  let userId = null;
-  if (name === 'users') colName = 'perfiles';
-  if (name.startsWith('notificaciones_')) { colName = 'notificaciones'; userId = name.split('_')[1]; }
-  return { _type: 'collection', name: colName, userId }; 
-}
-function doc(db, name, id) { 
-  let colName = name;
-  let userId = null;
-  if (name === 'users') colName = 'perfiles';
-  if (name.startsWith('notificaciones_')) { colName = 'notificaciones'; userId = name.split('_')[1]; }
-  return { _type: 'doc', collection: colName, id, userId }; 
-}
-function query(col, ...clauses) { return { _type: 'query', col, clauses }; }
-function where(field, op, val) { return { _type: 'where', field, op, val }; }
-function orderBy(field, dir) { return { _type: 'orderBy', field, dir }; }
-
-async function getDocs(queryObj) {
-  let supabaseQuery;
-  let tableName;
-  if (queryObj._type === 'collection') {
-tableName = queryObj.name;
-supabaseQuery = supabase.from(tableName).select('*');
-if (queryObj.userId) supabaseQuery = supabaseQuery.eq('userId', queryObj.userId);
-} else if (queryObj._type === 'query') {
-tableName = queryObj.col.name;
-supabaseQuery = supabase.from(tableName).select('*');
-if (queryObj.col.userId) supabaseQuery = supabaseQuery.eq('userId', queryObj.col.userId);
-     queryObj.clauses.forEach(c => {
-         if (c._type === 'where') {
-             if (c.op === '==') supabaseQuery = supabaseQuery.eq(c.field, c.val);
-             if (c.op === 'in') supabaseQuery = supabaseQuery.in(c.field, c.val);
-         }
-         if (c._type === 'orderBy') {
-             supabaseQuery = supabaseQuery.order(c.field, { ascending: c.dir !== 'desc' });
-         }
-     });
-  }
-  const { data, error } = await supabaseQuery;
-  if (error) { console.error("getDocs error", error); throw error; }
-  return {
-     forEach: (cb) => {
-         (data || []).forEach(row => {
-             cb({ id: row.id, data: () => row });
-         });
-     },
-     docs: (data || []).map(row => ({ id: row.id, data: () => row }))
-  };
-}
-
-async function getDoc(docRef) {
-  console.log("getDoc START:", docRef.collection, docRef.id);
-  try {
-    const { data, error } = await supabase.from(docRef.collection).select('*').eq('id', docRef.id).single();
-    console.log("getDoc query finished. data:", data, "error:", error);
-    if (error && error.code !== 'PGRST116') { console.error("getDoc error", error); }
-    return {
-        exists: () => !!data,
-        id: docRef.id,
-        data: () => data
-    };
-  } catch (err) {
-    console.error("getDoc EXCEPTION:", err);
-    throw err;
-  }
-}
-
-async function addDoc(colRef, data) {
-  const payload = { ...data };
-  if (colRef.userId) payload.userId = colRef.userId;
-  const { data: ret, error } = await supabase.from(colRef.name).insert(payload).select().single();
-  if (error) throw error;
-  return { id: ret.id };
-}
-
-async function setDoc(docRef, data, opts) {
-  const payload = { ...data, id: docRef.id };
-  const { error } = await supabase.from(docRef.collection).upsert(payload);
-  if (error) throw error;
-}
-
-async function updateDoc(docRef, data) {
-  const { error } = await supabase.from(docRef.collection).update(data).eq('id', docRef.id);
-  if (error) throw error;
-}
-
-async function deleteDoc(docRef) {
-  const { error } = await supabase.from(docRef.collection).delete().eq('id', docRef.id);
-  if (error) throw error;
-}
-
-// Para createUserWithEmailAndPassword (solo simulamos el Auth de supabase)
-async function createUserWithEmailAndPassword(auth, email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) throw error;
-  return { user: data.user };
-}
-
-async function sendPasswordResetEmail(auth, email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error) throw error;
-}
-
-
+import { db, auth, storage } from "./firebase-config.js";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail,
+  setPersistence, browserSessionPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, doc, addDoc, getDoc, getDocs, setDoc,
+  updateDoc, deleteDoc, query, where, serverTimestamp, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -377,7 +275,6 @@ function getMentionableUsers(){
 }
 
 // ── NOTIFICACIONES ────────────────────────────────────────────────────────────
-let notifChannel = null;
 async function loadUserNotifications(){
   if(!currentUser) return;
   try{
@@ -386,18 +283,6 @@ async function loadUserNotifications(){
     notifications.sort((a,b)=>((b.ts||0)-(a.ts||0)));
   }catch(e){ notifications=[]; }
   renderNotifications();
-
-  // Setup Supabase Realtime for this user's notifications
-  if (notifChannel) supabase.removeChannel(notifChannel);
-  notifChannel = supabase.channel('realtime:notificaciones')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones', filter: `userId=eq.${currentUser.uid}` }, payload => {
-      // Avoid duplicating the local optimistic push
-      if (!notifications.find(n => n.ts === payload.new.ts)) {
-        notifications.unshift({ id: payload.new.id, ...payload.new });
-        renderNotifications();
-      }
-    })
-    .subscribe();
 }
 
 async function addUserNotification(uid, notif){
@@ -564,10 +449,7 @@ window.doLogin=async()=>{
   }
 
   try{
-    console.log('Attempting Supabase signIn...');
-const { error: signInErr } = await supabase.auth.signInWithPassword({email: email, password: pass});
-if (signInErr) throw signInErr;
-console.log('Supabase signIn returned successfully');
+    await signInWithEmailAndPassword(auth,email,pass);
   }
   catch(e){
     console.error('LOGIN ERROR:', e);
@@ -590,7 +472,7 @@ window.doLogout=async()=>{
   const err=document.getElementById('loginErr');
   if(err) err.style.display='none';
 
-  await supabase.auth.signOut();
+  await signOut(auth);
 };
 
 // Cambiar contraseña
@@ -604,7 +486,7 @@ window.doChangePass=async()=>{
   const newPass=document.getElementById('chpassInput').value.trim();
   if(!newPass||newPass.length<6){showErr('chpassErr','Mínimo 6 caracteres.');return;}
   try{
-    await supabase.auth.updateUser({ password: newPass });
+    await updatePassword(auth.currentUser, newPass);
     closeChPass();
     alert('✅ Contraseña actualizada correctamente.');
   }catch(e){
@@ -613,16 +495,8 @@ window.doChangePass=async()=>{
   }
 };
 
-supabase.auth.onAuthStateChange((event, session) => {
-console.log('onAuthStateChange triggered:', event);
-setTimeout(async () => {
-try {
-  const user = session?.user;
+onAuthStateChanged(auth, async user=>{
   if(user){
-    console.log('User detected, id:', user.id);
-
-    user.uid = user.id;
-
     currentUser=user;
     const snap=await getDoc(doc(db,'users',user.uid));
     userProfile=snap.exists()?snap.data():{nombre:user.email,rol:'rh'};
@@ -659,8 +533,6 @@ try {
     document.getElementById('appWrap').style.display='none';
     document.getElementById('appWrap').classList.remove('visible');
   }
-}catch(e){console.error('FATAL ERROR:', e);}
-}, 0);
 });
 
 function initApp(){

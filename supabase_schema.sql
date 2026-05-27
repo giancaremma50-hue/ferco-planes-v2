@@ -1,0 +1,105 @@
+-- ==========================================
+-- SCRIPT DE INICIALIZACION: PLANES FERCO
+-- Ejecutar este script en el "SQL Editor" de Supabase
+-- ==========================================
+
+-- 1. Activar extensión para UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. Eliminar tablas si existen (para empezar limpios)
+DROP TABLE IF EXISTS public.perfiles CASCADE;
+DROP TABLE IF EXISTS public.puestos CASCADE;
+DROP TABLE IF EXISTS public.areas CASCADE;
+DROP TABLE IF EXISTS public.paises CASCADE;
+
+-- 3. Tabla de Países
+CREATE TABLE public.paises (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Tabla de Áreas
+CREATE TABLE public.areas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. Tabla de Puestos (Jerarquía)
+CREATE TABLE public.puestos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT NOT NULL,
+    area_id UUID REFERENCES public.areas(id) ON DELETE CASCADE,
+    reporta_a_id UUID REFERENCES public.puestos(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. Tabla de Perfiles (Usuarios extendidos)
+CREATE TABLE public.perfiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    nombre TEXT NOT NULL,
+    rol TEXT NOT NULL DEFAULT 'comercial',
+    pais_id UUID REFERENCES public.paises(id) ON DELETE SET NULL,
+    area_id UUID REFERENCES public.areas(id) ON DELETE SET NULL,
+    puesto_id UUID REFERENCES public.puestos(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 7. Configuración de Seguridad (RLS - Row Level Security)
+ALTER TABLE public.paises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.areas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.puestos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.perfiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Permitir acceso a usuarios autenticados en paises" ON public.paises FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Permitir acceso a usuarios autenticados en areas" ON public.areas FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Permitir acceso a usuarios autenticados en puestos" ON public.puestos FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Permitir acceso a usuarios autenticados en perfiles" ON public.perfiles FOR ALL USING (auth.role() = 'authenticated');
+
+-- ==========================================
+-- DATOS INICIALES (IMPORTADOS DEL ARCHIVO Jerarquias.md)
+-- ==========================================
+INSERT INTO public.paises (id, nombre) VALUES ('fc7e9ffc-9b14-4952-9fcf-d6d16a22f284', 'Guatemala');
+INSERT INTO public.areas (id, nombre) VALUES ('9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'Comercial');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('631640c0-fb5f-4e6a-9e38-493b4adf2b67', 'CEO', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', NULL);
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('b9138a37-5e1a-426a-930b-1dc790647aa2', 'Director Comercial GT', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '631640c0-fb5f-4e6a-9e38-493b4adf2b67');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('f0f2fa57-4658-46ac-b6bc-1b84156eeead', 'Gerente Mayoreo', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'b9138a37-5e1a-426a-930b-1dc790647aa2');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('1c692174-1cbe-4205-9c67-c214e131641a', 'KAM', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'f0f2fa57-4658-46ac-b6bc-1b84156eeead');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('10697494-6e9b-434e-8270-3a9aa63d060c', 'Director Retail', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'b9138a37-5e1a-426a-930b-1dc790647aa2');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('b56d73df-2b2b-409d-aae2-5505ae24f85e', 'Regional Marlon', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '10697494-6e9b-434e-8270-3a9aa63d060c');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('6f531bdc-a380-48d7-a18f-77669bdb8ee0', 'Gerente de Sucursal', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'b56d73df-2b2b-409d-aae2-5505ae24f85e');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('754cc096-b45a-46fd-9021-93314136bca7', 'Asesor Comercial', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '6f531bdc-a380-48d7-a18f-77669bdb8ee0');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('3a5d5a73-d673-4c20-812a-a399f44dced5', 'Regional Sandra', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '10697494-6e9b-434e-8270-3a9aa63d060c');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('09b5975d-9946-428a-b7b5-210f6f59de4f', 'Zona Eva', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '3a5d5a73-d673-4c20-812a-a399f44dced5');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('07215b86-f838-43d8-a5f2-74affa62e00a', 'Gerente de Sucursal', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '09b5975d-9946-428a-b7b5-210f6f59de4f');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('360223f1-78bd-44e0-8ebb-c4ffd761cb42', 'Asesor Comercial', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '07215b86-f838-43d8-a5f2-74affa62e00a');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('c1a9a891-a842-49ec-82a5-50b6175f67a1', 'Regional Freddy', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '10697494-6e9b-434e-8270-3a9aa63d060c');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('a961327a-ea82-43d0-8064-799fc32c2069', 'Zona Diego', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'c1a9a891-a842-49ec-82a5-50b6175f67a1');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('ec1e200b-ab8a-4d42-ac73-037b828fa502', 'Gerente de Sucursal', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'a961327a-ea82-43d0-8064-799fc32c2069');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('b42786a9-5c54-4d48-b014-c9e6d6545cf0', 'Asesor Comercial', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'ec1e200b-ab8a-4d42-ac73-037b828fa502');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('91b5ceaa-8f47-4162-a208-ec0f81688129', 'Gerente Proyectos', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'b9138a37-5e1a-426a-930b-1dc790647aa2');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('2a08d81b-5c89-4cac-9140-4a871feab714', 'KAM', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', '91b5ceaa-8f47-4162-a208-ec0f81688129');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('cfbc0599-6cbc-493b-b30d-7fe7fead0b10', 'Gerente Canales Digitales', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'b9138a37-5e1a-426a-930b-1dc790647aa2');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('f81ab619-3bc5-46e1-a9eb-90a45727aaf9', 'Líder de Mesa', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'cfbc0599-6cbc-493b-b30d-7fe7fead0b10');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('6ea94efd-b951-4f16-91fb-086e9af56723', 'Asesor Comercial', '9eb77f95-85c6-4419-b22b-b02a0aea5a8c', 'f81ab619-3bc5-46e1-a9eb-90a45727aaf9');
+INSERT INTO public.areas (id, nombre) VALUES ('0d50e619-0790-462c-81e7-0985bb96afcb', 'Operaciones');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('cbad8560-0d96-4b72-8ca3-8ec0fdef21ff', 'CEO', '0d50e619-0790-462c-81e7-0985bb96afcb', NULL);
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('bea77754-6183-4943-9838-35b074f06bc8', 'COO', '0d50e619-0790-462c-81e7-0985bb96afcb', 'cbad8560-0d96-4b72-8ca3-8ec0fdef21ff');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('baad582d-da4e-4598-a075-63f1417a5cf8', 'Gerente Operaciones GT', '0d50e619-0790-462c-81e7-0985bb96afcb', 'bea77754-6183-4943-9838-35b074f06bc8');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('ac737838-b08e-401c-8199-2990859a2d8a', 'Gerente HUB', '0d50e619-0790-462c-81e7-0985bb96afcb', 'baad582d-da4e-4598-a075-63f1417a5cf8');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('7e75f8f5-3529-4d09-95e4-b582ce1d513b', 'Jefe de CEDI', '0d50e619-0790-462c-81e7-0985bb96afcb', 'ac737838-b08e-401c-8199-2990859a2d8a');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('1255b91e-1769-414a-96c2-9b3886ed7240', 'Encargado de Bodega', '0d50e619-0790-462c-81e7-0985bb96afcb', '7e75f8f5-3529-4d09-95e4-b582ce1d513b');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('39cdd891-18f9-4cf5-a519-7938c1788610', 'Supervisor', '0d50e619-0790-462c-81e7-0985bb96afcb', '1255b91e-1769-414a-96c2-9b3886ed7240');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('99d5c814-76fa-45c5-a10b-fd99cb4fc348', 'Auxiliar de Bodega', '0d50e619-0790-462c-81e7-0985bb96afcb', '39cdd891-18f9-4cf5-a519-7938c1788610');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('992e2f99-3aad-49f5-8481-88f2a4ae4504', 'Coordinador de Servicio al Cliente', '0d50e619-0790-462c-81e7-0985bb96afcb', 'bea77754-6183-4943-9838-35b074f06bc8');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('f30a6fc3-6f39-4f7b-ab5e-8a7c5cdcc123', 'Servicio al Cliente', '0d50e619-0790-462c-81e7-0985bb96afcb', '992e2f99-3aad-49f5-8481-88f2a4ae4504');
+INSERT INTO public.areas (id, nombre) VALUES ('dcc0c424-71f0-4670-9207-502399fb4357', 'Recursos Humanos');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('1b7a1214-3c12-42db-95ee-a2cc6b542cf9', 'CEO', 'dcc0c424-71f0-4670-9207-502399fb4357', NULL);
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('635f5439-97c7-474b-aee5-636e4159a121', 'CHRO', 'dcc0c424-71f0-4670-9207-502399fb4357', '1b7a1214-3c12-42db-95ee-a2cc6b542cf9');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('67612b69-e04f-4445-ac67-a56a7b90d15b', 'Gerente de Atracción de Talento', 'dcc0c424-71f0-4670-9207-502399fb4357', '635f5439-97c7-474b-aee5-636e4159a121');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('50ba3714-8699-4b83-b570-19b64099bd2b', 'Analista de Atracción de Talento', 'dcc0c424-71f0-4670-9207-502399fb4357', '67612b69-e04f-4445-ac67-a56a7b90d15b');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('a37e6858-0e1c-4274-b617-e2bd143c82ee', 'Jefe de Desarrollo Organizacional', 'dcc0c424-71f0-4670-9207-502399fb4357', '635f5439-97c7-474b-aee5-636e4159a121');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('13ed6cce-f374-4cae-be91-861d9099277d', 'Coach Comercial', 'dcc0c424-71f0-4670-9207-502399fb4357', 'a37e6858-0e1c-4274-b617-e2bd143c82ee');
+INSERT INTO public.puestos (id, nombre, area_id, reporta_a_id) VALUES ('6b9abd1c-202c-41f0-8007-d071c90b2915', 'HRBP', 'dcc0c424-71f0-4670-9207-502399fb4357', '635f5439-97c7-474b-aee5-636e4159a121');
