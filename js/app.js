@@ -549,6 +549,8 @@ function applyRoleUI(){
   const isCom=!isAdmin||isRH;
 
   document.getElementById('navUsuarios').style.display=isRH?'flex':'none';
+  const navAdmin=document.getElementById('navAdmin');
+  if(navAdmin) navAdmin.style.display=(rol==='rh_global' || rol==='rh')?'flex':'none';
 
   // Botones de creación: Plan Fortalecimiento (admin+rh), Uno a Uno (comercial+rh)
   const btnPlan=document.getElementById('btnNuevoPlan');
