@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($lines = \\(Get-Content \"C:\\\\Users\\\\giancarlo.lam\\\\Downloads\\\\Planes FERCO V3\\\\index.html\" | Measure-Object -Line\\).Lines; Write-Output \"Total lines: $lines\")",
+      "PowerShell($content = Get-Content \"C:\\\\Users\\\\giancarlo.lam\\\\Downloads\\\\Planes FERCO V3\\\\index.html\" -Raw; $last200 = $content.Substring\\($content.Length - 400\\); Write-Output $last200)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo view giancaremma50-hue/ferco-planes-v2 --json name,defaultBranchRef,url 2>&1)",
+      "Skill(ui-ux-pro-max)",
+      "Skill(ui-ux-pro-max:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(powershell -Command \"Get-Content index.html | Measure-Object -Line\")",
+      "Bash(git commit *)",
+      "Bash(git rm *)"
+    ]
+  }
+}

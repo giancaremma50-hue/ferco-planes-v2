@@ -1,2387 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planes FERCO v3</title>
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Pre-theme initialization script (prevents theme flashing) -->
-<script>
-  (function() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-  })();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<style>
-/* ── PREMIUM BASE & VARIABES ── */
-:root {
-  --card: #ffffff;
-  --ring: #f59e0b;
-  --input: #f3f4f6;
-  --muted: #f9fafb;
-  --accent: #fffbeb;
-  --border: #e5e7eb;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-lg: 20px;
-  --chart-1: #f59e0b;
-  --chart-2: #d97706;
-  --chart-3: #b45309;
-  --chart-4: #92400e;
-  --chart-5: #78350f;
-  --popover: #ffffff;
-  --primary: #f59e0b;
-  --sidebar: #f9fafb;
-  --spacing: 0.25rem;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Inter', sans-serif;
-  --secondary: #f3f4f6;
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --destructive: #ef4444;
-  --shadow-blur: 16px;
-  --shadow-color: rgba(0, 0, 0, 0.04);
-  --sidebar-ring: #f59e0b;
-  --shadow-spread: -2px;
-  --shadow-opacity: 0.05;
-  --sidebar-accent: #fffbeb;
-  --sidebar-border: #e5e7eb;
-  --card-foreground: #1e293b;
-  --shadow-offset-x: 0px;
-  --shadow-offset-y: 6px;
-  --sidebar-primary: #f59e0b;
-  --muted-foreground: #64748b;
-  --accent-foreground: #92400e;
-  --popover-foreground: #1e293b;
-  --primary-foreground: #ffffff;
-  --sidebar-foreground: #475569;
-  --secondary-foreground: #4b5563;
-  --destructive-foreground: #ffffff;
-  --sidebar-accent-foreground: #92400e;
-  --sidebar-primary-foreground: #ffffff;
 
-  /* State colors (Light) */
-  --good: #15803d;
-  --goodbg: #dcfce7;
-  --mid: #b45309;
-  --midbg: #fef3c7;
-  --bad: #b91c1c;
-  --badbg: #fee2e2;
-  --atr: #c2410c;
-  --atrbg: #ffedd5;
-  
-  --backdrop: rgba(15, 23, 42, 0.3);
-}
-
-.dark {
-  --card: #1e293b;
-  --ring: #f59e0b;
-  --input: #334155;
-  --muted: #0f172a;
-  --accent: rgba(245, 158, 11, 0.15);
-  --border: #334155;
-  --chart-1: #fbbf24;
-  --chart-2: #d97706;
-  --chart-3: #92400e;
-  --chart-4: #b45309;
-  --chart-5: #92400e;
-  --popover: #1e293b;
-  --primary: #f59e0b;
-  --sidebar: #0f172a;
-  --secondary: #1e293b;
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --destructive: #ef4444;
-  --sidebar-ring: #f59e0b;
-  --sidebar-accent: rgba(245, 158, 11, 0.1);
-  --sidebar-border: #1e293b;
-  --card-foreground: #e2e8f0;
-  --sidebar-primary: #f59e0b;
-  --muted-foreground: #94a3b8;
-  --accent-foreground: #fde68a;
-  --popover-foreground: #e2e8f0;
-  --primary-foreground: #ffffff;
-  --sidebar-foreground: #94a3b8;
-  --secondary-foreground: #e2e8f0;
-  --destructive-foreground: #ffffff;
-  --sidebar-accent-foreground: #fde68a;
-  --sidebar-primary-foreground: #ffffff;
-
-  /* State colors (Dark) */
-  --good: #4ade80;
-  --goodbg: rgba(21, 128, 61, 0.25);
-  --mid: #fbbf24;
-  --midbg: rgba(180, 83, 9, 0.25);
-  --bad: #f87171;
-  --badbg: rgba(185, 28, 28, 0.25);
-  --atr: #fb923c;
-  --atrbg: rgba(194, 65, 12, 0.25);
-  
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --backdrop: rgba(0, 0, 0, 0.6);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── BASE LAYOUT & INTERACTIVE ELEMENTS ── */
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background: var(--background);
-  color: var(--foreground);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Premium Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ring);
-}
-
-/* ── LOGIN SCREEN (Revamped with frosted glass) ── */
-.login-wrap {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  z-index: 999;
-}
-.login-wrap::before {
-  content: '';
-  position: absolute;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, var(--ring) 0%, transparent 70%);
-  top: 15%;
-  left: 20%;
-  opacity: 0.15;
-  filter: blur(40px);
-}
-.login-wrap::after {
-  content: '';
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
-  bottom: 10%;
-  right: 15%;
-  opacity: 0.12;
-  filter: blur(50px);
-}
-.login-box {
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-lg);
-  padding: 40px;
-  width: 400px;
-  max-width: 92vw;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.login-logo-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-.login-logo-wrap .logo-img {
-  max-height: 48px;
-  object-fit: contain;
-}
-.login-sub {
-  text-align: center;
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 28px;
-  font-weight: 500;
-}
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-.login-field label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.login-field input {
-  padding: 12px 14px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: #ffffff;
-  transition: all 0.2s ease;
-}
-.login-field input:focus {
-  outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
-  background: rgba(15, 23, 42, 0.7);
-}
-.login-btn {
-  width: 100%;
-  padding: 13px;
-  background: var(--ring);
-  color: #000000;
-  border: none;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-  transition: all 0.2s ease;
-}
-.login-btn:hover {
-  background: #fbbf24;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
-}
-.login-btn:active {
-  transform: scale(0.98);
-}
-.login-err {
-  font-size: 12px;
-  color: #f87171;
-  text-align: center;
-  margin-top: 12px;
-  display: none;
-  padding: 8px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-/* ── APP SHELL — FLEX ROW, FULL VIEWPORT ── */
-.app {
-  display: none;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  flex-direction: row;
-}
-.app.visible {
-  display: flex;
-}
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 250px;
-  min-width: 250px;
-  background: var(--sidebar);
-  border-right: 1px solid var(--sidebar-border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  overflow: hidden;
-  transition: width 0.25s ease, min-width 0.25s ease, background-color 0.3s ease, border-color 0.3s ease;
-  height: 100vh;
-}
-.sidebar.collapsed {
-  width: 0;
-  min-width: 0;
-}
-.sidebar-inner {
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-.s-logo {
-  padding: 22px 20px;
-  border-bottom: 1px solid var(--sidebar-border);
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.s-logo .logo-img {
-  max-height: 38px;
-  max-width: 85%;
-  object-fit: contain;
-  margin-bottom: 2px;
-}
-.s-logo-sub {
-  font-size: 10px;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-.s-nav {
-  padding: 16px 12px;
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.s-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--sidebar-foreground);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-  border-left: 0px solid transparent;
-  white-space: nowrap;
-}
-.s-item svg {
-  stroke: var(--sidebar-foreground);
-  transition: stroke 0.2s ease;
-}
-.s-item:hover {
-  background: var(--secondary);
-  color: var(--foreground);
-}
-.s-item:hover svg {
-  stroke: var(--foreground);
-}
-.s-item.active {
-  color: var(--accent-foreground);
-  background: var(--sidebar-accent);
-}
-.s-item.active svg {
-  stroke: var(--accent-foreground);
-}
-.s-bottom {
-  flex-shrink: 0;
-  border-top: 1px solid var(--sidebar-border);
-  background: var(--sidebar);
-  padding: 16px;
-}
-.s-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.s-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--ring);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: #000;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
-}
-.s-uname {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-}
-.s-urole {
-  font-size: 10px;
-  color: var(--muted-foreground);
-  font-weight: 500;
-}
-.s-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.btn-logout {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted-foreground);
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-.btn-logout:hover {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: var(--destructive);
-}
-.btn-chpass {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--sidebar-foreground);
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-.btn-chpass:hover {
-  background: var(--secondary);
-  color: var(--foreground);
-  border-color: var(--border);
-}
-
-/* ── MAIN AREA & TOPBAR ── */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-  background: var(--background);
-}
-.topbar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 60px;
-  flex-shrink: 0;
-  z-index: 5;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-.toggle-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--foreground);
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s ease;
-}
-.toggle-btn:hover {
-  background: var(--secondary);
-}
-.page-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--foreground);
-  flex: 1;
-  letter-spacing: -0.01em;
-}
-.content {
-  padding: 24px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* ── THEME TOGGLE BUTTON ── */
-.theme-toggle-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-.theme-toggle-btn:hover {
-  background: var(--secondary);
-  border-color: var(--ring);
-}
-.theme-toggle-btn svg {
-  transition: transform 0.2s ease;
-}
-.theme-toggle-btn:active svg {
-  transform: scale(0.9);
-}
-
-/* Dynamic show/hide of theme toggle icons & logos */
-.logo-dark { display: none; }
-.logo-light { display: block; }
-.dark .logo-dark { display: block; }
-.dark .logo-light { display: none; }
-
-.sun-icon { display: none; }
-.moon-icon { display: block; }
-.dark .sun-icon { display: block; }
-.dark .moon-icon { display: none; }
-
-/* ── BUTTONS ── */
-.btn {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card);
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--foreground);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-.btn svg {
-  stroke: var(--foreground);
-}
-.btn:hover {
-  background: var(--secondary);
-  border-color: var(--border);
-}
-.btn:active {
-  transform: scale(0.97);
-}
-.btn-primary {
-  background: var(--foreground);
-  color: var(--card);
-  border-color: var(--foreground);
-}
-.btn-primary svg {
-  stroke: var(--card);
-}
-.btn-primary:hover {
-  background: var(--muted-foreground);
-  border-color: var(--muted-foreground);
-  color: var(--card);
-}
-.btn-gold {
-  background: var(--ring);
-  color: #000;
-  border-color: var(--ring);
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-}
-.btn-gold svg {
-  stroke: #000;
-}
-.btn-gold:hover {
-  background: #fbbf24;
-  border-color: #fbbf24;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-}
-.btn-danger {
-  background: var(--destructive);
-  color: var(--destructive-foreground);
-  border-color: var(--destructive);
-}
-.btn-danger svg {
-  stroke: var(--destructive-foreground);
-}
-.btn-danger:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-}
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 11.5px;
-  border-radius: var(--radius-sm);
-}
-
-/* ── NOTIFICATIONS POPULAR PANEL ── */
-.notif-wrap {
-  position: relative;
-}
-.notif-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--foreground);
-  height: 36px;
-  transition: all 0.2s ease;
-}
-.notif-btn:hover {
-  background: var(--secondary);
-  border-color: var(--ring);
-}
-.notif-badge {
-  background: var(--destructive);
-  color: var(--destructive-foreground);
-  font-size: 9px;
-  font-weight: 800;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.notif-panel {
-  display: none;
-  position: absolute;
-  top: 46px;
-  right: 0;
-  width: 350px;
-  max-height: 480px;
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  z-index: 100;
-  overflow: hidden;
-  box-shadow: 0 10px 25px var(--shadow-color);
-  flex-direction: column;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.notif-panel.open {
-  display: flex;
-  animation: modalPop .22s cubic-bezier(.16,1,.3,1);
-}
-.np-head {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13.5px;
-  font-weight: 800;
-  color: var(--foreground);
-  flex-shrink: 0;
-}
-.np-mark {
-  font-size: 11.5px;
-  color: var(--ring);
-  cursor: pointer;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-.np-mark:hover {
-  color: var(--accent-foreground);
-  text-decoration: underline;
-}
-.np-scroll {
-  overflow-y: auto;
-  flex: 1;
-}
-.np-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  display: flex;
-  gap: 12px;
-  transition: background 0.15s ease;
-}
-.np-item:hover {
-  background: var(--secondary);
-}
-.np-item.unread {
-  background: var(--accent);
-}
-.np-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ring);
-  flex-shrink: 0;
-  margin-top: 5px;
-  box-shadow: 0 0 6px var(--ring);
-}
-.np-dot.read {
-  background: transparent;
-  box-shadow: none;
-}
-.np-text {
-  font-size: 12.5px;
-  color: var(--foreground);
-  line-height: 1.5;
-  flex: 1;
-}
-.np-time {
-  font-size: 10px;
-  color: var(--muted-foreground);
-  margin-top: 4px;
-}
-.np-empty {
-  padding: 32px 24px;
-  text-align: center;
-  font-size: 12.5px;
-  color: var(--muted-foreground);
-}
-
-/* ── VIEW TOGGLE (mis planes / reportes) ── */
-.view-toggle {
-  display: flex;
-  border: 1px solid var(--border);
-  background: var(--card);
-  border-radius: var(--radius);
-  overflow: hidden;
-  padding: 3px;
-  width: fit-content;
-}
-.vt-btn {
-  padding: 8px 16px;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  color: var(--muted-foreground);
-  white-space: nowrap;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-}
-.vt-btn.active {
-  background: var(--foreground);
-  color: var(--card);
-}
-
-/* ── FILTER BAR ── */
-.filter-bar {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  box-shadow: 0 1px 3px var(--shadow-color);
-}
-.filter-bar label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.filter-bar select, .filter-bar input {
-  padding: 8px 12px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-.filter-bar select:focus, .filter-bar input:focus {
-  outline: none;
-  border-color: var(--ring);
-}
-.clr {
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--secondary);
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--foreground);
-  align-self: flex-end;
-  transition: all 0.2s ease;
-}
-.clr:hover {
-  background: var(--border);
-}
-
-/* ── KPI GRID ── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.kpi {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px var(--shadow-color);
-  transition: transform 0.2s ease;
-}
-.kpi:hover {
-  transform: translateY(-2px);
-}
-.kpi .lbl {
-  font-size: 11px;
-  color: var(--muted-foreground);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
-}
-.kpi .val {
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--foreground);
-}
-.cg { color: var(--good); }
-.cm { color: var(--mid); }
-.ca { color: var(--atr); }
-
-/* ── KANBAN ── */
-.kanban {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  min-height: 380px;
-  align-items: flex-start;
-}
-.k-col {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  min-width: 280px;
-  flex: 1;
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-.k-col.col-atr {
-  border-color: rgba(194, 65, 12, 0.3);
-}
-.k-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.k-title {
-  font-size: 13.5px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--foreground);
-}
-.pill {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.pill.good { background: var(--goodbg); color: var(--good); }
-.pill.mid { background: var(--midbg); color: var(--mid); }
-.pill.atr { background: var(--atrbg); color: var(--atr); }
-.pill.neu { background: var(--accent); color: var(--accent-foreground); }
-.pill.gray { background: var(--secondary); color: var(--muted-foreground); }
-
-/* ── PLAN CARDS ── */
-.pcard {
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  box-shadow: 0 1px 2px var(--shadow-color);
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.pcard:hover {
-  border-color: var(--ring);
-  background: var(--card);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-.pcard.atr-card {
-  border-left: 4px solid var(--atr);
-}
-.pc-name {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--foreground);
-  margin-bottom: 3px;
-}
-.pc-sub {
-  font-size: 11.5px;
-  color: var(--muted-foreground);
-  margin-bottom: 8px;
-}
-.pc-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-.tag {
-  padding: 2.5px 8px;
-  border-radius: 99px;
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.tag-reg { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
-.tag-zona { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
-.tag-suc { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-.tag-atr { background: var(--atrbg); color: var(--atr); }
-
-.pbar {
-  height: 5px;
-  background: var(--border);
-  border-radius: 99px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.pbar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.3s ease;
-}
-.pc-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10.5px;
-  color: var(--muted-foreground);
-  font-weight: 500;
-}
-.pc-counts {
-  display: flex;
-  gap: 10px;
-  font-size: 10.5px;
-  color: var(--muted-foreground);
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
-  margin-top: 6px;
-}
-.pc-count {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* ── DETAIL MODAL & POPUP OVERLAY ── */
-.foverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--backdrop);
-  backdrop-filter: blur(8px);
-  z-index: 40;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.foverlay.open {
-  display: flex;
-}
-.fmodal {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  width: 1050px;
-  max-width: 98vw;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px var(--shadow-color);
-}
-.fm-head {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  background: var(--muted);
-  flex-shrink: 0;
-}
-.fm-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--foreground);
-  letter-spacing: -0.01em;
-}
-.fm-sub {
-  font-size: 12.5px;
-  color: var(--muted-foreground);
-  margin-top: 2px;
-}
-.fm-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  background: var(--card);
-  flex-shrink: 0;
-  overflow-x: auto;
-  padding: 0 10px;
-}
-.fm-tab {
-  padding: 14px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-.fm-tab:hover {
-  color: var(--foreground);
-}
-.fm-tab.active {
-  color: var(--ring);
-  border-bottom-color: var(--ring);
-}
-.fm-body {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-.fm-foot {
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--muted);
-  flex-shrink: 0;
-}
-
-/* ── DETAIL FIELDS ── */
-.fm-section {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
-  margin-bottom: 14px;
-  margin-top: 22px;
-}
-.fm-section:first-child {
-  margin-top: 0;
-}
-.fm-field label {
-  font-size: 11px;
-  color: var(--muted-foreground);
-  font-weight: 700;
-  display: block;
-  margin-bottom: 4px;
-}
-.fm-field p {
-  font-size: 13.5px;
-  color: var(--foreground);
-  line-height: 1.6;
-  background: var(--background);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-}
-
-/* ── TABLES ── */
-.st {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.st th {
-  background: var(--muted);
-  color: var(--foreground);
-  padding: 10px 12px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
-}
-.st td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  line-height: 1.5;
-  color: var(--foreground);
-}
-.st tr:hover td {
-  background: var(--secondary);
-}
-
-/* ── TIMELINE ── */
-.tl {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.tl-item {
-  display: flex;
-  gap: 12px;
-}
-.tld {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-top: 5px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px var(--border);
-}
-.tld-done { background: var(--good); }
-.tld-pend { background: var(--border); }
-.tl-date {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-}
-.tl-text {
-  font-size: 13px;
-  color: var(--foreground);
-  line-height: 1.5;
-}
-
-/* ── STAGE SELECTOR ── */
-.stage-sel {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.stage-opt {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
-  background: var(--card);
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--muted-foreground);
-  transition: all 0.2s ease;
-}
-.stage-opt:hover {
-  border-color: var(--foreground);
-  color: var(--foreground);
-}
-.stage-opt.sel-cierre {
-  border-color: var(--good);
-  background: var(--goodbg);
-  color: var(--good);
-}
-
-/* ── FILE ZONE (sleek dotted drag over area) ── */
-.file-zone {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  background: var(--background);
-  transition: all 0.2s ease;
-}
-.file-zone svg {
-  stroke: var(--muted-foreground);
-  margin-bottom: 8px;
-}
-.file-zone:hover, .file-zone.drag-over {
-  border-color: var(--ring);
-  background: var(--accent);
-}
-.file-zone p {
-  font-size: 12.5px;
-  color: var(--muted-foreground);
-  line-height: 1.5;
-}
-.file-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-.file-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 13px;
-}
-.file-item-name {
-  flex: 1;
-  font-weight: 700;
-  color: var(--foreground);
-}
-.file-item-meta {
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-.file-item-del {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--muted-foreground);
-  font-size: 15px;
-  padding: 0 4px;
-  transition: color 0.2s ease;
-}
-.file-item-del:hover {
-  color: var(--destructive);
-}
-
-/* ── COMMENTS & DISCUSSIONS ── */
-.comment-item {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.c-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--accent-foreground);
-  flex-shrink: 0;
-}
-.c-bubble {
-  flex: 1;
-  min-width: 0;
-}
-.c-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-}
-.c-author {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--foreground);
-}
-.c-role {
-  font-size: 9.5px;
-  color: var(--primary-foreground);
-  background: var(--foreground);
-  border-radius: 4px;
-  padding: 1px 8px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.c-time {
-  font-size: 10px;
-  color: var(--muted-foreground);
-}
-.c-text {
-  font-size: 13.5px;
-  color: var(--foreground);
-  line-height: 1.6;
-  background: var(--background);
-  border-radius: 0 var(--radius) var(--radius) var(--radius);
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  word-break: break-word;
-}
-.c-actions {
-  display: flex;
-  gap: 14px;
-  margin-top: 6px;
-}
-.c-action {
-  font-size: 11.5px;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  font-weight: 700;
-  background: none;
-  border: none;
-  transition: color 0.2s ease;
-}
-.c-action:hover {
-  color: var(--foreground);
-}
-.c-action.edit-btn {
-  color: #3b82f6;
-}
-.c-replies {
-  margin-left: 48px;
-  margin-top: 12px;
-  border-left: 2px solid var(--border);
-  padding-left: 16px;
-}
-.c-input-wrap {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-.c-input-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.c-input {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 13.5px;
-  resize: vertical;
-  min-height: 80px;
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-.c-input:focus {
-  outline: none;
-  border-color: var(--ring);
-}
-
-/* ── MENTION DROPDOWN ── */
-.mention-drop {
-  position: absolute;
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 10px 25px var(--shadow-color);
-  z-index: 200;
-  min-width: 220px;
-  max-height: 200px;
-  overflow-y: auto;
-  display: none;
-}
-.mention-drop.open {
-  display: block;
-}
-.mention-item {
-  padding: 10px 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  transition: background 0.15s ease;
-}
-.mention-item:hover {
-  background: var(--secondary);
-}
-.mention-item-name {
-  font-weight: 700;
-  color: var(--foreground);
-}
-.mention-item-role {
-  font-size: 10px;
-  color: var(--muted-foreground);
-}
-.mention {
-  color: var(--accent-foreground);
-  font-weight: 700;
-  background: var(--accent);
-  border-radius: 4px;
-  padding: 1px 4px;
-}
-
-/* ── GENERAL OVERLAYS & MODALS ── */
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--backdrop);
-  backdrop-filter: blur(8px);
-  z-index: 50;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.overlay.open {
-  display: flex;
-}
-.modal {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  padding: 28px;
-  width: 760px;
-  max-width: 98vw;
-  max-height: 90vh;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 25px 50px -12px var(--shadow-color);
-}
-.modal-title {
-  font-size: 18px;
-  font-weight: 800;
-  margin-bottom: 16px;
-  color: var(--foreground);
-  letter-spacing: -0.01em;
-}
-.mtabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-  overflow-x: auto;
-}
-.mtab {
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-.mtab:hover {
-  color: var(--foreground);
-}
-.mtab.active {
-  color: var(--ring);
-  border-bottom-color: var(--ring);
-}
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.form-group label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.form-group input, .form-group select, .form-group textarea {
-  padding: 10px 12px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 13.5px;
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-  outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 2.5px rgba(245, 158, 11, 0.15);
-}
-.form-group input.err, .form-group select.err, .form-group textarea.err {
-  border-color: var(--destructive);
-  background: rgba(239, 68, 68, 0.05);
-}
-.form-group textarea {
-  min-height: 90px;
-  resize: vertical;
-}
-.form-group.full {
-  grid-column: 1 / -1;
-}
-.modal-footer {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-.err-msg {
-  font-size: 12px;
-  color: var(--destructive);
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: rgba(239, 68, 68, 0.08);
-  border-radius: var(--radius);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  display: none;
-}
-
-/* ── SMART ACUERDOS ── */
-.smart-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px var(--shadow-color);
-}
-.sc-head {
-  background: var(--muted);
-  color: var(--foreground);
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border);
-}
-.sc-num {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ring);
-  text-transform: uppercase;
-}
-.sc-ttl {
-  font-size: 13px;
-  font-weight: 700;
-  flex: 1;
-}
-.sc-del {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--muted-foreground);
-  font-size: 16px;
-  transition: color 0.2s ease;
-}
-.sc-del:hover {
-  color: var(--destructive);
-}
-.sc-body {
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  background: var(--card);
-}
-.sc-body.coll {
-  display: none;
-}
-.sc-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.sc-field.full {
-  grid-column: 1 / -1;
-}
-.sc-field label {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.sc-field input, .sc-field textarea {
-  padding: 10px 12px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-.sc-field input:focus, .sc-field textarea:focus {
-  outline: none;
-  border-color: var(--ring);
-}
-.sc-field input.err, .sc-field textarea.err {
-  border-color: var(--destructive);
-  background: rgba(239, 68, 68, 0.05);
-}
-.sc-field textarea {
-  min-height: 80px;
-}
-.add-smart-btn {
-  width: 100%;
-  padding: 12px;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  background: var(--card);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
-  transition: all 0.2s ease;
-}
-.add-smart-btn:hover {
-  border-color: var(--ring);
-  color: var(--ring);
-  background: var(--accent);
-}
-
-/* ── USERS TABLE ── */
-.users-wrap {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13.5px;
-}
-.users-table th {
-  background: var(--muted);
-  padding: 12px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--border);
-}
-.users-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  color: var(--foreground);
-}
-.rol-badge {
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.rol-rh { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-.rol-director { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
-.rol-regional { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
-.rol-zona { background: var(--midbg); color: var(--mid); }
-.rol-sucursal { background: var(--secondary); color: var(--muted-foreground); }
-
-/* ── CHART CONTAINER ── */
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-top: 14px;
-}
-.chart-box {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 1px 3px var(--shadow-color);
-}
-.chart-box h4 {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 12px;
-}
-.chart-box canvas {
-  max-height: 170px;
-}
-
-/* ── UAU INDICADORES ── */
-.ind-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.ind-calc {
-  background: var(--accent);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: var(--radius);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.ind-calc label {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--accent-foreground);
-  text-transform: uppercase;
-}
-.ind-calc .calc-val {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--accent-foreground);
-}
-
-/* ── HIERARCHY / REPORTES VIEW ── */
-.hierarchy-view {
-  padding: 4px 0;
-}
-.hier-node {
-  margin-bottom: 10px;
-}
-.hier-node .hier-node {
-  margin-top: 8px;
-  margin-left: 24px;
-  margin-bottom: 0;
-}
-.hier-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.hier-card-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.hier-card:hover {
-  box-shadow: 0 6px 15px var(--shadow-color);
-  border-color: var(--ring);
-}
-.hier-card.open {
-  border-color: var(--ring);
-  background: var(--accent);
-}
-.hier-lvl-badge {
-  font-size: 9.5px;
-  font-weight: 800;
-  padding: 3px 9px;
-  border-radius: 99px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.hier-lvl-regional { background: #3b82f6; color: #fff; }
-.hier-lvl-zona { background: #06b6d4; color: #fff; }
-.hier-lvl-sucursal { background: #14b8a6; color: #fff; }
-
-.hier-name {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: var(--foreground);
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.hier-chevron {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  transition: transform 0.2s ease;
-}
-
-/* ── UI/UX TRANSITIONS & ANIMATIONS ── */
-.overlay.open .modal, .overlay.open .seg-modal, .overlay.open .chpass-modal {
-  animation: modalPop .22s cubic-bezier(.16,1,.3,1);
-}
-.foverlay.open .fmodal {
-  animation: modalPop .22s cubic-bezier(.16,1,.3,1);
-}
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: scale(.96) translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* ── PRINT MEDIA STYLES ── */
-@media print {
-  html, body {
-    height: auto !important;
-    overflow: visible !important;
-    width: auto !important;
-    background: #fff !important;
-    color: #000 !important;
-  }
-  body > * {
-    display: none !important;
-  }
-  .print-area {
-    display: block !important;
-    position: static !important;
-    overflow: visible !important;
-    background: #fff;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-  .print-doc {
-    max-width: 100%;
-    padding: 16px;
-  }
-  .print-acuerdo-block, .seg-annex, .print-seg-item, .pbox, .pmeta, .psigs {
-    page-break-inside: avoid;
-  }
-  .psec {
-    page-break-after: avoid;
-  }
-}
-.print-area {
-  display: none;
-}
-.print-doc {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: #000;
-  padding: 24px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-.ph {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 3px solid #0f172a;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
-}
-.ph-logo {
-  font-size: 24px;
-  font-weight: 900;
-  color: #0f172a;
-  letter-spacing: 2px;
-}
-.ph-logo span {
-  color: #F0BE1A;
-  font-size: 12px;
-  display: block;
-  font-weight: 700;
-  letter-spacing: 3px;
-  margin-top: -4px;
-}
-.ph-title h2 {
-  font-size: 14px;
-  font-weight: 800;
-  color: #0f172a;
-  text-align: center;
-}
-.ph-title p {
-  font-size: 10px;
-  color: #64748b;
-  font-style: italic;
-  text-align: center;
-  margin-top: 2px;
-}
-.pmeta {
-  display: grid;
-  grid-template-columns: 110px 1fr 110px 1fr;
-  gap: 6px 12px;
-  border: 1px solid #e2e8f0;
-  padding: 10px;
-  margin: 12px 0;
-  font-size: 11px;
-}
-.pmeta .ml {
-  font-weight: 700;
-  color: #64748b;
-}
-.psec {
-  background: #0f172a;
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 6px 12px;
-  margin: 14px 0 8px;
-  text-align: center;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-.pbox {
-  border: 1px solid #e2e8f0;
-  padding: 10px 12px;
-  font-size: 11px;
-  line-height: 1.7;
-  min-height: 60px;
-  font-style: italic;
-  margin-bottom: 8px;
-}
-.ptable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 10px;
-}
-.ptable th {
-  background: #0f172a;
-  color: #fff;
-  padding: 6px;
-  border: 1px solid #0f172a;
-  text-align: left;
-}
-.ptable td {
-  padding: 6px;
-  border: 1px solid #e2e8f0;
-  vertical-align: top;
-  line-height: 1.5;
-}
-.psigs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  margin-top: 28px;
-}
-.psig {
-  border-top: 1px solid #000;
-  text-align: center;
-  font-size: 10px;
-  padding-top: 6px;
-  margin-top: 48px;
-}
-/* --- CASCADA DE USUARIOS --- */
-.users-hier-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.uh-node { margin-bottom: 4px; }
-.uh-node.country-node { border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); box-shadow: 0 1px 3px var(--shadow-color); }
-.uh-card { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.2s, transform 0.2s; border-radius: var(--radius-sm); gap: 12px; }
-.uh-card:hover { background: var(--secondary); }
-.country-card { font-weight: 700; font-size: 14px; color: var(--foreground); background: var(--muted); border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
-.country-card.open { border-bottom: 1px solid var(--border); }
-.area-card { font-weight: 600; font-size: 13px; color: var(--foreground); margin-left: 12px; border-left: 3px solid var(--ring); background: var(--card); margin-top: 6px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.area-card:hover { background: var(--secondary); }
-.uh-icon { font-size: 16px; }
-.uh-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.uh-count { font-size: 11px; color: var(--muted-foreground); background: var(--secondary); padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-.uh-chevron { font-size: 10px; color: var(--muted-foreground); transition: transform 0.2s; transform-origin: center; }
-.uh-children { display: none; padding: 8px 16px 12px 16px; }
-.area-node .uh-children { padding: 10px 12px 10px 24px; }
-
-/* Tarjetas de Usuarios */
-.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 12px; }
-@keyframes cascadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-.user-card-premium { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px var(--shadow-color); transition: box-shadow 0.2s ease, transform 0.2s ease; position: relative; min-height: 118px; opacity: 0; animation: cascadeIn 0.32s ease forwards; }
-.user-card-premium:hover { box-shadow: 0 4px 14px var(--shadow-color); transform: translateY(-2px); border-color: var(--ring); }
-.uc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
-.uc-info { flex: 1; min-width: 0; }
-.uc-name { font-weight: 700; font-size: 13px; color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.uc-email { font-size: 11px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
-.uc-pass-btn { background: var(--secondary); border: none; color: var(--foreground); width: 26px; height: 26px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, color 0.2s; flex-shrink: 0; }
-.uc-pass-btn:hover { background: var(--border); color: var(--ring); }
-.uc-details { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
-.uc-detail-item { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
-.uc-label { color: var(--muted-foreground); font-weight: 500; }
-.uc-val { color: var(--foreground); font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
-</style>
-</head>
-<body>
-
-<div class="login-wrap" id="loginWrap">
-  <div class="login-box">
-    <div class="login-logo-wrap">
-      <img src="Logo FERCO NEGRO.png" class="logo-img logo-light" alt="Logo FERCO">
-      <img src="Logo Ferco Ceramica Letra Blanca 3 (1).png" class="logo-img logo-dark" alt="Logo FERCO">
-    </div>
-    <div class="login-sub">Planes de Fortalecimiento v2 · Inicia sesión</div>
-    <div class="login-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="usuario@ferco.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="login-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
-    <div class="login-err" id="loginErr">Correo o contraseña incorrectos.</div>
-  </div>
-</div>
-
-<div class="app" id="appWrap">
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-inner">
-      <div class="s-logo">
-        <img src="Logo FERCO NEGRO.png" class="logo-img logo-light" alt="Logo FERCO">
-        <img src="Logo Ferco Ceramica Letra Blanca 3 (1).png" class="logo-img logo-dark" alt="Logo FERCO">
-        <div class="s-logo-sub">Planes de Fortalecimiento</div>
-      </div>
-      <div class="s-nav">
-        <div class="s-item active" onclick="showView('dashboard',this)">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Dashboard
-        </div>
-        <div class="s-item" id="navUsuarios" style="display:none" onclick="showView('usuarios',this)">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Usuarios
-        </div>
-      </div>
-      <div class="s-bottom">
-        <div class="s-user">
-          <div class="s-avatar" id="avatarEl">--</div>
-          <div><div class="s-uname" id="unameEl">Cargando...</div><div class="s-urole" id="uroleEl"></div></div>
-        </div>
-        <div class="s-actions">
-          <button class="btn-chpass" onclick="openChPass()">🔑 Cambiar contraseña</button>
-          <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main" id="mainArea">
-    <div class="topbar">
-      <button class="toggle-btn" onclick="toggleSidebar()">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="page-title" id="pageTitle">Dashboard</div>
-      
-      <!-- Theme Toggle Button -->
-      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Cambiar tema">
-        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-      </button>
-
-      <div class="notif-wrap">
-        <button class="notif-btn" id="notifBtn" onclick="toggleNotif(event)">
-          <span id="notifIcon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
-          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
-        </button>
-        <div class="notif-panel" id="notifPanel">
-          <div class="np-head">
-            <span>Notificaciones</span>
-            <span class="np-mark" onclick="markAllRead()">Marcar leídas</span>
-          </div>
-          <div class="np-scroll" id="notifList">
-            <div class="np-empty">Sin notificaciones</div>
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-primary" id="btnNuevoPlan" onclick="openModal()" style="display:none">+ Plan Fortalecimiento</button>
-      <button class="btn btn-gold" id="btnNuevoUaU" onclick="openUnoAUnoForm()" style="display:none">+ Uno a Uno</button>
-    </div>
-
-    <div class="content" id="viewDashboard">
-      <div id="viewToggleRow" style="display:none;margin-bottom:12px">
-        <div class="view-toggle">
-          <button class="vt-btn active" onclick="setSubView('mis',this)">Mis planes</button>
-          <button class="vt-btn" onclick="setSubView('reportes',this)">Mis reportes</button>
-        </div>
-      </div>
-      <div class="filter-bar" id="filterBar"></div>
-      <div class="kpi-grid" id="kpiGrid"></div>
-      <div id="kanbanArea"><div class="loading"><div class="spinner"></div> Cargando planes...</div></div>
-    </div>
-
-    <div class="content" id="viewUsuarios" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-size:15px;font-weight:800">Gestión de usuarios</div>
-        <button class="btn btn-primary" onclick="openUserModal()">+ Nuevo usuario</button>
-      </div>
-      <div class="users-wrap">
-        <div id="usersLoading" class="loading"><div class="spinner"></div> Cargando...</div>
-        <div id="usersHierarchyArea" style="display:none" class="users-hier-wrap"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- DETAIL MODAL -->
-<div class="foverlay" id="foverlay" onclick="if(event.target===this)closeDetail()">
-  <div class="fmodal">
-    <div class="fm-head" id="fm-head">
-      <div><div class="fm-title" id="fm-title">Detalle</div><div class="fm-sub" id="fm-sub"></div></div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-sm" id="fm-edit-btn" onclick="openEditModal()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Editar</button>
-        <button class="btn btn-sm" id="fm-email-btn" onclick="sendActivePlanByEmail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Enviar PDF</button>
-        <button class="btn btn-gold btn-sm" onclick="printActivePlan()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>PDF</button>
-        <button class="btn btn-sm btn-danger" onclick="closeDetail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      </div>
-    </div>
-    <div class="fm-tabs" id="fmTabsEl"></div>
-    <div class="fm-body" id="fm-body"></div>
-    <div class="fm-foot" id="fm-foot"></div>
-  </div>
-</div>
-
-<!-- NEW PLAN MODAL -->
-<div class="overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-title">Nuevo Plan de Fortalecimiento</div>
-    <div class="mtabs">
-      <div class="mtab active" onclick="goTab(0,this)">1. Datos generales</div>
-      <div class="mtab" onclick="goTab(1,this)">2. Fortalezas</div>
-      <div class="mtab" onclick="goTab(2,this)">3. Áreas a fortalecer</div>
-      <div class="mtab" onclick="goTab(3,this)">4. Acuerdos SMART</div>
-    </div>
-    <div id="tabContent" style="flex:1"></div>
-    <div class="err-msg" id="errMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn" id="btnPrev" onclick="prevTab()" style="display:none">← Anterior</button>
-      <button class="btn btn-primary" id="btnNext" onclick="nextTab()">Siguiente →</button>
-      <button class="btn btn-gold" id="btnSave" onclick="savePlan()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar plan</button>
-    </div>
-  </div>
-</div>
-
-<!-- SEGUIMIENTO MODAL -->
-<div class="overlay" id="segOverlay">
-  <div class="seg-modal">
-    <div class="modal-title">Registrar seguimiento</div>
-
-    <!-- Selector de acuerdo (visible solo si hay >1) -->
-    <div id="segAcuerdoSelWrap" style="display:none">
-      <div class="form-group">
-        <label>Acuerdo al que pertenece este seguimiento *</label>
-        <select id="segAcuerdoSel" onchange="onSegAcuerdoChange()"></select>
-      </div>
-    </div>
-
-    <!-- Alerta de acuerdo vencido -->
-    <div id="segVencidoWrap" style="display:none">
-      <div class="vencido-alert">
-        <span id="segVencidoTxt">⚠️ Este acuerdo está vencido</span>
-        <button class="btn btn-sm" style="border-color:var(--atr);color:var(--atr);flex-shrink:0" onclick="showExtendBox()">📅 Extender fecha</button>
-      </div>
-      <!-- Extend box inline -->
-      <div class="extend-box" id="extendBox" style="display:none">
-        <label>Nueva fecha de cierre del acuerdo</label>
-        <input type="date" id="extendFecha">
-        <div class="extend-box-actions">
-          <button class="btn btn-sm" onclick="document.getElementById('extendBox').style.display='none'">Cancelar</button>
-          <button class="btn btn-gold btn-sm" onclick="confirmarExtender()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M20 6 9 17l-5-5"/></svg>Confirmar extensión</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group"><label>Avances / Observaciones *</label><textarea id="segAvance" rows="3" placeholder="Describe los avances observados..."></textarea></div>
-    <div class="form-group"><label>% de avance *</label><input type="number" id="segPct" min="0" max="100" placeholder="Ej. 60"></div>
-    <div class="form-group"><label>Acuerdos para próximo seguimiento *</label><textarea id="segAcuerdo" rows="2" placeholder="¿Qué se hará hasta el próximo seguimiento?"></textarea></div>
-    <div class="form-group"><label>Soporte necesario *</label><input type="text" id="segSoporte" placeholder="Recursos o apoyo requerido"></div>
-    <div class="form-group"><label>Fecha del próximo seguimiento *</label><input type="date" id="segFecha"></div>
-    <div class="form-group">
-      <label>Archivos de avances / Respaldo (opcional)</label>
-      <div class="file-zone" onclick="document.getElementById('segFiles').click()">
-        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-        <p>Arrastra, pega (Ctrl+V) o haz clic para subir archivos<br><span style="font-size:11px">Imágenes, PDF, Excel — cualquier formato</span></p>
-      </div>
-      <input type="file" id="segFiles" multiple style="display:none" onchange="previewSegFiles(this)">
-      <div class="file-list" id="segFileList"></div>
-    </div>
-
-    <div class="err-msg" id="segErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeSeg()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveSeg()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar seguimiento</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CIERRE CON JUSTIFICACIÓN -->
-<div class="overlay" id="cierreOverlay">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-title">Cerrar plan</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Para cerrar el plan debes registrar la justificación. Esto quedará guardado como respaldo del cierre.</p>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="form-group">
-        <label>Justificación del cierre *</label>
-        <textarea id="cierreJustificacion" rows="5" placeholder="Describe por qué se cierra el plan, qué logró el colaborador, y cómo se resolvió la brecha identificada..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Archivo de respaldo (opcional)</label>
-        <div class="file-zone" onclick="document.getElementById('cierreFile').click()">
-          <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-          <p>Adjuntar evidencia del cierre<br><span style="font-size:11px">PDF, imagen, Excel</span></p>
-        </div>
-        <input type="file" id="cierreFile" style="display:none" onchange="previewCierreFile(this)">
-        <div id="cierreFilePreview"></div>
-      </div>
-    </div>
-    <div class="err-msg" id="cierreErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="document.getElementById('cierreOverlay').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarCierre()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M20 6 9 17l-5-5"/></svg>Confirmar cierre</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL EDITAR PLAN -->
-<div class="overlay" id="editOverlay">
-  <div class="modal" style="width:860px;max-width:98vw">
-    <div class="modal-title">Editar Plan de Fortalecimiento</div>
-    <div class="mtabs" id="editTabs">
-      <div class="mtab active" onclick="goEditTab(0,this)">1. Datos generales</div>
-      <div class="mtab" onclick="goEditTab(1,this)">2. Fortalezas</div>
-      <div class="mtab" onclick="goEditTab(2,this)">3. Áreas a fortalecer</div>
-      <div class="mtab" onclick="goEditTab(3,this)">4. Acuerdos SMART</div>
-    </div>
-    <div id="editTabContent" style="flex:1;padding:16px;overflow:auto;max-height:55vh"></div>
-    <div class="err-msg" id="editErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeEditModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveEdit()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar cambios</button>
-    </div>
-  </div>
-</div>
-
-<!-- NEW USER MODAL -->
-<div class="overlay" id="userModalOverlay">
-  <div class="modal" style="max-width:720px">
-    <div class="modal-title">Nuevo usuario</div>
-    <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#1e40af;display:flex;gap:8px">
-      <span style="font-size:16px">📧</span>
-      <span>Al crear el usuario, se generará una contraseña segura automáticamente y recibirá un correo oficial de Firebase para configurarla.</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <!-- Fila 1: Datos básicos -->
-      <div class="form-grid">
-        <div class="form-group"><label>Nombre completo *</label><input type="text" id="uNombre" placeholder="Nombre y apellidos"></div>
-        <div class="form-group"><label>Correo FERCO *</label><input type="email" id="uEmail" placeholder="correo@ferco.com.gt"></div>
-      </div>
-      <!-- Fila 2: País + Área (2 columnas) -->
-      <div class="form-grid">
-        <div class="form-group">
-          <label>País *</label>
-          <select id="uPais" onchange="onPaisChange()">
-            <option value="">— Selecciona el país —</option>
-            <option>Guatemala</option>
-            <option>El Salvador</option>
-            <option>Honduras</option>
-            <option>México</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Área *</label>
-          <select id="uArea" onchange="onAreaChange()" disabled>
-            <option value="">— Selecciona el país primero —</option>
-          </select>
-        </div>
-      </div>
-      <!-- Puesto / Rol (dropdown dinámico) -->
-      <div class="form-group">
-        <label>Puesto / Rol *</label>
-        <select id="uCargo" onchange="onPuestoChange()" disabled>
-          <option value="">— Selecciona el área primero —</option>
-        </select>
-      </div>
-      <!-- Reporta a (define la jerarquía) -->
-      <div class="form-group">
-        <label>Reporta a <span style="color:#94a3b8;font-size:12px">(define la jerarquía)</span></label>
-        <select id="uReportaA"><option value="">— Sin asignación —</option></select>
-      </div>
-      <!-- RH Global (solo visible para rh/esRhGlobal, al final) -->
-      <div class="form-group" id="uRhGlobalWrap" style="display:none;background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:10px 14px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin:0">
-          <input type="checkbox" id="uEsRhGlobal" style="width:16px;height:16px;accent-color:#7c3aed">
-          <span>Designar como <strong>RH Global</strong> — acceso transversal a todos los planes de todos los países</span>
-        </label>
-      </div>
-    </div>
-    <div class="err-msg" id="userErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeUserModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btnCrearUsuario" onclick="saveUser()">Crear usuario</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CAMBIAR CONTRASEÑA -->
-<div class="overlay" id="chpassOverlay">
-  <div class="chpass-modal">
-    <div class="modal-title">🔑 Cambiar contraseña</div>
-    <p style="font-size:12px;color:var(--muted)">Ingresa tu nueva contraseña. Debe tener al menos 6 caracteres.</p>
-    <div class="form-group">
-      <label>Nueva contraseña *</label>
-      <input type="password" id="chpassInput" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doChangePass()">
-    </div>
-    <div class="err-msg" id="chpassErr"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeChPass()">Cancelar</button>
-      <button class="btn btn-primary" onclick="doChangePass()">Actualizar contraseña</button>
-    </div>
-  </div>
-</div>
-
-<!-- NUEVO UNO A UNO MODAL -->
-<div class="overlay" id="uauModalOverlay">
-  <div class="modal" style="width:720px;max-width:98vw">
-    <div class="modal-title" style="display:flex;align-items:center;gap:10px">
-      <span style="background:var(--gold);color:var(--dark);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800">UNO A UNO</span>
-      Nuevo Uno a Uno
-    </div>
-    <div class="mtabs" id="uauTabs">
-      <div class="mtab active" onclick="goUauTab(0,this)">1. Datos Generales</div>
-      <div class="mtab" onclick="goUauTab(1,this)">2. Indicadores</div>
-      <div class="mtab" onclick="goUauTab(2,this)">3. Resumen y Compromisos</div>
-    </div>
-    <div id="uauTabContent" style="flex:1;padding:16px;overflow:auto;max-height:55vh"></div>
-    <div class="err-msg" id="uauErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeUauModal()">Cancelar</button>
-      <button class="btn" id="uauBtnPrev" onclick="prevUauTab()" style="display:none">← Anterior</button>
-      <button class="btn btn-primary" id="uauBtnNext" onclick="nextUauTab()">Siguiente →</button>
-      <button class="btn btn-gold" id="uauBtnSave" onclick="saveUnoAUno()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- UAU SEGUIMIENTO MODAL -->
-<div class="overlay" id="uauSegOverlay">
-  <div class="uau-seg-modal">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-      <span style="background:var(--gold);color:var(--dark);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800">UNO A UNO</span>
-      <span class="modal-title" style="margin:0">Registrar seguimiento semanal</span>
-    </div>
-    <div class="mtabs" id="uauSegTabs" style="margin-bottom:0">
-      <div class="mtab active" onclick="goUauSegTab(0,this)">Indicadores</div>
-      <div class="mtab" onclick="goUauSegTab(1,this)">Resumen y Compromisos</div>
-    </div>
-    <div id="uauSegTabContent" style="flex:1;padding:4px 0;overflow:auto;max-height:50vh"></div>
-    <div class="err-msg" id="uauSegErrMsg"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeUauSeg()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveUauSeg()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Guardar seguimiento</button>
-    </div>
-  </div>
-</div>
-
-<div class="print-area" id="printArea"></div>
-
-<script type="module">
-import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+// import removed
+// import removed
   createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail,
   setPersistence, browserSessionPersistence }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc,
+// import removed
   updateDoc, deleteDoc, query, where, serverTimestamp, orderBy }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject }
+// import removed
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -2396,7 +22,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-await setPersistence(auth, browserSessionPersistence);
+// await removed
 const db = getFirestore(app);
 const storage = getStorage(app);
 
@@ -2517,25 +143,14 @@ const FERCO_HIERARCHY={
     "Comercial":{
       "Director Comercial GT":{
         "Gerente Mayoreo":          {sub:{"KAM":{}}},
-        "Director Retail":          {sub:{
-        "Regional Marlon":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Regional Sandra":  {sub:{"Zona Eva":{sub:{"Gerente de Sucursal":{}}},"Gerente de Sucursal":{}}},
-        "Regional Carlos":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Regional Freddy":  {sub:{
-          "Gerente de Sucursal":{sub:{"Asesor Comercial":{}}},
-          "Zona Diego":     {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Selvin":    {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Jose":      {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Giovany":   {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}
-        }}
-      }},
+        "Director Retail":          {sub:{"Regional":{sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}}}},
         "Gerente de Proyectos":     {sub:{"KAM":{}}},
-        "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"Asesor Comercial":{}}}}}
+        "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"AC":{}}}}}
       }
     },
     "Operaciones":{
       "COO":{
-        "Gerente de Operaciones GT":{sub:{"Gerente HUB":{sub:{"Jefe de CEDI":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}}}}}},
+        "Gerente de Operaciones GT":{sub:{"Gerente HUB":{sub:{"Jefe de CEDI":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}}}}}}},
         "Coordinador de Servicio al Cliente":{sub:{"Servicio al Cliente":{}}}
       }
     },
@@ -2597,7 +212,7 @@ const FERCO_HIERARCHY={
   "El Salvador":{
     "Comercial":{
       "Director Comercial SV":{
-        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+        "Regional":             {sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -2611,8 +226,8 @@ const FERCO_HIERARCHY={
   "Honduras":{
     "Comercial":{
       "Director Comercial HN":{
-        "Gerente de Sucursal":             {sub:{"Asesor Comercial":{}}},
-        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+        "Sucursal":             {sub:{"AC":{}}},
+        "Regional":             {sub:{"Sucursal":{sub:{"AC":{}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}}
       }
     },
@@ -2625,7 +240,7 @@ const FERCO_HIERARCHY={
   "México":{
     "Comercial":{
       "Director Comercial MX":{
-        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}}},
+        "Regional":             {sub:{"Zona":{sub:{"Sucursal":{sub:{"AC":{}}}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -3131,28 +746,21 @@ async function buildQuery(colName){
   }
   if(rol==='regional') return getDocs(query(collection(db,colName),where('region','==',userProfile.region)));
   if(rol==='zona') return getDocs(query(collection(db,colName),where('zona','==',userProfile.zona)));
-  if(ADMIN_HIERARCHY.includes(rol)){const _pais=userProfile.pais||'';if(!_pais)return{docs:[]};return getDocs(query(collection(db,colName),where('pais','==',_pais)));  }
+  if(ADMIN_HIERARCHY.includes(rol)) return getDocs(query(collection(db,colName),where('pais','==',userProfile.pais||'')));
   return getDocs(query(collection(db,colName),where('liderUid','==',currentUser.uid)));
 }
 
 async function loadPlanes(){
   document.getElementById('kanbanArea').innerHTML='<div class="loading"><div class="spinner"></div> Cargando...</div>';
-  const safeQuery=async(col)=>{
-    try{return await buildQuery(col);}catch(e){
-      console.warn('buildQuery fallback para',col,e);
-      try{return await getDocs(query(collection(db,col),where('liderUid','==',currentUser.uid)));}
-      catch(e2){console.error('buildQuery fallback error',e2);return{docs:[]};}
-    }
-  };
   try{
     const rol=userProfile.rol;
     const isRH=rol==='rh';
     const isAdmin=isAdminArea(userProfile);
     const isCom=!isAdmin||isRH;
     const promises=[];
-    if(isRH||isAdmin) promises.push(safeQuery('planes').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'fortalecimiento'}))));
+    if(isRH||isAdmin) promises.push(buildQuery('planes').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'fortalecimiento'}))));
     else promises.push(Promise.resolve([]));
-    if(isRH||isCom) promises.push(safeQuery('unoauno').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'unoauno'}))));
+    if(isRH||isCom) promises.push(buildQuery('unoauno').then(s=>s.docs.map(d=>({id:d.id,...d.data(),tipo:'unoauno'}))));
     else promises.push(Promise.resolve([]));
     const [fort,uau]=await Promise.all(promises);
     allPlanes=[...fort,...uau];
@@ -4894,7 +2502,7 @@ async function loadUsers(){
         const areaKey = countryKey + '_a_' + aIdx;
         
         let usersHtml = '<div class="user-grid">';
-        users.forEach((u, uIdx) => {
+        users.forEach(u => {
           // Cargo: usar u.cargo si existe, si no el rolLabel del rol legacy
           const cargoDisplay = u.cargo || rolLabel(u.rol) || u.rol || '—';
           // Área badge con color
@@ -4914,7 +2522,7 @@ async function loadUsers(){
           }
 
           usersHtml += `
-            <div class="user-card-premium" style="animation-delay:${uIdx*55}ms">
+            <div class="user-card-premium">
               <div class="uc-top">
                 <div class="uc-info">
                   <div class="uc-name">${escHtml(u.nombre||'—')}</div>
@@ -4988,269 +2596,193 @@ async function loadUsers(){
 window.openUserModal=()=>{
   document.getElementById('userModalOverlay').classList.add('open');
   hideErr('userErrMsg');
-  ['uNombre','uEmail'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
+  // Limpiar campos básicos
+  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Resetear País y Área
   document.getElementById('uPais').value='';
   const areaSel=document.getElementById('uArea');
-  areaSel.value='';areaSel.disabled=true;
+  areaSel.value='';
+  areaSel.disabled=true;
   areaSel.innerHTML='<option value="">— Selecciona el país primero —</option>';
-  const cargoSel=document.getElementById('uCargo');
-  cargoSel.value='';cargoSel.disabled=true;
-  cargoSel.innerHTML='<option value="">— Selecciona el área primero —</option>';
+  // Limpiar niveles dinámicos y cargo
+  document.getElementById('uNivelRows').innerHTML='';
+  document.getElementById('uCargoWrap').style.display='none';
   document.getElementById('uEsRhGlobal').checked=false;
+  // Mostrar checkbox RH Global solo a usuarios rh / esRhGlobal
   document.getElementById('uRhGlobalWrap').style.display=
     (userProfile?.rol==='rh'||userProfile?.esRhGlobal)?'':'none';
   populateReportaA();
 };
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
-// País cambia → habilitar Área
-window.onPaisChange=()=>{
-  const pais = document.getElementById('uPais').value;
-  const areaSelect = document.getElementById('uArea');
-  const cargoSelect = document.getElementById('uCargo');
-  const repSelect = document.getElementById('uReportaA');
-  
-  cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>';
-  cargoSelect.disabled=true;
-  repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
-  
-  if(!pais){
-    areaSelect.innerHTML='<option value="">— Selecciona el país primero —</option>';
-    areaSelect.disabled=true;
-    return;
-  }
-  
-  const areas = new Set();
-  RAW_HIERARCHY.forEach(row => {
-    if(row[0] === pais && row[1]) areas.add(row[1]);
-  });
-  
-  let aHtml = '<option value="">— Selecciona el área —</option>';
-  Array.from(areas).sort().forEach(a => aHtml += `<option>${a}</option>`);
-  areaSelect.innerHTML = aHtml;
-  areaSelect.disabled = false;
-}
-
-// Extrae todos los nombres de cargo únicos de un nodo de FERCO_HIERARCHY
-function flattenPuestos(node){
-  const result=new Set();
-  function traverse(obj){
-    if(!obj||typeof obj!=='object') return;
-    const children=('sub' in obj)?obj.sub:obj;
-    if(!children||typeof children!=='object') return;
-    for(const[key,val] of Object.entries(children)){
-      result.add(key);
-      traverse(val);
-    }
-  }
-  traverse(node);
-  return[...result];
-}
-
-// Poblar dropdown de Puesto según País+Área
-function populatePuestos(){
-  const pais=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea').value;
-  const sel=document.getElementById('uCargo');
-  sel.innerHTML='<option value="">— Selecciona el puesto —</option>';
-  sel.disabled=true;
-  if(!pais||!area) return;
-  const areaNode=FERCO_HIERARCHY[pais]?.[area];
-  if(!areaNode){sel.disabled=false;return;}
-  flattenPuestos(areaNode).forEach(p=>{
-    const o=document.createElement('option');
-    o.value=p;o.textContent=p;
-    sel.appendChild(o);
-  });
-  sel.disabled=false;
-}
-
-// Área cambia → poblar Puesto
-window.onAreaChange=()=>{
-  const pais = document.getElementById('uPais').value;
-  const area = document.getElementById('uArea').value;
-  const cargoSelect = document.getElementById('uCargo');
-  const repSelect = document.getElementById('uReportaA');
-  
-  repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
-  
-  if(!area){
-    cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>';
-    cargoSelect.disabled=true;
-    return;
-  }
-  
-  const cargos = new Set();
-  RAW_HIERARCHY.forEach(row => {
-    if(row[0] === pais && row[1] === area) {
-      for(let i=2; i<row.length; i++){
-        if(row[i]){
-          const parts = row[i].split('/');
-          parts.forEach(p => cargos.add(p.trim()));
-        }
-      }
-    }
-  });
-  
-  let cHtml = '<option value="">— Selecciona el puesto / rol —</option>';
-  Array.from(cargos).sort().forEach(c => cHtml += `<option>${c}</option>`);
-  cargoSelect.innerHTML = cHtml;
-  cargoSelect.disabled = false;
-};
-
-// Puesto cambia → actualizar Reporta a
-window.onPuestoChange=()=>{
-  populateReportaA();
-};
-
-// Poblar Reporta A: filtro jerárquico superior + fallback a todos
+// Poblar el selector Reporta A
 function populateReportaA(){
   const sel=document.getElementById('uReportaA');
   sel.innerHTML='<option value="">— Sin asignación —</option>';
-  const pais=document.getElementById('uPais')?.value||'';
-  const area=document.getElementById('uArea')?.value||'';
-  const cargo=document.getElementById('uCargo')?.value||'';
-  if(cargo&&pais&&area){
-    const ROL_ORDER=['sucursal','zona','regional','director'];
-    const cargoRol=deriveRolLegacy(cargo,area,'');
-    const cargoLevel=ROL_ORDER.indexOf(cargoRol);
-    const filtered=allUsers.filter(u=>{
-      const uLevel=ROL_ORDER.indexOf(u.rol);
-      const isRh=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
-      const samePaisArea=(u.pais===pais&&(u.area===area||isRh));
-      return samePaisArea&&(isRh||(cargoLevel>=0&&uLevel>cargoLevel));
-    });
-    // Fallback: si no hay superiores en mismo país/área, buscar en todos pero
-    // respetando siempre el nivel (nunca mostrar igual o inferior rango)
-    const fallback=allUsers.filter(u=>{
-      const isRhU=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
-      const uLvl=ROL_ORDER.indexOf(u.rol);
-      return isRhU||(cargoLevel>=0&&uLvl>cargoLevel);
-    });
-    const users=filtered.length>0?filtered:fallback;
-    users.forEach(function(u){
-      const o=document.createElement('option');
-      o.value=u.uid;
-      o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
-      sel.appendChild(o);
-    });
-    return;
-  }
-  allUsers.forEach(function(u){
+  allUsers.forEach(u=>{
     const o=document.createElement('option');
     o.value=u.uid;
-    o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
+    o.textContent=`${u.nombre} (${u.cargo||rolLabel(u.rol)||u.rol||'—'})`;
     sel.appendChild(o);
   });
 }
 
-// Mapea cargo + área → rol legacy (compatibilidad con getSubordinateUids)
-function deriveRolLegacy(cargo, area, reportaA, nivel=99) {
-  if (area !== 'Comercial') {
-     if(nivel <= 2) return 'dir_admin';
-     if(nivel === 3) return 'gerente_admin';
-     if(nivel === 4) return 'jefe_admin';
-     return 'admin';
-  } else {
-     if(nivel <= 2) return 'director';
-     if(nivel === 3) return 'regional';
-     if(nivel === 4) return 'zona';
-     return 'sucursal';
+// Manejo de cambio en cualquier nivel de jerarquía (arranca en nivel 3)
+window.onNivelChange=(nivel)=>{
+  // Eliminar niveles posteriores
+  for(let n=nivel+1;n<=8;n++){
+    const el=document.getElementById(`uNivel${n}Row`);if(el)el.remove();
   }
+  updateCargoBadge();
+  // Navegar por el árbol: País → Área → nivel3…nivelN
+  const pais=document.getElementById('uPais').value;
+  const area=document.getElementById('uArea').value;
+  let node=FERCO_HIERARCHY[pais]?.[area];
+  for(let n=3;n<=nivel;n++){
+    const val=document.getElementById(`uNivel${n}`)?.value;
+    if(!val) return;
+    node=node?.[val]?.sub||node?.[val];
+    if(!node) return;
+  }
+  // Renderizar siguiente nivel si hay hijos
+  const children=node?.sub||(typeof node==='object'&&!node.sub?node:null);
+  if(children&&Object.keys(children).length>0) renderNivelRow(nivel+1,children);
+  updateCargoBadge();
+};
+
+function updateCargoBadge(){
+  let cargo='';
+  for(let n=8;n>=3;n--){
+    const v=document.getElementById(`uNivel${n}`)?.value;
+    if(v){cargo=v;break;}
+  }
+  const wrap=document.getElementById('uCargoWrap');
+  if(cargo){document.getElementById('uCargo').value=cargo;wrap.style.display='';}
+  else wrap.style.display='none';
 }
 
+function renderNivelRow(nivel,nodeOrSub){
+  const children=nodeOrSub?.sub||nodeOrSub;
+  if(!children||Object.keys(children).length===0) return;
+  const row=document.createElement('div');
+  row.id=`uNivel${nivel}Row`;
+  row.className='form-group';
+  row.innerHTML=`<label>Nivel ${nivel}</label>
+    <select id="uNivel${nivel}" onchange="onNivelChange(${nivel})">
+      <option value="">— Selecciona —</option>
+      ${Object.keys(children).map(k=>`<option value="${escHtml(k)}">${escHtml(k)}</option>`).join('')}
+    </select>`;
+  document.getElementById('uNivelRows').appendChild(row);
+}
+
+window.onPaisChange=()=>{
+  const pais=document.getElementById('uPais').value;
+  const areaSel=document.getElementById('uArea');
+  areaSel.innerHTML='<option value="">— Selecciona el área —</option>';
+  document.getElementById('uNivelRows').innerHTML='';
+  updateCargoBadge();
+  if(!pais){areaSel.disabled=true;return;}
+  const areas=Object.keys(FERCO_HIERARCHY[pais]||{});
+  areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
+  areaSel.disabled=false;
+};
+
+window.onAreaChange=()=>{
+  const pais=document.getElementById('uPais').value;
+  const area=document.getElementById('uArea').value;
+  document.getElementById('uNivelRows').innerHTML='';
+  updateCargoBadge();
+  if(!area) return;
+  const node=FERCO_HIERARCHY[pais]?.[area];
+  if(!node) return;
+  renderNivelRow(3,node);
+};
+
+// Mapea cargo + área → rol legacy (compatibilidad con getSubordinateUids)
+function deriveRolLegacy(cargo,area,nivel3){
+  if(area==='Comercial'){
+    if(['Director Comercial GT','Director Comercial SV','Director Comercial HN','Director Comercial MX'].includes(cargo)) return 'director';
+    if(cargo==='Director Retail') return 'regional';
+    if(cargo==='Regional') return 'regional';
+    if(cargo==='Zona') return 'zona';
+    if(cargo==='Sucursal'||cargo==='AC'||cargo==='KAM') return 'sucursal';
+    return 'regional';
+  }
+  const map={'Recursos Humanos':'jefe_admin','Finanzas':'gerente_admin',
+             'Operaciones':'gerente_admin','Categorías':'gerente_admin',
+             'Construcción y Desarrollo':'jefe_admin','IT':'gerente_admin'};
+  return map[area]||'coordinador_admin';
+}
 
 window.saveUser=async()=>{
   const nombre=document.getElementById('uNombre').value.trim();
   const email=document.getElementById('uEmail').value.trim();
   const pais=document.getElementById('uPais')?.value||'';
   const area=document.getElementById('uArea')?.value||'';
-  const cargo=document.getElementById('uCargo')?.value.trim()||'';
-  const reportaA=document.getElementById('uReportaA')?.value||'';
+  const cargo=document.getElementById('uCargo')?.value||'';
   const esRhGlobal=document.getElementById('uEsRhGlobal')?.checked||false;
+  const reportaA=document.getElementById('uReportaA')?.value||'';
+
+  // Recopilar path jerárquico (niveles 3-8)
+  const jerarquia={};
+  for(let n=3;n<=8;n++){
+    const v=document.getElementById(`uNivel${n}`)?.value;
+    if(v) jerarquia[`nivel${n}`]=v;
+  }
+  const nivel3=jerarquia.nivel3||'';
 
   // Validaciones
   if(!nombre||!email){showErr('userErrMsg','Completa el nombre y correo del usuario.');return;}
   if(!pais||!area){showErr('userErrMsg','Selecciona el país y el área.');return;}
-  if(!cargo){showErr('userErrMsg','Escribe el cargo o puesto.');return;}
+  if(!cargo){showErr('userErrMsg','Selecciona el cargo en la jerarquía.');return;}
 
   // Derivar rol legacy para compatibilidad con acceso control
-  const nivel = parseInt(document.getElementById('uCargo').dataset.nivel || '99', 10);
-  const rolLegacy=esRhGlobal?'rh_global':deriveRolLegacy(cargo,area,reportaA, nivel);
+  const rolLegacy=esRhGlobal?'rh':deriveRolLegacy(cargo,area,nivel3);
 
   // Generar contraseña aleatoria de 16 caracteres
   const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let pass='';
   for(let i=0;i<16;i++) pass+=chars.charAt(Math.floor(Math.random()*chars.length));
 
-  // Animación de carga en el botón
-  const btnCrear=document.getElementById('btnCrearUsuario');
-  const spinnerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Creando...</span>';
-  if(btnCrear){btnCrear.disabled=true;btnCrear.innerHTML=spinnerHTML;}
-
-  let secondaryApp=null;
-  let createdUid=null;
   try{
-    secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
+    const secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
     const secondaryAuth=getAuth(secondaryApp);
-
-    // 1. Crear cuenta en Firebase Auth
     const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
-    createdUid=cred.user.uid;
+    const uid=cred.user.uid;
+    await sendPasswordResetEmail(secondaryAuth,email);
+    await signOut(secondaryAuth);
+    await deleteApp(secondaryApp);
 
-    // 2. Guardar perfil usando la db principal (Monica está autenticada)
-    //    Si falla por reglas, intentar con db del nuevo usuario
     const profile={
-      nombre,email,cargo,
+      nombre,email,
+      cargo,
       area:esRhGlobal?'rh_global':area,
+      ...jerarquia,
       pais:esRhGlobal?'Global':(pais||''),
-      esRhGlobal,rol:rolLegacy,reportaA
+      esRhGlobal,
+      rol:rolLegacy,
+      reportaA
     };
-    let writeOk=false;
-    try{
-      await setDoc(doc(db,'users',createdUid),profile);
-      writeOk=true;
-    }catch(writeErr){
-      console.warn('Write con db primario falló, intentando con db secundario:',writeErr.code);
-      const secondaryDb=getFirestore(secondaryApp);
-      await setDoc(doc(secondaryDb,'users',createdUid),profile);
-      writeOk=true;
-    }
-
-    // 3. Enviar reset de contraseña
-    try{await sendPasswordResetEmail(secondaryAuth,email);}catch(_){}
-
-    // 4. Cerrar sesión secundaria (fire-and-forget, no bloquea)
-    signOut(secondaryAuth).catch(()=>{});
-    deleteApp(secondaryApp).catch(()=>{});
-    secondaryApp=null;
-
-    if(writeOk){
-      allUsers.push({uid:createdUid,...profile});
-      closeUserModal();
-      loadUsers();
-      showToast(`Usuario "${nombre}" creado. Se enviará un correo para configurar la contraseña.`);
-      sendEmailNotification(
-        email,'¡Bienvenido a Ferco Planes de Fortalecimiento!',
-        `<p>Hola ${nombre},</p><p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p><p>Has recibido otro correo oficial para configurar tu contraseña.</p><p>Saludos,<br>El equipo de Recursos Humanos</p>`
-      ).catch(()=>{});
-    }
-
+    await setDoc(doc(db,'users',uid),profile);
+    allUsers.push({uid,...profile});
+    closeUserModal();
+    loadUsers();
+    showToast(`Usuario "${nombre}" creado. Se enviará un correo para configurar la contraseña.`);
+    await sendEmailNotification(
+      email,
+      '¡Bienvenido a Ferco Planes de Fortalecimiento!',
+      `<p>Hola ${nombre},</p>
+      <p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p>
+      <p>Has recibido otro correo oficial para configurar tu contraseña.</p>
+      <p>Saludos,<br>El equipo de Recursos Humanos</p>`
+    );
   }catch(e){
-    console.error('Error creando usuario:',e);
     if(e.code==='auth/email-already-in-use'){
-      showErr('userErrMsg','Este correo ya está registrado. Usa un correo diferente.');
-    }else if(e.code==='auth/invalid-email'){
-      showErr('userErrMsg','El correo no tiene un formato válido.');
-    }else if(e.code==='auth/network-request-failed'){
-      showErr('userErrMsg','Error de red. Verifica tu conexión e inténtalo de nuevo.');
+      showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
     }else{
-      showErr('userErrMsg',`Error (${e.code||e.message||'desconocido'}). Intenta de nuevo.`);
+      console.error('Error creando usuario:',e);
+      showErr('userErrMsg','No se pudo crear el usuario. Verifica los campos e inténtalo de nuevo.');
     }
-  }finally{
-    // Siempre restaurar el botón y limpiar la app secundaria
-    if(secondaryApp){deleteApp(secondaryApp).catch(()=>{});}
-    if(btnCrear){btnCrear.disabled=false;btnCrear.innerHTML='Crear usuario';}
   }
 };
 
@@ -5873,6 +3405,3 @@ function buildUauPrintDoc(p){
     <div class="psigs"><div><div class="psig">${p.asesor||'Asesor'}</div></div><div><div class="psig">${p.lider||'Líder'}</div></div></div>
   </div>`;
 }
-</script>
-</body>
-</html>

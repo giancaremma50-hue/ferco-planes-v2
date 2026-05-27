@@ -1,0 +1,82 @@
+You are given a task to integrate an existing React component in the codebase
+
+The codebase should support:
+- shadcn project structure  
+- Tailwind CSS
+- Typescript
+
+If it doesn't, provide instructions on how to setup project via shadcn CLI, install Tailwind or Typescript.
+
+Determine the default path for components and styles. 
+If default path for components is not /components/ui, provide instructions on why it's important to create this folder
+Copy-paste this component to /components/ui folder:
+```tsx
+lucide-icon-drawer.tsx
+import { animate, svg } from 'animejs';
+import { useEffect, useRef } from 'react';
+
+export function useLucideDrawerAnimation() {
+  const root = useRef(null);
+
+  useEffect(() => {
+    if (root.current) {
+      const svgElements = root.current.querySelectorAll('svg path, svg circle, svg polyline');
+      svgElements.forEach((element) => element.classList.add('line'));
+      animate(svg.createDrawable('.line'), {
+        draw: ['0 0.05', '0.05 1'],
+        ease: 'inOutQuad',
+        duration: 1000,
+        loop: true,
+        alternate: true,
+        playbackrate: 1,
+      });
+    }
+  }, []);
+
+  return root;
+}
+
+
+demo.tsx
+import { Atom, CircleArrowDown, Zap, Heart } from 'lucide-react';
+import { useLucideDrawerAnimation } from "@/components/ui/lucide-icon-drawer";
+
+export function Demo() {
+  const root = useLucideDrawerAnimation();
+
+  return (
+    <div ref={root} className="flex flex-col items-center gap-4">
+      <div className="flex flex-row gap-4">
+        <Atom size={48} className="text-cyan-400" />
+        <CircleArrowDown size={48} />
+        <Zap size={48} className="text-yellow-400"/>
+        <Heart size={48} className="text-red-600" />
+      </div>
+      <span className="text-sm text-neutral-400">Used Lucide Icon</span>
+    </div>
+  );
+}
+
+```
+
+Install NPM dependencies:
+```bash
+animejs, lucide-react
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's argumens and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+ - What data/props will be passed to this component?
+ - Are there any specific state management requirements?
+ - Are there any required assets (images, icons, etc.)?
+ - What is the expected responsive behavior?
+ - What is the best place to use this component in the app?
+
+Steps to integrate
+ 0. Copy paste all the code above in the correct directories
+ 1. Install external dependencies
+ 2. Fill image assets with Unsplash stock images you know exist
+ 3. Use lucide-react icons for svgs or logos if component requires them
