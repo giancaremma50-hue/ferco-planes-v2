@@ -1,4 +1,14 @@
 import { db, auth, storage } from "./firebase-config.js";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, updatePassword, sendPasswordResetEmail,
+  setPersistence, browserSessionPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, doc, addDoc, getDoc, getDocs, setDoc,
+  updateDoc, deleteDoc, query, where, serverTimestamp, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
 
 // ── UTILIDADES DE CORREO ──────────────────────────────────────────────────────
 async function sendEmailNotification(to, subject, html) {
