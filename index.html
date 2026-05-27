@@ -4987,20 +4987,29 @@ async function loadUsers(){
 }
 
 window.openUserModal=()=>{
+  document.getElementById('uNombre').value='';
+  document.getElementById('uEmail').value='';
+  const rhWrap=document.getElementById('uRhGlobalWrap');
+  if(rhWrap) rhWrap.style.display=(currentUser&&currentUser.esRhGlobal)?'block':'none';
+  const rhCheck=document.getElementById('uEsRhGlobal');
+  if(rhCheck) rhCheck.checked=false;
+  
+  const paises = new Set();
+  RAW_HIERARCHY.forEach(row => { if(row[0]) paises.add(row[0]); });
+  let pHtml = '<option value="">— Selecciona el país —</option>';
+  Array.from(paises).sort().forEach(p => pHtml += `<option>${p}</option>`);
+  document.getElementById('uPais').innerHTML = pHtml;
+  document.getElementById('uPais').value = '';
+  
+  document.getElementById('uArea').innerHTML='<option value="">— Selecciona el país primero —</option>';
+  document.getElementById('uArea').disabled=true;
+  document.getElementById('uCargo').innerHTML='<option value="">— Selecciona el área primero —</option>';
+  document.getElementById('uCargo').disabled=true;
+  document.getElementById('uReportaA').innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
+  
+  const err=document.getElementById('userErrMsg');
+  if(err) err.style.display='none';
   document.getElementById('userModalOverlay').classList.add('open');
-  hideErr('userErrMsg');
-  ['uNombre','uEmail'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
-  document.getElementById('uPais').value='';
-  const areaSel=document.getElementById('uArea');
-  areaSel.value='';areaSel.disabled=true;
-  areaSel.innerHTML='<option value="">— Selecciona el país primero —</option>';
-  const cargoSel=document.getElementById('uCargo');
-  cargoSel.value='';cargoSel.disabled=true;
-  cargoSel.innerHTML='<option value="">— Selecciona el área primero —</option>';
-  document.getElementById('uEsRhGlobal').checked=false;
-  document.getElementById('uRhGlobalWrap').style.display=
-    (userProfile?.rol==='rh'||userProfile?.esRhGlobal)?'':'none';
-  populateReportaA();
 };
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
@@ -5097,11 +5106,6 @@ window.onAreaChange=()=>{
   Array.from(cargos).sort().forEach(c => cHtml += `<option>${c}</option>`);
   cargoSelect.innerHTML = cHtml;
   cargoSelect.disabled = false;
-};
-
-// Puesto cambia → actualizar Reporta a
-window.onPuestoChange=()=>{
-  populateReportaA();
 };
 
 // Poblar Reporta A: filtro jerárquico superior + fallback a todos
