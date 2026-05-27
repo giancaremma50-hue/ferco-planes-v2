@@ -5041,112 +5041,69 @@ window.onPaisChange=()=>{
   areaSelect.disabled = false;
 }
 
-// Extrae todos los nombres de cargo únicos de un nodo de FERCO_HIERARCHY
-function flattenPuestos(node){
-  const result=new Set();
-  function traverse(obj){
-    if(!obj||typeof obj!=='object') return;
-    const children=('sub' in obj)?obj.sub:obj;
-    if(!children||typeof children!=='object') return;
-    for(const[key,val] of Object.entries(children)){
-      result.add(key);
-      traverse(val);
-    }
-  }
-  traverse(node);
-  return[...result];
-}
 
-// Poblar dropdown de Puesto según País+Área
-function populatePuestos(){
-  const pais=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea').value;
-  const sel=document.getElementById('uCargo');
-  sel.innerHTML='<option value="">— Selecciona el puesto —</option>';
-  sel.disabled=true;
-  if(!pais||!area) return;
-  const areaNode=FERCO_HIERARCHY[pais]?.[area];
-  if(!areaNode){sel.disabled=false;return;}
-  flattenPuestos(areaNode).forEach(p=>{
-    const o=document.createElement('option');
-    o.value=p;o.textContent=p;
-    sel.appendChild(o);
-  });
-  sel.disabled=false;
-}
-
-// Área cambia → poblar Puesto
-window.onAreaChange=()=>{
+window.onPuestoChange=()=>{
   const pais = document.getElementById('uPais').value;
   const area = document.getElementById('uArea').value;
-  const cargoSelect = document.getElementById('uCargo');
+  const cargo = document.getElementById('uCargo').value;
   const repSelect = document.getElementById('uReportaA');
   
-  repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
-  
-  if(!area){
-    cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>';
-    cargoSelect.disabled=true;
+  if(!cargo){
+    repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
     return;
   }
   
-  const cargos = new Set();
+  const parentPositions = new Set();
+  let cargoNivel = 99;
+  
   RAW_HIERARCHY.forEach(row => {
     if(row[0] === pais && row[1] === area) {
       for(let i=2; i<row.length; i++){
         if(row[i]){
-          const parts = row[i].split('/');
-          parts.forEach(p => cargos.add(p.trim()));
+          const parts = row[i].split('/').map(p=>p.trim());
+          if(parts.includes(cargo)){
+            if (i < cargoNivel) cargoNivel = i;
+            if(i-1 >= 2) {
+               const parentVal = row[i-1];
+               if(parentVal){
+                 const pParts = parentVal.split('/').map(p=>p.trim());
+                 pParts.forEach(p => parentPositions.add(p));
+               }
+            }
+          }
         }
       }
     }
   });
   
-  let cHtml = '<option value="">— Selecciona el puesto / rol —</option>';
-  Array.from(cargos).sort().forEach(c => cHtml += `<option>${c}</option>`);
-  cargoSelect.innerHTML = cHtml;
-  cargoSelect.disabled = false;
-};
+  document.getElementById('uCargo').dataset.nivel = cargoNivel;
+  window.populateReportaA(Array.from(parentPositions), pais, area);
+}
 
-// Poblar Reporta A: filtro jerárquico superior + fallback a todos
-function populateReportaA(){
-  const sel=document.getElementById('uReportaA');
-  sel.innerHTML='<option value="">— Sin asignación —</option>';
-  const pais=document.getElementById('uPais')?.value||'';
-  const area=document.getElementById('uArea')?.value||'';
-  const cargo=document.getElementById('uCargo')?.value||'';
-  if(cargo&&pais&&area){
-    const ROL_ORDER=['sucursal','zona','regional','director'];
-    const cargoRol=deriveRolLegacy(cargo,area,'');
-    const cargoLevel=ROL_ORDER.indexOf(cargoRol);
-    const filtered=allUsers.filter(u=>{
-      const uLevel=ROL_ORDER.indexOf(u.rol);
-      const isRh=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
-      const samePaisArea=(u.pais===pais&&(u.area===area||isRh));
-      return samePaisArea&&(isRh||(cargoLevel>=0&&uLevel>cargoLevel));
-    });
-    // Fallback: si no hay superiores en mismo país/área, buscar en todos pero
-    // respetando siempre el nivel (nunca mostrar igual o inferior rango)
-    const fallback=allUsers.filter(u=>{
-      const isRhU=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
-      const uLvl=ROL_ORDER.indexOf(u.rol);
-      return isRhU||(cargoLevel>=0&&uLvl>cargoLevel);
-    });
-    const users=filtered.length>0?filtered:fallback;
-    users.forEach(function(u){
-      const o=document.createElement('option');
-      o.value=u.uid;
-      o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
-      sel.appendChild(o);
-    });
-    return;
+window.populateReportaA=(parentPositions, pais, area)=>{
+  const repSelect = document.getElementById('uReportaA');
+  let rHtml = '<option value="">— Sin asignación (Opcional) —</option>';
+  
+  let filterUsers = allUsers.filter(u => u.pais === pais || u.esRhGlobal || u.pais === 'Global');
+  
+  if(parentPositions && parentPositions.length > 0) {
+     filterUsers = filterUsers.filter(u => parentPositions.includes(u.cargo) || u.esRhGlobal);
   }
-  allUsers.forEach(function(u){
-    const o=document.createElement('option');
-    o.value=u.uid;
-    o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
-    sel.appendChild(o);
+  
+  const rhGlobals = allUsers.filter(u => u.esRhGlobal);
+  const regular = filterUsers.filter(u => !u.esRhGlobal && parentPositions && parentPositions.includes(u.cargo));
+  
+  const toShow = (parentPositions && parentPositions.length > 0) ? [...rhGlobals, ...regular] : filterUsers;
+  
+  const seen = new Set();
+  toShow.forEach(u => {
+    if(!seen.has(u.uid)) {
+      seen.add(u.uid);
+      rHtml += `<option value="${u.uid}">${u.nombre} (${u.cargo || 'RH Global'})</option>`;
+    }
   });
+  
+  repSelect.innerHTML = rHtml;
 }
 
 // Mapea cargo + área → rol legacy (compatibilidad con getSubordinateUids)
