@@ -2342,9 +2342,10 @@ window.sendActivePlanByEmail=async()=>{
     const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
     element.style.display = 'none';
 
-    const storageRef = ref(storage, `pdfs/${activePlanData.id}_${Date.now()}.pdf`);
-    await uploadBytes(storageRef, pdfBlob);
-    const downloadUrl = await getDownloadURL(storageRef);
+    const path = `pdfs/${activePlanData.id}_${Date.now()}.pdf`;
+    const { data, error } = await supabase.storage.from('archivos').upload(path, pdfBlob, { contentType: 'application/pdf' });
+    if (error) throw error;
+    const downloadUrl = supabase.storage.from('archivos').getPublicUrl(path).data.publicUrl;
 
     const uidsToSend = new Set([activePlanData.creadoPor, activePlanData.liderUid, currentUser.uid]);
     const emails = [];
