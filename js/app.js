@@ -685,6 +685,8 @@ function applyRoleUI(){
   document.getElementById('navUsuarios').style.display=isRH?'flex':'none';
   const navAdmin=document.getElementById('navAdmin');
   if(navAdmin) navAdmin.style.display=(rol==='rh_global' || rol==='rh')?'flex':'none';
+      const btnConf = document.getElementById('btnAdminConfig');
+      if(btnConf) btnConf.style.display = (rol==='rh_global' || rol==='rh')?'inline-block':'none';
 
   // Botones de creación: Plan Fortalecimiento (admin+rh), Uno a Uno (comercial+rh)
   const btnPlan=document.getElementById('btnNuevoPlan');
@@ -3455,7 +3457,7 @@ function buildUauPrintDoc(p){
 }
 // ── PANEL DE CONFIGURACIÓN (ADMIN) ────────────────────────────────────────────
 window.openAdminConfig = () => {
-    document.getElementById('adminConfigOverlay').classList.add('open');
+    openAdminConfigOverlay();
     renderAdminConfig();
 };
 
@@ -3608,3 +3610,186 @@ window.savePuesto = async () => {
 window.openPuestoModal = () => alert('Módulo de Puestos en construcción');
 window.openAreaModal = () => alert('Módulo de Áreas en construcción');
 window.addPais = () => alert('Módulo de Países en construcción');
+
+// ==========================================
+// ADMIN CONFIGURACIÓN DE EMPRESA
+// ==========================================
+
+window.switchAdminTab = (idx) => {
+  document.querySelectorAll('#adminTabs .mtab').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.mtab-content').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+};
+
+window.loadAdminConfig = () => {
+  const cfg = window.EmpresaConfig || { paises: [], areas: [], puestos: [] };
+  
+  // Render Países
+  const listPaises = document.getElementById('listPaises');
+  if(listPaises) {
+    listPaises.innerHTML = cfg.paises.map(p => 
+      `<div style="padding:8px 12px;background:var(--secondary);border-radius:var(--radius-sm);border:1px solid var(--border)">${p}</div>`
+    ).join('');
+  }
+
+  // Render Áreas
+  const listAreas = document.getElementById('listAreas');
+  if(listAreas) {
+    listAreas.innerHTML = cfg.areas.map(a => 
+      `<div style="padding:8px 12px;background:var(--secondary);border-radius:var(--radius-sm);border:1px solid var(--border)">${a.nombre}</div>`
+    ).join('');
+  }
+
+  // Render Puestos summary
+  const totalSpan = document.getElementById('admTotalPuestos');
+  if(totalSpan) totalSpan.innerText = cfg.puestos.length + ' puestos configurados';
+  
+  window.filterPuestos(); // Render initially using the filter function
+};
+
+window.updateSupabaseConfig = async () => {
+  try {
+    const { error } = await supabase.from('config').update({
+      paises: window.EmpresaConfig.paises,
+      areas: window.EmpresaConfig.areas,
+      puestos: window.EmpresaConfig.puestos
+    }).eq('id', 'empresa');
+    if (error) throw error;
+    showToast("Configuración guardada exitosamente");
+    loadAdminConfig();
+  } catch(e) {
+    console.error(e);
+    alert("Error guardando la configuración: " + e.message);
+  }
+};
+
+window.addPais = () => {
+  const p = prompt("Nombre del País:");
+  if(p && p.trim() !== '') {
+    window.EmpresaConfig.paises.push(p.trim());
+    updateSupabaseConfig();
+  }
+};
+
+window.openAreaModal = () => {
+  const a = prompt("Nombre de la nueva Área:");
+  if(a && a.trim() !== '') {
+    window.EmpresaConfig.areas.push({ id: a.trim(), nombre: a.trim() });
+    updateSupabaseConfig();
+  }
+};
+
+window.openPuestoModal = () => {
+  const cfg = window.EmpresaConfig;
+  document.getElementById('admPuestoNombre').value = '';
+  document.getElementById('admPuestoId').value = '';
+  
+  const sPais = document.getElementById('admPuestoPais');
+  sPais.innerHTML = '<option value="">Selecciona País...</option>' + cfg.paises.map(p => `<option value="${p}">${p}</option>`).join('');
+  
+  const sArea = document.getElementById('admPuestoArea');
+  sArea.innerHTML = '<option value="">Selecciona Área...</option>' + cfg.areas.map(a => `<option value="${a.nombre}">${a.nombre}</option>`).join('');
+  
+  document.getElementById('admPuestoReporta').innerHTML = '<option value="">— Selecciona País y Área primero —</option>';
+  
+  document.getElementById('puestoModalOverlay').classList.add('open');
+};
+
+window.onAdmPuestoChange = () => {
+  const pais = document.getElementById('admPuestoPais').value;
+  const area = document.getElementById('admPuestoArea').value;
+  const sRep = document.getElementById('admPuestoReporta');
+  
+  if(!pais || !area) {
+    sRep.innerHTML = '<option value="">— Selecciona País y Área primero —</option>';
+    return;
+  }
+  
+  const posibles = window.EmpresaConfig.puestos.filter(p => p.pais === pais && p.area === area);
+  sRep.innerHTML = '<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>' + posibles.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+};
+
+window.savePuesto = () => {
+  const nombre = document.getElementById('admPuestoNombre').value.trim();
+  const pais = document.getElementById('admPuestoPais').value;
+  const area = document.getElementById('admPuestoArea').value;
+  const reportaA = document.getElementById('admPuestoReporta').value || null;
+  
+  if(!nombre || !pais || !area) {
+    alert("Por favor llena Nombre, País y Área.");
+    return;
+  }
+  
+  // Generar ID único
+  const id = nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_' + area.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_' + pais.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  
+  // Calcular nivel
+  let nivel = 1;
+  if(reportaA) {
+    const jefe = window.EmpresaConfig.puestos.find(p => p.id === reportaA);
+    if(jefe) nivel = jefe.nivel + 1;
+  }
+  
+  window.EmpresaConfig.puestos.push({
+    id, nombre, area, pais, reportaA, nivel
+  });
+  
+  document.getElementById('puestoModalOverlay').classList.remove('open');
+  updateSupabaseConfig();
+};
+
+
+window.filterPuestos = () => {
+  const cfg = window.EmpresaConfig || { puestos: [] };
+  const query = (document.getElementById('admSearchPuesto')?.value || '').toLowerCase();
+  const listPuestos = document.getElementById('listPuestos');
+  
+  if(!listPuestos) return;
+  
+  let filtered = cfg.puestos;
+  // Solo mostrar si hay un término de búsqueda o limitar a los primeros 15 si está vacío
+  if(query) {
+    filtered = cfg.puestos.filter(p => p.nombre.toLowerCase().includes(query) || p.area.toLowerCase().includes(query));
+  } else {
+    // Si no hay búsqueda, solo mostrar un pequeño preview o dejarlo vacío
+    filtered = cfg.puestos.slice(0, 15);
+  }
+  
+  if(filtered.length === 0) {
+    listPuestos.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted-foreground)">No se encontraron puestos.</td></tr>';
+    return;
+  }
+  
+  let html = filtered.map(p => {
+    const jefe = p.reportaA ? (cfg.puestos.find(x => x.id === p.reportaA)?.nombre || 'Desconocido') : 'Nadie (Máximo Nivel)';
+    return `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px"><b>${p.nombre}</b></td>
+      <td style="padding:10px">${p.area} <br><span style="font-size:10px;color:var(--muted-foreground)">${p.pais}</span></td>
+      <td style="padding:10px">${jefe}</td>
+      <td style="padding:10px"><button class="btn btn-sm" onclick="deletePuesto('${p.id}')">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+  
+  if(!query && cfg.puestos.length > 15) {
+     html += `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--muted-foreground);font-size:12px">Mostrando 15 de ${cfg.puestos.length} puestos. Usa el buscador para encontrar más.</td></tr>`;
+  }
+  
+  listPuestos.innerHTML = html;
+};
+
+window.deletePuesto = (id) => {
+  if(confirm("¿Estás seguro de que quieres eliminar este puesto? Los usuarios asignados a él podrían perder su jerarquía.")) {
+    window.EmpresaConfig.puestos = window.EmpresaConfig.puestos.filter(p => p.id !== id);
+    updateSupabaseConfig();
+  }
+};
+
+// Modificar openAdminConfig si existe, o enlazarlo al botón de Configuración
+window.openAdminConfig = () => {
+  loadAdminConfig();
+  document.getElementById('adminConfigOverlay').classList.add('open');
+};
