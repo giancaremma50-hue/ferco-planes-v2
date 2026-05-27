@@ -499,34 +499,26 @@ onAuthStateChanged(auth, async user=>{
     const usersSnap=await getDocs(collection(db,'users'));
     allUsers=usersSnap.docs.map(d=>({uid:d.id,...d.data()}));
     await loadUserNotifications();
-    const configSnap=await getDoc(doc(db,'config','empresa'));
-    if(configSnap.exists()){
-      window.EmpresaConfig=configSnap.data();
-    } else {
-      // Seed default config
-      const defaultConfig = {
-        paises: ['Guatemala', 'El Salvador', 'Honduras', 'México'],
-        areas: [
-          {id: 'Comercial', nombre: 'Comercial', color: 'background:#dcfce7;color:#166534'},
-          {id: 'Operaciones', nombre: 'Operaciones', color: 'background:#dbeafe;color:#1e40af'},
-          {id: 'Recursos Humanos', nombre: 'Recursos Humanos', color: 'background:#fce7f3;color:#9d174d'},
-          {id: 'Categorias', nombre: 'Categorías', color: 'background:#fef3c7;color:#92400e'},
-          {id: 'Finanzas', nombre: 'Finanzas', color: 'background:#e0e7ff;color:#3730a3'},
-          {id: 'Construcción y Desarrollo', nombre: 'Construcción y Desarrollo', color: 'background:var(--background);color:#475569'},
-          {id: 'IT', nombre: 'IT', color: 'background:#f0fdf4;color:#166534'}
-        ],
-        puestos: [
-          {id: 'director', nombre: 'Director Comercial', area: 'Comercial', reportaA: 'rh'},
-          {id: 'regional', nombre: 'Gerente Regional', area: 'Comercial', reportaA: 'director'},
-          {id: 'zona', nombre: 'Gerente de Zona', area: 'Comercial', reportaA: 'regional'},
-          {id: 'sucursal', nombre: 'Gerente de Sucursal', area: 'Comercial', reportaA: 'zona'},
-          {id: 'rh', nombre: 'RH Global', area: 'Recursos Humanos', reportaA: ''},
-          {id: 'ceo', nombre: 'CEO', area: 'Comercial', reportaA: ''}
-        ]
-      };
-      await setDoc(doc(db,'config','empresa'), defaultConfig);
-      window.EmpresaConfig=defaultConfig;
+    try {
+      const configSnap=await getDoc(doc(db,'config','empresa'));
+      if(configSnap.exists()){
+        window.EmpresaConfig=configSnap.data();
+      } else {
+        const defaultConfig = {
+          paises: ['Guatemala', 'El Salvador', 'Honduras', 'México'],
+          areas: [
+            {id: 'Comercial', nombre: 'Comercial', color: 'background:#dcfce7;color:#166534'}
+          ],
+          puestos: []
+        };
+        await setDoc(doc(db,'config','empresa'), defaultConfig);
+        window.EmpresaConfig=defaultConfig;
+      }
+    } catch(e) {
+      console.error("Error cargando config de Firebase:", e);
+      window.EmpresaConfig = { paises: ['Guatemala (Error)'], areas: [], puestos: [] };
     }
+
     initApp();
   }else{
     currentUser=null; userProfile=null;
