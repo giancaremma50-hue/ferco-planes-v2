@@ -2276,15 +2276,17 @@ html, body {
         </div>
         <div class="form-group">
           <label>Área *</label>
-          <select id="uArea" disabled>
+          <select id="uArea" onchange="onAreaChange()" disabled>
             <option value="">— Selecciona el país primero —</option>
           </select>
         </div>
       </div>
-      <!-- Puesto / Rol (texto libre) -->
+      <!-- Puesto / Rol (dropdown dinámico) -->
       <div class="form-group">
         <label>Puesto / Rol *</label>
-        <input type="text" id="uCargo" placeholder="Ej: Regional Freddy, Zona Diego, Analista de Soporte…">
+        <select id="uCargo" onchange="onPuestoChange()" disabled>
+          <option value="">— Selecciona el área primero —</option>
+        </select>
       </div>
       <!-- Reporta a (define la jerarquía) -->
       <div class="form-group">
@@ -4985,11 +4987,14 @@ async function loadUsers(){
 window.openUserModal=()=>{
   document.getElementById('userModalOverlay').classList.add('open');
   hideErr('userErrMsg');
-  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
+  ['uNombre','uEmail'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
   document.getElementById('uPais').value='';
   const areaSel=document.getElementById('uArea');
   areaSel.value='';areaSel.disabled=true;
   areaSel.innerHTML='<option value="">— Selecciona el país primero —</option>';
+  const cargoSel=document.getElementById('uCargo');
+  cargoSel.value='';cargoSel.disabled=true;
+  cargoSel.innerHTML='<option value="">— Selecciona el área primero —</option>';
   document.getElementById('uEsRhGlobal').checked=false;
   document.getElementById('uRhGlobalWrap').style.display=
     (userProfile?.rol==='rh'||userProfile?.esRhGlobal)?'':'none';
@@ -5002,16 +5007,88 @@ window.onPaisChange=()=>{
   const pais=document.getElementById('uPais').value;
   const areaSel=document.getElementById('uArea');
   areaSel.innerHTML='<option value="">— Selecciona el área —</option>';
-  if(!pais){areaSel.disabled=true;return;}
+  const cargoSel=document.getElementById('uCargo');
+  cargoSel.innerHTML='<option value="">— Selecciona el área primero —</option>';
+  cargoSel.disabled=true;
+  if(!pais){areaSel.disabled=true;populateReportaA();return;}
   const areas=Object.keys(FERCO_HIERARCHY[pais]||{});
   areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   areaSel.disabled=false;
+  populateReportaA();
 };
 
-// Poblar Reporta A con TODOS los usuarios
+// Extrae todos los nombres de cargo únicos de un nodo de FERCO_HIERARCHY
+function flattenPuestos(node){
+  const result=new Set();
+  function traverse(obj){
+    if(!obj||typeof obj!=='object') return;
+    const children=('sub' in obj)?obj.sub:obj;
+    if(!children||typeof children!=='object') return;
+    for(const[key,val] of Object.entries(children)){
+      result.add(key);
+      traverse(val);
+    }
+  }
+  traverse(node);
+  return[...result];
+}
+
+// Poblar dropdown de Puesto según País+Área
+function populatePuestos(){
+  const pais=document.getElementById('uPais').value;
+  const area=document.getElementById('uArea').value;
+  const sel=document.getElementById('uCargo');
+  sel.innerHTML='<option value="">— Selecciona el puesto —</option>';
+  sel.disabled=true;
+  if(!pais||!area) return;
+  const areaNode=FERCO_HIERARCHY[pais]?.[area];
+  if(!areaNode){sel.disabled=false;return;}
+  flattenPuestos(areaNode).forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p;o.textContent=p;
+    sel.appendChild(o);
+  });
+  sel.disabled=false;
+}
+
+// Área cambia → poblar Puesto
+window.onAreaChange=()=>{
+  populatePuestos();
+  document.getElementById('uCargo').value='';
+  populateReportaA();
+};
+
+// Puesto cambia → actualizar Reporta a
+window.onPuestoChange=()=>{
+  populateReportaA();
+};
+
+// Poblar Reporta A: filtro jerárquico superior + fallback a todos
 function populateReportaA(){
   const sel=document.getElementById('uReportaA');
   sel.innerHTML='<option value="">— Sin asignación —</option>';
+  const pais=document.getElementById('uPais')?.value||'';
+  const area=document.getElementById('uArea')?.value||'';
+  const cargo=document.getElementById('uCargo')?.value||'';
+  if(cargo&&pais&&area){
+    const ROL_ORDER=['sucursal','zona','regional','director'];
+    const cargoRol=deriveRolLegacy(cargo,area,'');
+    const cargoLevel=ROL_ORDER.indexOf(cargoRol);
+    const filtered=allUsers.filter(u=>{
+      const uLevel=ROL_ORDER.indexOf(u.rol);
+      const isRh=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
+      const samePaisArea=(u.pais===pais&&(u.area===area||isRh));
+      return samePaisArea&&(isRh||(cargoLevel>=0&&uLevel>cargoLevel));
+    });
+    const users=filtered.length>0?filtered:allUsers;
+    users.forEach(function(u){
+      const o=document.createElement('option');
+      o.value=u.uid;
+      o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
+      sel.appendChild(o);
+    });
+    return;
+  }
   allUsers.forEach(function(u){
     const o=document.createElement('option');
     o.value=u.uid;
