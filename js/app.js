@@ -197,7 +197,12 @@ function getSubordinateUids(){
   const myUid = currentUser.uid;
   const myRol = userProfile.rol;
   const subs = new Set();
-  const cfg = window.EmpresaConfig || {puestos:[]};
+  const rawCfg = window.EmpresaConfig || {};
+  const cfg = {
+    paises: rawCfg.paises || [],
+    areas: rawCfg.areas || [],
+    puestos: rawCfg.puestos || []
+  };
 
   // 1. Dependencia Directa de Usuarios (El campo 'reportaA' en el documento del usuario)
   function findDirectUserSubordinates(uid) {
@@ -2518,7 +2523,12 @@ window.openUserModal=()=>{
   const rhCheck=document.getElementById('uEsRhGlobal');
   if(rhCheck) rhCheck.checked=false;
   
-  const cfg = window.EmpresaConfig || {paises:[], areas:[], puestos:[]};
+    const rawCfg = window.EmpresaConfig || {};
+  const cfg = {
+    paises: rawCfg.paises || [],
+    areas: rawCfg.areas || [],
+    puestos: rawCfg.puestos || []
+  };
   
   const sPais=document.getElementById('uPais');
   sPais.innerHTML='<option value="">Seleccione país...</option>'+
@@ -2564,7 +2574,12 @@ window.onAreaChange=()=>{
   const area = document.getElementById('uArea').value;
   const cargoSelect = document.getElementById('uCargo');
   const repSelect = document.getElementById('uReportaA');
-  const cfg = window.EmpresaConfig || {puestos:[]};
+  const rawCfg = window.EmpresaConfig || {};
+  const cfg = {
+    paises: rawCfg.paises || [],
+    areas: rawCfg.areas || [],
+    puestos: rawCfg.puestos || []
+  };
   repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
   if(!area){ cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>'; cargoSelect.disabled=true; return; }
   const rolesArea = cfg.puestos.filter(p => p.area === area);
@@ -2577,7 +2592,12 @@ window.onAreaChange=()=>{
 window.onPuestoChange=()=>{
   const cargo = document.getElementById('uCargo').value;
   const repSelect = document.getElementById('uReportaA');
-  const cfg = window.EmpresaConfig || {puestos:[]};
+  const rawCfg = window.EmpresaConfig || {};
+  const cfg = {
+    paises: rawCfg.paises || [],
+    areas: rawCfg.areas || [],
+    puestos: rawCfg.puestos || []
+  };
   if(!cargo){ repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>'; return; }
   const puestoInfo = cfg.puestos.find(p => p.id === cargo);
   if(!puestoInfo || !puestoInfo.reportaA) { repSelect.innerHTML='<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>'; return; }

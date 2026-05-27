@@ -1,6 +1,6 @@
 /* ── PREMIUM BASE & VARIABES ── */
 :root {
---card: var(--card);
+--card: #ffffff;
   --ring: #a1a1a1;
   --input: #e5e5e5;
   --muted: #f5f5f5;
