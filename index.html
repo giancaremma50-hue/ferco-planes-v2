@@ -5080,7 +5080,14 @@ function populateReportaA(){
       const samePaisArea=(u.pais===pais&&(u.area===area||isRh));
       return samePaisArea&&(isRh||(cargoLevel>=0&&uLevel>cargoLevel));
     });
-    const users=filtered.length>0?filtered:allUsers;
+    // Fallback: si no hay superiores en mismo país/área, buscar en todos pero
+    // respetando siempre el nivel (nunca mostrar igual o inferior rango)
+    const fallback=allUsers.filter(u=>{
+      const isRhU=u.esRhGlobal||u.rol==='rh'||u.rol==='rh_global';
+      const uLvl=ROL_ORDER.indexOf(u.rol);
+      return isRhU||(cargoLevel>=0&&uLvl>cargoLevel);
+    });
+    const users=filtered.length>0?filtered:fallback;
     users.forEach(function(u){
       const o=document.createElement('option');
       o.value=u.uid;
