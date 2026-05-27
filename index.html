@@ -5154,73 +5154,72 @@ window.saveUser=async()=>{
 
   // Animación de carga en el botón
   const btnCrear=document.getElementById('btnCrearUsuario');
-  if(btnCrear){btnCrear.disabled=true;btnCrear.innerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Creando...</span>';}
+  const spinnerHTML='<span style="display:inline-flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Creando...</span>';
+  if(btnCrear){btnCrear.disabled=true;btnCrear.innerHTML=spinnerHTML;}
 
   let secondaryApp=null;
+  let createdUid=null;
   try{
     secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
     const secondaryAuth=getAuth(secondaryApp);
-    const secondaryDb=getFirestore(secondaryApp);
 
     // 1. Crear cuenta en Firebase Auth
     const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
-    const uid=cred.user.uid;
+    createdUid=cred.user.uid;
 
-    // 2. Guardar perfil con auth del nuevo usuario (evita permission-denied)
+    // 2. Guardar perfil usando la db principal (Monica está autenticada)
+    //    Si falla por reglas, intentar con db del nuevo usuario
     const profile={
-      nombre,email,
-      cargo,
+      nombre,email,cargo,
       area:esRhGlobal?'rh_global':area,
       pais:esRhGlobal?'Global':(pais||''),
-      esRhGlobal,
-      rol:rolLegacy,
-      reportaA
+      esRhGlobal,rol:rolLegacy,reportaA
     };
-    await setDoc(doc(secondaryDb,'users',uid),profile);
-
-    // 3. Enviar reset de contraseña (no bloquea si falla)
+    let writeOk=false;
     try{
-      await sendPasswordResetEmail(secondaryAuth,email);
-    }catch(emailErr){
-      console.warn('sendPasswordResetEmail falló (no crítico):',emailErr);
+      await setDoc(doc(db,'users',createdUid),profile);
+      writeOk=true;
+    }catch(writeErr){
+      console.warn('Write con db primario falló, intentando con db secundario:',writeErr.code);
+      const secondaryDb=getFirestore(secondaryApp);
+      await setDoc(doc(secondaryDb,'users',createdUid),profile);
+      writeOk=true;
     }
 
-    await signOut(secondaryAuth);
-    await deleteApp(secondaryApp);
+    // 3. Enviar reset de contraseña
+    try{await sendPasswordResetEmail(secondaryAuth,email);}catch(_){}
+
+    // 4. Cerrar sesión secundaria (fire-and-forget, no bloquea)
+    signOut(secondaryAuth).catch(()=>{});
+    deleteApp(secondaryApp).catch(()=>{});
     secondaryApp=null;
 
-    allUsers.push({uid,...profile});
-    closeUserModal();
-    loadUsers();
-    showToast(`Usuario "${nombre}" creado. Se enviará un correo para configurar la contraseña.`);
-
-    // 4. Notificación de bienvenida (no bloquea si falla)
-    try{
-      await sendEmailNotification(
-        email,
-        '¡Bienvenido a Ferco Planes de Fortalecimiento!',
-        `<p>Hola ${nombre},</p>
-        <p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p>
-        <p>Has recibido otro correo oficial para configurar tu contraseña.</p>
-        <p>Saludos,<br>El equipo de Recursos Humanos</p>`
-      );
-    }catch(notifErr){
-      console.warn('Notificación de bienvenida falló (no crítico):',notifErr);
+    if(writeOk){
+      allUsers.push({uid:createdUid,...profile});
+      closeUserModal();
+      loadUsers();
+      showToast(`Usuario "${nombre}" creado. Se enviará un correo para configurar la contraseña.`);
+      sendEmailNotification(
+        email,'¡Bienvenido a Ferco Planes de Fortalecimiento!',
+        `<p>Hola ${nombre},</p><p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p><p>Has recibido otro correo oficial para configurar tu contraseña.</p><p>Saludos,<br>El equipo de Recursos Humanos</p>`
+      ).catch(()=>{});
     }
 
   }catch(e){
-    if(secondaryApp){try{await deleteApp(secondaryApp);}catch(_){}}
-    if(btnCrear){btnCrear.disabled=false;btnCrear.innerHTML='Crear usuario';}
     console.error('Error creando usuario:',e);
     if(e.code==='auth/email-already-in-use'){
-      showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
+      showErr('userErrMsg','Este correo ya está registrado. Usa un correo diferente.');
     }else if(e.code==='auth/invalid-email'){
-      showErr('userErrMsg','El correo electrónico no tiene un formato válido.');
+      showErr('userErrMsg','El correo no tiene un formato válido.');
     }else if(e.code==='auth/network-request-failed'){
       showErr('userErrMsg','Error de red. Verifica tu conexión e inténtalo de nuevo.');
     }else{
-      showErr('userErrMsg',`Error al crear usuario (${e.code||e.message||'desconocido'}). Contacta al administrador.`);
+      showErr('userErrMsg',`Error (${e.code||e.message||'desconocido'}). Intenta de nuevo.`);
     }
+  }finally{
+    // Siempre restaurar el botón y limpiar la app secundaria
+    if(secondaryApp){deleteApp(secondaryApp).catch(()=>{});}
+    if(btnCrear){btnCrear.disabled=false;btnCrear.innerHTML='Crear usuario';}
   }
 };
 
