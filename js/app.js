@@ -2539,7 +2539,7 @@ window.openUserModal=()=>{
     cfg.areas.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
     
   // El rol depende del área seleccionada
-  const sRol=document.getElementById('uRol');
+  const sRol=document.getElementById('uCargo');
   sRol.innerHTML='<option value="">Seleccione rol...</option>';
   
   sArea.onchange = () => {
@@ -3342,9 +3342,7 @@ function buildUauPrintDoc(p){
 }
 // ── PANEL DE CONFIGURACIÓN (ADMIN) ────────────────────────────────────────────
 window.openAdminConfig = () => {
-    document.getElementById('kanbanArea').style.display = 'none';
-    document.getElementById('adminConfigArea').style.display = 'flex';
-    document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('adminConfigOverlay').classList.add('open');
     renderAdminConfig();
 };
 
