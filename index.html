@@ -5151,15 +5151,27 @@ window.saveUser=async()=>{
   let pass='';
   for(let i=0;i<16;i++) pass+=chars.charAt(Math.floor(Math.random()*chars.length));
 
+  let secondaryApp=null;
   try{
-    const secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
+    secondaryApp=initializeApp(firebaseConfig,'secondary_'+Date.now());
     const secondaryAuth=getAuth(secondaryApp);
+
+    // 1. Crear cuenta en Firebase Auth
     const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);
     const uid=cred.user.uid;
-    await sendPasswordResetEmail(secondaryAuth,email);
+
+    // 2. Enviar reset de contraseña (no bloquea si falla)
+    try{
+      await sendPasswordResetEmail(secondaryAuth,email);
+    }catch(emailErr){
+      console.warn('sendPasswordResetEmail falló (no crítico):',emailErr);
+    }
+
     await signOut(secondaryAuth);
     await deleteApp(secondaryApp);
+    secondaryApp=null;
 
+    // 3. Guardar perfil en Firestore
     const profile={
       nombre,email,
       cargo,
@@ -5174,20 +5186,32 @@ window.saveUser=async()=>{
     closeUserModal();
     loadUsers();
     showToast(`Usuario "${nombre}" creado. Se enviará un correo para configurar la contraseña.`);
-    await sendEmailNotification(
-      email,
-      '¡Bienvenido a Ferco Planes de Fortalecimiento!',
-      `<p>Hola ${nombre},</p>
-      <p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p>
-      <p>Has recibido otro correo oficial para configurar tu contraseña.</p>
-      <p>Saludos,<br>El equipo de Recursos Humanos</p>`
-    );
+
+    // 4. Notificación de bienvenida (no bloquea si falla)
+    try{
+      await sendEmailNotification(
+        email,
+        '¡Bienvenido a Ferco Planes de Fortalecimiento!',
+        `<p>Hola ${nombre},</p>
+        <p>Tu cuenta ha sido creada con el cargo de <b>${cargo}</b> en el área de <b>${area}</b>.</p>
+        <p>Has recibido otro correo oficial para configurar tu contraseña.</p>
+        <p>Saludos,<br>El equipo de Recursos Humanos</p>`
+      );
+    }catch(notifErr){
+      console.warn('Notificación de bienvenida falló (no crítico):',notifErr);
+    }
+
   }catch(e){
+    if(secondaryApp){try{await deleteApp(secondaryApp);}catch(_){}}
+    console.error('Error creando usuario:',e);
     if(e.code==='auth/email-already-in-use'){
       showErr('userErrMsg','Este correo ya está registrado en el sistema. Usa un correo diferente.');
+    }else if(e.code==='auth/invalid-email'){
+      showErr('userErrMsg','El correo electrónico no tiene un formato válido.');
+    }else if(e.code==='auth/network-request-failed'){
+      showErr('userErrMsg','Error de red. Verifica tu conexión e inténtalo de nuevo.');
     }else{
-      console.error('Error creando usuario:',e);
-      showErr('userErrMsg','No se pudo crear el usuario. Verifica los campos e inténtalo de nuevo.');
+      showErr('userErrMsg',`Error al crear usuario (${e.code||e.message||'desconocido'}). Contacta al administrador.`);
     }
   }
 };
