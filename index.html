@@ -2276,41 +2276,27 @@ html, body {
         </div>
         <div class="form-group">
           <label>Área *</label>
-          <select id="uArea" onchange="onAreaChange()" disabled>
+          <select id="uArea" disabled>
             <option value="">— Selecciona el país primero —</option>
           </select>
         </div>
       </div>
-      <!-- Fila 3: Dirección (nivel3) -->
-      <div class="form-group" id="uDireccionWrap" style="display:none">
-        <label>Dirección *</label>
-        <select id="uDireccion" onchange="onDireccionChange()">
-          <option value="">— Selecciona el área primero —</option>
-        </select>
+      <!-- Puesto / Rol (texto libre) -->
+      <div class="form-group">
+        <label>Puesto / Rol *</label>
+        <input type="text" id="uCargo" placeholder="Ej: Regional Freddy, Zona Diego, Analista de Soporte…">
       </div>
-      <!-- Fila 4: Rol/Puesto (lista plana de todos los roles bajo esa Dirección) -->
-      <div class="form-group" id="uRolWrap" style="display:none">
-        <label>Rol / Puesto *</label>
-        <select id="uRolPuesto" onchange="onRolPuestoChange()">
-          <option value="">— Selecciona la dirección primero —</option>
-        </select>
+      <!-- Reporta a (define la jerarquía) -->
+      <div class="form-group">
+        <label>Reporta a <span style="color:#94a3b8;font-size:12px">(define la jerarquía)</span></label>
+        <select id="uReportaA"><option value="">— Sin asignación —</option></select>
       </div>
-      <!-- Cargo asignado (read-only, visible cuando hay rol seleccionado) -->
-      <div class="form-group" id="uCargoWrap" style="display:none">
-        <label>Cargo asignado</label>
-        <input type="text" id="uCargo" readonly style="background:#f8fafc;font-weight:600;color:#0f172a">
-      </div>
-      <!-- RH Global (solo visible para usuarios rh/esRhGlobal) -->
+      <!-- RH Global (solo visible para rh/esRhGlobal, al final) -->
       <div class="form-group" id="uRhGlobalWrap" style="display:none;background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:10px 14px">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin:0">
           <input type="checkbox" id="uEsRhGlobal" style="width:16px;height:16px;accent-color:#7c3aed">
           <span>Designar como <strong>RH Global</strong> — acceso transversal a todos los planes de todos los países</span>
         </label>
-      </div>
-      <!-- Reporta a -->
-      <div class="form-group">
-        <label>Reporta a <span style="color:#94a3b8;font-size:12px">(opcional)</span></label>
-        <select id="uReportaA"><option value="">— Sin asignación —</option></select>
       </div>
     </div>
     <div class="err-msg" id="userErrMsg"></div>
@@ -2528,9 +2514,20 @@ const FERCO_HIERARCHY={
     "Comercial":{
       "Director Comercial GT":{
         "Gerente Mayoreo":          {sub:{"KAM":{}}},
-        "Director Retail":          {sub:{"Regional":{sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}}}},
+        "Director Retail":          {sub:{
+        "Regional Marlon":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+        "Regional Sandra":  {sub:{"Zona Eva":{sub:{"Gerente de Sucursal":{}}},"Gerente de Sucursal":{}}},
+        "Regional Carlos":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+        "Regional Freddy":  {sub:{
+          "Gerente de Sucursal":{sub:{"Asesor Comercial":{}}},
+          "Zona Diego":     {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+          "Zona Selvin":    {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+          "Zona Jose":      {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
+          "Zona Giovany":   {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}
+        }}
+      }},
         "Gerente de Proyectos":     {sub:{"KAM":{}}},
-        "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"AC":{}}}}}
+        "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"Asesor Comercial":{}}}}}
       }
     },
     "Operaciones":{
@@ -2597,7 +2594,7 @@ const FERCO_HIERARCHY={
   "El Salvador":{
     "Comercial":{
       "Director Comercial SV":{
-        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}},
+        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -2611,8 +2608,8 @@ const FERCO_HIERARCHY={
   "Honduras":{
     "Comercial":{
       "Director Comercial HN":{
-        "Gerente de Sucursal":             {sub:{"AC":{}}},
-        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}},
+        "Gerente de Sucursal":             {sub:{"Asesor Comercial":{}}},
+        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}}
       }
     },
@@ -2625,7 +2622,7 @@ const FERCO_HIERARCHY={
   "México":{
     "Comercial":{
       "Director Comercial MX":{
-        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"AC":{}}}}}}},
+        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}}},
         "Gerente de Proyectos": {sub:{"KAM":{}}},
         "Gerente Mayoreo":      {sub:{"KAM":{}}}
       }
@@ -4988,16 +4985,11 @@ async function loadUsers(){
 window.openUserModal=()=>{
   document.getElementById('userModalOverlay').classList.add('open');
   hideErr('userErrMsg');
-  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.dataset)el.dataset.path='';}});
+  ['uNombre','uEmail','uCargo'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
   document.getElementById('uPais').value='';
   const areaSel=document.getElementById('uArea');
   areaSel.value='';areaSel.disabled=true;
   areaSel.innerHTML='<option value="">— Selecciona el país primero —</option>';
-  document.getElementById('uDireccion').innerHTML='<option value="">— Selecciona el área primero —</option>';
-  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
-  document.getElementById('uDireccionWrap').style.display='none';
-  document.getElementById('uRolWrap').style.display='none';
-  document.getElementById('uCargoWrap').style.display='none';
   document.getElementById('uEsRhGlobal').checked=false;
   document.getElementById('uRhGlobalWrap').style.display=
     (userProfile?.rol==='rh'||userProfile?.esRhGlobal)?'':'none';
@@ -5005,131 +4997,22 @@ window.openUserModal=()=>{
 };
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
-// Extrae lista plana {label,path} de todos los roles bajo un nodo
-function flattenRoles(node,path){
-  if(!path) path=[];
-  const result=[];
-  const hasSub='sub' in Object(node);
-  const children=hasSub?node.sub:node;
-  if(!children||typeof children!=='object') return result;
-  for(const[key,val] of Object.entries(children)){
-    const newPath=[...path,key];
-    result.push({label:key,path:newPath});
-    const subNode=val&&typeof val==='object'&&'sub' in val?val.sub:val;
-    if(subNode&&typeof subNode==='object'&&Object.keys(subNode).length>0)
-      result.push(...flattenRoles(val,newPath));
-  }
-  return result;
-}
-
 // País cambia → habilitar Área
 window.onPaisChange=()=>{
   const pais=document.getElementById('uPais').value;
   const areaSel=document.getElementById('uArea');
   areaSel.innerHTML='<option value="">— Selecciona el área —</option>';
-  document.getElementById('uDireccion').innerHTML='<option value="">— Selecciona el área primero —</option>';
-  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
-  document.getElementById('uDireccionWrap').style.display='none';
-  document.getElementById('uRolWrap').style.display='none';
-  document.getElementById('uCargoWrap').style.display='none';
-  document.getElementById('uCargo').value='';
   if(!pais){areaSel.disabled=true;return;}
   const areas=Object.keys(FERCO_HIERARCHY[pais]||{});
   areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   areaSel.disabled=false;
-  populateReportaA();
 };
 
-// Área cambia → poblar Dirección
-window.onAreaChange=()=>{
-  const pais=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea').value;
-  const dirSel=document.getElementById('uDireccion');
-  dirSel.innerHTML='<option value="">— Selecciona —</option>';
-  document.getElementById('uRolPuesto').innerHTML='<option value="">— Selecciona la dirección primero —</option>';
-  document.getElementById('uDireccionWrap').style.display='none';
-  document.getElementById('uRolWrap').style.display='none';
-  document.getElementById('uCargoWrap').style.display='none';
-  document.getElementById('uCargo').value='';
-  if(!area) return;
-  const areaNode=FERCO_HIERARCHY[pais]?.[area];
-  if(!areaNode) return;
-  Object.keys(areaNode).forEach(dir=>{const o=document.createElement('option');o.value=dir;o.textContent=dir;dirSel.appendChild(o);});
-  document.getElementById('uDireccionWrap').style.display='';
-  populateReportaA();
-};
-
-// Dirección cambia → poblar Rol/Puesto con lista plana
-window.onDireccionChange=()=>{
-  const pais=document.getElementById('uPais').value;
-  const area=document.getElementById('uArea').value;
-  const dir=document.getElementById('uDireccion').value;
-  const rolSel=document.getElementById('uRolPuesto');
-  rolSel.innerHTML='<option value="">— Selecciona el rol —</option>';
-  document.getElementById('uRolWrap').style.display='none';
-  document.getElementById('uCargoWrap').style.display='none';
-  document.getElementById('uCargo').value='';
-  if(!dir) return;
-  const dirNode=FERCO_HIERARCHY[pais]?.[area]?.[dir];
-  // La Dirección es también un cargo asignable
-  const o0=document.createElement('option');
-  o0.value=dir;o0.textContent=dir;o0.dataset.path=JSON.stringify([dir]);
-  rolSel.appendChild(o0);
-  // Añadir todos los roles subordinados (lista plana)
-  if(dirNode){
-    flattenRoles(dirNode,[dir]).forEach(function(item){
-      const o=document.createElement('option');
-      o.value=item.label;o.textContent=item.label;
-      o.dataset.path=JSON.stringify(item.path);
-      rolSel.appendChild(o);
-    });
-  }
-  document.getElementById('uRolWrap').style.display='';
-  populateReportaA();
-};
-
-// Rol/Puesto cambia → mostrar cargo y filtrar Reporta a
-window.onRolPuestoChange=()=>{
-  const rolSel=document.getElementById('uRolPuesto');
-  const selected=rolSel.options[rolSel.selectedIndex];
-  const cargo=rolSel.value;
-  const cargoInput=document.getElementById('uCargo');
-  if(!cargo){
-    document.getElementById('uCargoWrap').style.display='none';
-    cargoInput.value='';
-    if(cargoInput.dataset) cargoInput.dataset.path='';
-    populateReportaA();
-    return;
-  }
-  cargoInput.value=cargo;
-  document.getElementById('uCargoWrap').style.display='';
-  const path=selected&&selected.dataset&&selected.dataset.path?JSON.parse(selected.dataset.path):[cargo];
-  cargoInput.dataset.path=JSON.stringify(path);
-  populateReportaA(cargo,path);
-};
-
-// Poblar selector Reporta A, filtrado por jerarquía superior al cargo
-function populateReportaA(cargo,path){
+// Poblar Reporta A con TODOS los usuarios
+function populateReportaA(){
   const sel=document.getElementById('uReportaA');
   sel.innerHTML='<option value="">— Sin asignación —</option>';
-  const pais=document.getElementById('uPais')?.value||'';
-  const area=document.getElementById('uArea')?.value||'';
-  const dir=document.getElementById('uDireccion')?.value||'';
-  if(!cargo||!path){
-    allUsers.forEach(function(u){
-      const o=document.createElement('option');
-      o.value=u.uid;
-      o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
-      sel.appendChild(o);
-    });
-    return;
-  }
-  const superiorCargos=new Set(path.slice(0,-1));
-  if(dir&&cargo!==dir) superiorCargos.add(dir);
   allUsers.forEach(function(u){
-    const mismaJerarquia=u.pais===pais&&u.area===area&&superiorCargos.has(u.cargo);
-    const esAdmin=['rh','rh_global','ceo','director'].includes(u.rol);
-    if(!mismaJerarquia&&!esAdmin) return;
     const o=document.createElement('option');
     o.value=u.uid;
     o.textContent=u.nombre+' — '+(u.cargo||rolLabel(u.rol)||u.rol||'—');
@@ -5138,19 +5021,28 @@ function populateReportaA(cargo,path){
 }
 
 // Mapea cargo + área → rol legacy (compatibilidad con getSubordinateUids)
-function deriveRolLegacy(cargo,area,nivel3){
-  if(area==='Comercial'){
-    if(['Director Comercial GT','Director Comercial SV','Director Comercial HN','Director Comercial MX'].includes(cargo)) return 'director';
-    if(cargo==='Director Retail') return 'regional';
-    if(cargo==='Regional') return 'regional';
-    if(cargo==='Zona') return 'zona';
-    if(cargo==='Gerente de Sucursal'||cargo==='AC'||cargo==='KAM') return 'sucursal';
-    return 'regional';
+function deriveRolLegacy(cargo,area,reportaA){
+  const areaMap={'Recursos Humanos':'jefe_admin','Finanzas':'gerente_admin',
+    'Operaciones':'gerente_admin','Categorías':'gerente_admin',
+    'Construcción y Desarrollo':'jefe_admin','IT':'gerente_admin'};
+  if(area!=='Comercial') return areaMap[area]||'coordinador_admin';
+  if(cargo){
+    if(/Director Comercial/i.test(cargo)) return 'director';
+    if(/Director Retail/i.test(cargo))    return 'regional';
+    if(/^Regional\b/i.test(cargo))        return 'regional';
+    if(/^Zona\b/i.test(cargo))            return 'zona';
+    if(/Gerente de Sucursal|^Asesor Comercial$|^KAM$/i.test(cargo)) return 'sucursal';
+    if(/Gerente Mayoreo|Gerente.*Proyectos|Gerente.*Canales/i.test(cargo)) return 'regional';
   }
-  const map={'Recursos Humanos':'jefe_admin','Finanzas':'gerente_admin',
-             'Operaciones':'gerente_admin','Categorías':'gerente_admin',
-             'Construcción y Desarrollo':'jefe_admin','IT':'gerente_admin'};
-  return map[area]||'coordinador_admin';
+  if(reportaA){
+    const boss=allUsers.find(u=>u.uid===reportaA);
+    if(boss){
+      if(boss.rol==='director')  return 'regional';
+      if(boss.rol==='regional')  return 'zona';
+      if(boss.rol==='zona'||boss.rol==='sucursal') return 'sucursal';
+    }
+  }
+  return 'regional';
 }
 
 window.saveUser=async()=>{
@@ -5158,28 +5050,17 @@ window.saveUser=async()=>{
   const email=document.getElementById('uEmail').value.trim();
   const pais=document.getElementById('uPais')?.value||'';
   const area=document.getElementById('uArea')?.value||'';
-  const dir=document.getElementById('uDireccion')?.value||'';
-  const cargo=document.getElementById('uCargo')?.value||'';
-  const esRhGlobal=document.getElementById('uEsRhGlobal')?.checked||false;
+  const cargo=document.getElementById('uCargo')?.value.trim()||'';
   const reportaA=document.getElementById('uReportaA')?.value||'';
-
-  // Leer path jerárquico desde dataset del input de cargo
-  const pathRaw=document.getElementById('uCargo')?.dataset?.path;
-  const rolPath=pathRaw?JSON.parse(pathRaw):(cargo?[cargo]:[]);
-  // Guardar nivel3..nivelN (nivel3 siempre es la Dirección)
-  const jerarquia={};
-  rolPath.forEach(function(v,i){jerarquia['nivel'+(i+3)]=v;});
-  if(dir&&!jerarquia.nivel3) jerarquia.nivel3=dir;
-  const nivel3=dir;
+  const esRhGlobal=document.getElementById('uEsRhGlobal')?.checked||false;
 
   // Validaciones
   if(!nombre||!email){showErr('userErrMsg','Completa el nombre y correo del usuario.');return;}
   if(!pais||!area){showErr('userErrMsg','Selecciona el país y el área.');return;}
-  if(!dir){showErr('userErrMsg','Selecciona la dirección.');return;}
-  if(!cargo){showErr('userErrMsg','Selecciona el rol o puesto.');return;}
+  if(!cargo){showErr('userErrMsg','Escribe el cargo o puesto.');return;}
 
   // Derivar rol legacy para compatibilidad con acceso control
-  const rolLegacy=esRhGlobal?'rh':deriveRolLegacy(cargo,area,nivel3);
+  const rolLegacy=esRhGlobal?'rh':deriveRolLegacy(cargo,area,reportaA);
 
   // Generar contraseña aleatoria de 16 caracteres
   const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
@@ -5198,9 +5079,7 @@ window.saveUser=async()=>{
     const profile={
       nombre,email,
       cargo,
-      direccion:dir,
       area:esRhGlobal?'rh_global':area,
-      ...jerarquia,
       pais:esRhGlobal?'Global':(pais||''),
       esRhGlobal,
       rol:rolLegacy,
