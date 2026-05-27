@@ -2556,7 +2556,7 @@ window.openUserModal=()=>{
   });
   
   hideErr('uErr');
-  document.getElementById('userModal').classList.add('open');
+  document.getElementById('userModalOverlay').classList.add('open');
 };
 
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
