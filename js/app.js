@@ -11,7 +11,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject }
 
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const RAW_HIERARCHY = [["Guatemala", "Comercial", "Director Comercial GT", "Gerente Mayoreo", null, "KAM"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Marlon", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Sandra", "Zona Eva", "Gerente de Sucursal"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Sandra", "Gerente de Sucursal"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Carlos", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Freddy", "Gerente de Sucursal", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Freddy", "Zona Diego", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Freddy", "Zona Selvin", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Freddy", "Zona Jose", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Director Retail", "Regional Freddy", "Zona Giovany", "Gerente de Sucursal", "AC"], ["Guatemala", "Comercial", "Director Comercial GT", "Gerente Proyectos", "KAM"], ["Guatemala", "Comercial", "Director Comercial GT", "Gerente Canales Digitales", "Líder de Mesa", "AC"], ["El Salvador", "Comercial", "Director Comercial SV", "Regional", "Gerente de Sucursal", "AC"], ["El Salvador", "Comercial", "Director Comercial SV", "Gerente Proyectos", "KAM"], ["El Salvador", "Comercial", "Director Comercial SV", "Gerente Mayoreo", "KAM"], ["Honduras", "Comercial", "Director Comercial HN", "Sucursal", "AC"], ["Honduras", "Comercial", "Director Comercial HN", "Gerente Proyectos", "KAM"], ["México", "Comercial", "Director Comercial MX", "Regional", "Gerente de Sucursal", "AC"], ["México", "Comercial", "Director Comercial MX", "Gerente Proyectos", "KAM"], ["México", "Comercial", "Director Comercial MX", "Gerente Mayoreo", "KAM"], ["Guatemala", "Operaciones", "COO", "Gerente Operaciones GT", "Gerente HUB", "Jefe de CEDI", "Encargado de Bodega", "Supervisor", "Auxiliar de Bodega"], ["El Salvador", "Operaciones", "COO", "Gerente Operaciones SV", "Encargado de Bodega", "Supervisor", "Auxiliar de Bodega"], ["Honduras", "Operaciones", "COO", "Gerente Operaciones HN", "Encargado de Bodega", "Supervisor", "Auxiliar de Bodega"], ["México", "Operaciones", "COO", "Gerente Operaciones MX", "Encargado de Bodega", "Supervisor", "Auxiliar de Bodega"], ["Guatemala", "Operaciones", "COO", "Coordinador de Servicio al Cliente", "Servicio al Cliente"], ["México", "Operaciones", "COO", "Gerente de Logística MX / Coordinador de Transporte", "Planificador de Rutas / Chofer / Ayudante de Chofer"], ["Guatemala", "Recursos Humanos", "CHRO", "Gerente de Atracción de Talento", "Analista de Atracción de Talento"], ["Guatemala", "Recursos Humanos", "CHRO", "Gerente de Compensaciones"], ["Guatemala", "Recursos Humanos", "CHRO", "Jefe de Desarrollo Organizacional", "Coach Comercial"], ["Guatemala", "Recursos Humanos", "CHRO", "Coordinador de Relaciones Laborales", "Analista de Servicios al Colaborador"], ["Guatemala", "Recursos Humanos", "CHRO", "HRBP"], ["Guatemala", "Categorias", "CPO", "Gerente de Categorías", "Especialista / Administrador de Categorías"], ["Guatemala", "Categorias", "CPO", "Gerente de Comercio Internacional", "Analista de Importaciones y Exportaciones / Analista de Inventarios"], ["Guatemala", "Categorias", "CPO", "Gerente de Mercadeo", "Coordinador de Mercadeo / Coordinador de Diseño", "Diseñador / Fotógrafo"], ["Guatemala", "Categorias", "CPO", "Gerente de Cadena de Suministros", "Especialista de Compras bajo pedido / Jefe de Resurtido / Jefe de Proyectos", "Analista de Back Office Comercial / Analista de Resurtido / Analista de Proyectos"], ["Guatemala", "Finanzas", "Gerente Financiero", "Contador Corporativo", "Contador General GT", "Analista de Costos / Asistente de contabilidad / Asistente de Cuentas por Pagar / Analista de Impuestos"], ["Guatemala", "Finanzas", "Gerente Financiero", "Contador Corporativo", "Coordinador Administrativo", "Asistente de contabilidad / Auxiliar Administrativo"], ["Guatemala", "Finanzas", "Gerente Financiero", "Contador Corporativo", "Analista de Nómina"], ["México", "Finanzas", "Gerente Financiero", "Gerente Administrativo y Financiero MX", "Contador General / Jefe de Créditos y Cobros / Contador Nominista / Auxiliar de Limpieza / Guardia de Seguridad"], ["Guatemala", "Finanzas", "Gerente Financiero", "Jefe de Auditoría Interna", "Coordinador de Auditoría Interna", "Auditor Interno"], ["Guatemala", "Finanzas", "Gerente Financiero", "Jefe de Créditos y Cobros", "Asistente de Créditos / Mensajero – Cobrador"], ["Guatemala", "Finanzas", "Gerente Financiero", "Jefe de Compras", "Servicio al Cliente Administrativo / Técnico"], ["Guatemala", "Finanzas", "Gerente Financiero", "Jefe de Tesorería Corporativo", "Jefe de Cajas", "Cajero Regional / Cajero"], ["Guatemala", "Finanzas", "Gerente Financiero", "Jefe de Tesorería Corporativo", "Analista de Cuentas por Pagar / Cajero Virtual"], ["Guatemala", "Finanzas", "Gerente Financiero", "Analista de Planificación Financiera"], ["Guatemala", "Construcción y Desarrollo", "Gerente de Desarrollo y Construcción", "PM Construcción / Arquitecto Diseñador / Coordinador de Cuantificaciones y Licitaciones / Supervisor de Instalaciones / Arquitecto Retail / Jefe de Mantenimiento", "Auxiliar de Mantenimiento"], ["Guatemala", "IT", "Gerente de Transformación Digital", "PMO Eficiencia de Negocios y Tecnología", "Soporte Técnico Lisa, WMA & TMS"], ["Guatemala", "IT", "Gerente de Transformación Digital", "PMO Inteligencia de Procesos y Negocios", "Product Owner SAP / Analista de Inteligencia de Negocios", "Analista de Soporte"], ["Guatemala", "IT", "Gerente de Transformación Digital", "Gerente de Infraestructura y Soporte", "Coordinador de Infraestructura / Coordinador de Soporte Técnico", "Analista de Soporte Técnico"], ["Guatemala", "IT", "Gerente de Transformación Digital", "Project Manager / Analista de Datos Sr."]];
+
 
 // ── UTILIDADES DE CORREO ──────────────────────────────────────────────────────
 async function sendEmailNotification(to, subject, html) {
@@ -50,6 +50,7 @@ const MX_SUCS=['60 Norte','Cancún','Canek','Cedis','Dragones','Mayoreo','Mérid
 // ── ESTADO GLOBAL ─────────────────────────────────────────────────────────────
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 let currentUser=null, userProfile=null, allPlanes=[], allUsers=[];
+window.EmpresaConfig={};
 let activePlanId=null, activePlanData=null;
 let currentTab=0, smartRows=0, formData={};
 let pendingSegFiles=[];
@@ -125,138 +126,6 @@ function nowStr(){
 const ADMIN_HIERARCHY=['dir_admin','gerente_admin','jefe_admin','supervisor_admin','coordinador_admin'];
 
 // ── ORGANIGRAMA FERCO (jerarquía dinámica: País → Área → Nivel3+) ─────────────
-const FERCO_HIERARCHY={
-  "Guatemala":{
-    "Comercial":{
-      "Director Comercial GT":{
-        "Gerente Mayoreo":          {sub:{"KAM":{}}},
-        "Director Retail":          {sub:{
-        "Regional Marlon":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Regional Sandra":  {sub:{"Zona Eva":{sub:{"Gerente de Sucursal":{}}},"Gerente de Sucursal":{}}},
-        "Regional Carlos":  {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Regional Freddy":  {sub:{
-          "Gerente de Sucursal":{sub:{"Asesor Comercial":{}}},
-          "Zona Diego":     {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Selvin":    {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Jose":      {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-          "Zona Giovany":   {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}
-        }}
-      }},
-        "Gerente de Proyectos":     {sub:{"KAM":{}}},
-        "Gerente de Canales Digitales":{sub:{"Líder de Mesa":{sub:{"Asesor Comercial":{}}}}}
-      }
-    },
-    "Operaciones":{
-      "COO":{
-        "Gerente de Operaciones GT":{sub:{"Gerente HUB":{sub:{"Jefe de CEDI":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}}}}}},
-        "Coordinador de Servicio al Cliente":{sub:{"Servicio al Cliente":{}}}
-      }
-    },
-    "Recursos Humanos":{
-      "CHRO":{
-        "Gerente de Atracción de Talento":   {sub:{"Analista de Atracción de Talento":{}}},
-        "Gerente de Compensaciones":         {},
-        "Jefe de Desarrollo Organizacional": {sub:{"Coach Comercial":{}}},
-        "Coordinador de Relaciones Laborales":{sub:{"Analista de Servicios al Colaborador":{}}},
-        "HRBP":{}
-      }
-    },
-    "Categorías":{
-      "CPO":{
-        "Gerente de Categorías":          {sub:{"Especialista de Categorías":{},"Administrador de Categorías":{}}},
-        "Gerente de Comercio Internacional":{sub:{"Analista de Importaciones y Exportaciones":{},"Analista de Inventarios":{}}},
-        "Gerente de Mercadeo":            {sub:{"Coordinador de Mercadeo":{sub:{"Diseñador":{},"Fotógrafo":{}}},"Coordinador de Diseño":{sub:{"Diseñador":{},"Fotógrafo":{}}}}},
-        "Gerente de Cadena de Suministros":{sub:{
-          "Especialista de Compras bajo pedido":{sub:{"Analista de Back Office Comercial":{},"Analista de Resurtido":{},"Analista de Proyectos":{}}},
-          "Jefe de Resurtido":             {sub:{"Analista de Back Office Comercial":{},"Analista de Resurtido":{},"Analista de Proyectos":{}}},
-          "Jefe de Proyectos":             {sub:{"Analista de Back Office Comercial":{},"Analista de Resurtido":{},"Analista de Proyectos":{}}}
-        }}
-      }
-    },
-    "Finanzas":{
-      "Gerente Financiero":{
-        "Contador Corporativo":{sub:{
-          "Contador General GT":       {sub:{"Analista de Costos":{},"Asistente de Contabilidad":{},"Asistente de Cuentas por Pagar":{},"Analista de Impuestos":{}}},
-          "Coordinador Administrativo":{sub:{"Asistente de Contabilidad":{},"Auxiliar Administrativo":{}}},
-          "Analista de Nómina":        {}
-        }},
-        "Jefe de Auditoría Interna":   {sub:{"Coordinador de Auditoría Interna":{sub:{"Auditor Interno":{}}}}},
-        "Jefe de Créditos y Cobros":   {sub:{"Asistente de Créditos":{},"Mensajero – Cobrador":{}}},
-        "Jefe de Compras":             {sub:{"Servicio al Cliente Administrativo":{},"Técnico":{}}},
-        "Jefe de Tesorería Corporativo":{sub:{"Jefe de Cajas":{sub:{"Cajero Regional":{},"Cajero":{}}},"Analista de Cuentas por Pagar":{},"Cajero Virtual":{}}},
-        "Analista de Planificación Financiera":{}
-      }
-    },
-    "Construcción y Desarrollo":{
-      "Gerente de Desarrollo y Construcción":{
-        "PM Construcción":             {sub:{"Auxiliar de Mantenimiento":{}}},
-        "Arquitecto Diseñador":        {sub:{"Auxiliar de Mantenimiento":{}}},
-        "Coordinador de Cuantificaciones y Licitaciones":{sub:{"Auxiliar de Mantenimiento":{}}},
-        "Supervisor de Instalaciones": {sub:{"Auxiliar de Mantenimiento":{}}},
-        "Arquitecto Retail":           {sub:{"Auxiliar de Mantenimiento":{}}},
-        "Jefe de Mantenimiento":       {sub:{"Auxiliar de Mantenimiento":{}}}
-      }
-    },
-    "IT":{
-      "Gerente de Transformación Digital":{
-        "PMO Eficiencia de Negocios y Tecnología":{sub:{"Soporte Técnico Lisa, WMA & TMS":{}}},
-        "PMO Inteligencia de Procesos y Negocios":{sub:{"Product Owner SAP":{sub:{"Analista de Soporte":{}}},"Analista de Inteligencia de Negocios":{sub:{"Analista de Soporte":{}}}}},
-        "Gerente de Infraestructura y Soporte":{sub:{"Coordinador de Infraestructura":{sub:{"Analista de Soporte Técnico":{}}},"Coordinador de Soporte Técnico":{sub:{"Analista de Soporte Técnico":{}}}}},
-        "Project Manager":{},
-        "Analista de Datos Sr.":{}
-      }
-    }
-  },
-  "El Salvador":{
-    "Comercial":{
-      "Director Comercial SV":{
-        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Gerente de Proyectos": {sub:{"KAM":{}}},
-        "Gerente Mayoreo":      {sub:{"KAM":{}}}
-      }
-    },
-    "Operaciones":{
-      "COO":{
-        "Gerente de Operaciones SV":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}}
-      }
-    }
-  },
-  "Honduras":{
-    "Comercial":{
-      "Director Comercial HN":{
-        "Gerente de Sucursal":             {sub:{"Asesor Comercial":{}}},
-        "Regional":             {sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}},
-        "Gerente de Proyectos": {sub:{"KAM":{}}}
-      }
-    },
-    "Operaciones":{
-      "COO":{
-        "Gerente de Operaciones HN":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}}
-      }
-    }
-  },
-  "México":{
-    "Comercial":{
-      "Director Comercial MX":{
-        "Regional":             {sub:{"Zona":{sub:{"Gerente de Sucursal":{sub:{"Asesor Comercial":{}}}}}}},
-        "Gerente de Proyectos": {sub:{"KAM":{}}},
-        "Gerente Mayoreo":      {sub:{"KAM":{}}}
-      }
-    },
-    "Operaciones":{
-      "COO":{
-        "Gerente de Operaciones MX":{sub:{"Encargado de Bodega":{sub:{"Supervisor":{sub:{"Auxiliar de Bodega":{}}}}}}},
-        "Gerente de Logística MX":  {sub:{"Planificador de Rutas":{},"Chofer":{},"Ayudante de Chofer":{}}},
-        "Coordinador de Transporte":{sub:{"Planificador de Rutas":{},"Chofer":{},"Ayudante de Chofer":{}}}
-      }
-    },
-    "Finanzas":{
-      "Gerente Financiero":{
-        "Gerente Administrativo y Financiero MX":{sub:{"Contador General":{},"Jefe de Créditos y Cobros":{},"Contador Nominista":{},"Auxiliar de Limpieza":{},"Guardia de Seguridad":{}}}
-      }
-    }
-  }
-};
 
 // Colores por área (usa el nombre del área como clave directa)
 const AREA_COLORS={
@@ -325,32 +194,52 @@ function renderMentions(txt){
 
 // ── JERARQUÍA Y MENCIONABLES ──────────────────────────────────────────────────
 function getSubordinateUids(){
-  const rol=userProfile.rol;
   const myUid = currentUser.uid;
+  const myRol = userProfile.rol;
   const subs = new Set();
+  const cfg = window.EmpresaConfig || {puestos:[]};
 
-  function findSubordinates(uid) {
+  // 1. Dependencia Directa de Usuarios (El campo 'reportaA' en el documento del usuario)
+  function findDirectUserSubordinates(uid) {
     allUsers.forEach(u => {
       if (u.reportaA === uid && !subs.has(u.uid)) {
         subs.add(u.uid);
-        findSubordinates(u.uid);
+        findDirectUserSubordinates(u.uid);
       }
     });
   }
-  findSubordinates(myUid);
+  findDirectUserSubordinates(myUid);
 
-  for(const u of allUsers){
-    if(u.uid===myUid || subs.has(u.uid)) continue;
-    if(rol==='director'&&u.rol==='regional') subs.add(u.uid);
-    else if(rol==='regional'&&u.rol==='zona'&&u.region===userProfile.region) subs.add(u.uid);
-    else if(rol==='zona'&&u.rol==='sucursal'&&u.zona===userProfile.zona) subs.add(u.uid);
-    else if(typeof ADMIN_HIERARCHY!=='undefined' && ADMIN_HIERARCHY.includes(rol)){
-      const myIdx=ADMIN_HIERARCHY.indexOf(rol);
-      const uIdx=ADMIN_HIERARCHY.indexOf(u.rol);
-      if(uIdx>myIdx&&u.pais===userProfile.pais) subs.add(u.uid);
-    }
-    else if(rol==='rh'||rol==='rh_global'||rol==='ceo') subs.add(u.uid);
+  // 2. Jerarquía Global por Rol (Opción B: Roles reportan a Roles en Configuración)
+  // SuperAdmin / CEO ve todo
+  if (myRol === 'rh_global' || myRol === 'rh' || myRol === 'ceo') {
+      allUsers.forEach(u => { if (u.uid !== myUid) subs.add(u.uid); });
+      return Array.from(subs);
   }
+
+  // Encontramos todos los roles subordinados a nuestro rol recursivamente
+  const subordinateRoles = new Set();
+  function findSubordinateRoles(rolId) {
+      cfg.puestos.forEach(p => {
+          if (p.reportaA === rolId && !subordinateRoles.has(p.id)) {
+              subordinateRoles.add(p.id);
+              findSubordinateRoles(p.id);
+          }
+      });
+  }
+  findSubordinateRoles(myRol);
+
+  // Agregar a los usuarios que tienen un rol subordinado Y que están en la misma línea (país)
+  allUsers.forEach(u => {
+      if (u.uid === myUid) return;
+      if (subordinateRoles.has(u.rol)) {
+          // Si queremos que un Gerente de Guatemala no vea a los de México, filtramos por país:
+          if (u.pais === userProfile.pais || !userProfile.pais) {
+              subs.add(u.uid);
+          }
+      }
+  });
+
   return Array.from(subs);
 }
 
@@ -610,6 +499,34 @@ onAuthStateChanged(auth, async user=>{
     const usersSnap=await getDocs(collection(db,'users'));
     allUsers=usersSnap.docs.map(d=>({uid:d.id,...d.data()}));
     await loadUserNotifications();
+    const configSnap=await getDoc(doc(db,'config','empresa'));
+    if(configSnap.exists()){
+      window.EmpresaConfig=configSnap.data();
+    } else {
+      // Seed default config
+      const defaultConfig = {
+        paises: ['Guatemala', 'El Salvador', 'Honduras', 'México'],
+        areas: [
+          {id: 'Comercial', nombre: 'Comercial', color: 'background:#dcfce7;color:#166534'},
+          {id: 'Operaciones', nombre: 'Operaciones', color: 'background:#dbeafe;color:#1e40af'},
+          {id: 'Recursos Humanos', nombre: 'Recursos Humanos', color: 'background:#fce7f3;color:#9d174d'},
+          {id: 'Categorias', nombre: 'Categorías', color: 'background:#fef3c7;color:#92400e'},
+          {id: 'Finanzas', nombre: 'Finanzas', color: 'background:#e0e7ff;color:#3730a3'},
+          {id: 'Construcción y Desarrollo', nombre: 'Construcción y Desarrollo', color: 'background:var(--background);color:#475569'},
+          {id: 'IT', nombre: 'IT', color: 'background:#f0fdf4;color:#166534'}
+        ],
+        puestos: [
+          {id: 'director', nombre: 'Director Comercial', area: 'Comercial', reportaA: 'rh'},
+          {id: 'regional', nombre: 'Gerente Regional', area: 'Comercial', reportaA: 'director'},
+          {id: 'zona', nombre: 'Gerente de Zona', area: 'Comercial', reportaA: 'regional'},
+          {id: 'sucursal', nombre: 'Gerente de Sucursal', area: 'Comercial', reportaA: 'zona'},
+          {id: 'rh', nombre: 'RH Global', area: 'Recursos Humanos', reportaA: ''},
+          {id: 'ceo', nombre: 'CEO', area: 'Comercial', reportaA: ''}
+        ]
+      };
+      await setDoc(doc(db,'config','empresa'), defaultConfig);
+      window.EmpresaConfig=defaultConfig;
+    }
     initApp();
   }else{
     currentUser=null; userProfile=null;
@@ -2602,27 +2519,41 @@ window.openUserModal=()=>{
   document.getElementById('uNombre').value='';
   document.getElementById('uEmail').value='';
   const rhWrap=document.getElementById('uRhGlobalWrap');
-  if(rhWrap) rhWrap.style.display=(currentUser&&currentUser.esRhGlobal)?'block':'none';
+  if(rhWrap) rhWrap.style.display=(currentUser&&userProfile?.rol==='rh_global')?'block':'none';
   const rhCheck=document.getElementById('uEsRhGlobal');
   if(rhCheck) rhCheck.checked=false;
   
-  const paises = new Set();
-  RAW_HIERARCHY.forEach(row => { if(row[0]) paises.add(row[0]); });
-  let pHtml = '<option value="">— Selecciona el país —</option>';
-  Array.from(paises).sort().forEach(p => pHtml += `<option>${p}</option>`);
-  document.getElementById('uPais').innerHTML = pHtml;
-  document.getElementById('uPais').value = '';
+  const cfg = window.EmpresaConfig || {paises:[], areas:[], puestos:[]};
   
-  document.getElementById('uArea').innerHTML='<option value="">— Selecciona el país primero —</option>';
-  document.getElementById('uArea').disabled=true;
-  document.getElementById('uCargo').innerHTML='<option value="">— Selecciona el área primero —</option>';
-  document.getElementById('uCargo').disabled=true;
-  document.getElementById('uReportaA').innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
+  const sPais=document.getElementById('uPais');
+  sPais.innerHTML='<option value="">Seleccione país...</option>'+
+    cfg.paises.map(p=>`<option value="${p}">${p}</option>`).join('');
+    
+  const sArea=document.getElementById('uArea');
+  sArea.innerHTML='<option value="">Seleccione área...</option>'+
+    cfg.areas.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+    
+  // El rol depende del área seleccionada
+  const sRol=document.getElementById('uRol');
+  sRol.innerHTML='<option value="">Seleccione rol...</option>';
   
-  const err=document.getElementById('userErrMsg');
-  if(err) err.style.display='none';
-  document.getElementById('userModalOverlay').classList.add('open');
+  sArea.onchange = () => {
+      const areaSelec = sArea.value;
+      const rolesArea = cfg.puestos.filter(p => p.area === areaSelec);
+      sRol.innerHTML='<option value="">Seleccione rol...</option>'+
+        rolesArea.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('');
+  };
+  
+  // Limpiar otros selects
+  ['uRegion','uZona','uSucursal'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) {el.innerHTML=''; el.parentElement.style.display='none';}
+  });
+  
+  hideErr('uErr');
+  document.getElementById('userModal').classList.add('open');
 };
+
 window.closeUserModal=()=>document.getElementById('userModalOverlay').classList.remove('open');
 
 // País cambia → habilitar Área
@@ -3478,3 +3409,154 @@ function buildUauPrintDoc(p){
     <div class="psigs"><div><div class="psig">${p.asesor||'Asesor'}</div></div><div><div class="psig">${p.lider||'Líder'}</div></div></div>
   </div>`;
 }
+// ── PANEL DE CONFIGURACIÓN (ADMIN) ────────────────────────────────────────────
+window.openAdminConfig = () => {
+    document.getElementById('kanbanArea').style.display = 'none';
+    document.getElementById('adminConfigArea').style.display = 'flex';
+    document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+    renderAdminConfig();
+};
+
+window.closeAdminConfig = () => {
+    document.getElementById('adminConfigArea').style.display = 'none';
+    document.getElementById('kanbanArea').style.display = 'flex';
+    renderAll();
+};
+
+async function saveConfigToDb() {
+    try {
+        await setDoc(doc(db, 'config', 'empresa'), window.EmpresaConfig);
+        alert('✅ Configuración guardada correctamente.');
+    } catch(e) {
+        console.error(e);
+        alert('❌ Error al guardar configuración.');
+    }
+}
+
+window.renderAdminConfig = () => {
+    if (!window.EmpresaConfig) return;
+    const cfg = window.EmpresaConfig;
+
+    // Países
+    const paisesList = document.getElementById('adminPaisesList');
+    if (paisesList) {
+        paisesList.innerHTML = (cfg.paises || []).map((p, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:8px 12px; border-radius:6px; border:1px solid var(--border);">
+                <span>${escHtml(p)}</span>
+                <button onclick="deletePais(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer;" title="Eliminar País">${lIcon('trash-2', 16)}</button>
+            </div>
+        `).join('');
+    }
+
+    // Áreas
+    const areasList = document.getElementById('adminAreasList');
+    if (areasList) {
+        areasList.innerHTML = (cfg.areas || []).map((a, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:8px 12px; border-radius:6px; border:1px solid var(--border);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; ${a.color}"></span>
+                    <span>${escHtml(a.nombre)}</span>
+                </div>
+                <button onclick="deleteArea(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer;" title="Eliminar Área">${lIcon('trash-2', 16)}</button>
+            </div>
+        `).join('');
+    }
+
+    // Puestos
+    const puestosTable = document.getElementById('adminPuestosTable');
+    if (puestosTable) {
+        const getPuestoNombre = (id) => {
+            if(!id) return 'Ninguno (Máximo Nivel)';
+            const p = (cfg.puestos||[]).find(x => x.id === id);
+            return p ? p.nombre : id;
+        };
+
+        puestosTable.innerHTML = (cfg.puestos || []).map((p, i) => `
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:12px; font-weight:500;">${escHtml(p.nombre)}</td>
+                <td style="padding:12px; color:var(--text-muted);">${escHtml(p.id)}</td>
+                <td style="padding:12px;">${escHtml(p.area)}</td>
+                <td style="padding:12px;"><span style="background:var(--bg); padding:4px 8px; border-radius:4px; font-size:12px; border:1px solid var(--border);">${escHtml(getPuestoNombre(p.reportaA))}</span></td>
+                <td style="padding:12px; text-align:right;">
+                    <button onclick="deletePuesto(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer;">${lIcon('trash-2', 16)} Eliminar</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+};
+
+window.addPaisPrompt = async () => {
+    const p = prompt('Nombre del nuevo País:');
+    if (!p) return;
+    if (!window.EmpresaConfig.paises) window.EmpresaConfig.paises = [];
+    if (window.EmpresaConfig.paises.includes(p)) { alert('Ese país ya existe'); return; }
+    window.EmpresaConfig.paises.push(p);
+    await saveConfigToDb();
+    renderAdminConfig();
+};
+
+window.deletePais = async (index) => {
+    if (!confirm('¿Seguro que deseas eliminar este País? Esto no borrará a los usuarios que ya lo tienen asignado, pero ya no aparecerá en el formulario.')) return;
+    window.EmpresaConfig.paises.splice(index, 1);
+    await saveConfigToDb();
+    renderAdminConfig();
+};
+
+window.addAreaPrompt = async () => {
+    const a = prompt('Nombre de la nueva Área Comercial (Ej: Logística):');
+    if (!a) return;
+    const id = a.toLowerCase().replace(/\s+/g, '_');
+    if (!window.EmpresaConfig.areas) window.EmpresaConfig.areas = [];
+    if (window.EmpresaConfig.areas.find(x => x.id === id)) { alert('Esta área ya existe'); return; }
+    window.EmpresaConfig.areas.push({
+        id: id,
+        nombre: a,
+        color: 'background:#f1f5f9;color:#334155' // default neutral color
+    });
+    await saveConfigToDb();
+    renderAdminConfig();
+};
+
+window.deleteArea = async (index) => {
+    if (!confirm('¿Seguro que deseas eliminar esta Área?')) return;
+    window.EmpresaConfig.areas.splice(index, 1);
+    await saveConfigToDb();
+    renderAdminConfig();
+};
+
+window.addPuestoModal = () => {
+    document.getElementById('puestoNombre').value = '';
+    document.getElementById('puestoId').value = '';
+    
+    // Poblar áreas
+    const selArea = document.getElementById('puestoArea');
+    selArea.innerHTML = (window.EmpresaConfig.areas || []).map(a => `<option value="${a.nombre}">${a.nombre}</option>`).join('');
+    
+    // Poblar Reporta A
+    const selReporta = document.getElementById('puestoReporta');
+    selReporta.innerHTML = '<option value="">Nadie (Máximo Nivel)</option>' + 
+        (window.EmpresaConfig.puestos || []).map(p => `<option value="${p.id}">${p.nombre} (${p.area})</option>`).join('');
+
+    hideErr('puestoErr');
+    document.getElementById('puestoModal').classList.add('open');
+};
+
+window.closePuestoModal = () => {
+    document.getElementById('puestoModal').classList.remove('open');
+};
+
+window.savePuesto = async () => {
+    const nombre = document.getElementById('puestoNombre').value.trim();
+    const id = document.getElementById('puestoId').value.trim();
+    const area = document.getElementById('puestoArea').value;
+    const reportaA = document.getElementById('puestoReporta').value;
+
+    if (!nombre || !id) { showErr('puestoErr', 'El nombre y el identificador son obligatorios.'); return; }
+    if (!window.EmpresaConfig.puestos) window.EmpresaConfig.puestos = [];
+    if (window.EmpresaConfig.puestos.find(x => x.id === id)) { showErr('puestoErr', 'El identificador ya está en uso.'); return; }
+
+    window.EmpresaConfig.puestos.push({ id, nombre, area, reportaA });
+    closePuestoModal();
+    await saveConfigToDb();
+    renderAdminConfig();
+};
