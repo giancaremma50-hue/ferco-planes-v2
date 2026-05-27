@@ -1738,9 +1738,10 @@ async function uploadPlanFilesDirectly(files){
   const archs=[...(activePlanData.archivos||[])];
   for(const f of files){
     try{
-      const r=ref(storage,`planes/${activePlanId}/${Date.now()}_${f.name}`);
-      await uploadBytes(r,f);
-      const url=await getDownloadURL(r);
+      const path = `planes/${activePlanId}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const { data, error } = await supabase.storage.from('archivos').upload(path, f);
+      if (error) throw error;
+      const url = supabase.storage.from('archivos').getPublicUrl(path).data.publicUrl;
       archs.push({nombre:f.name,url,fecha:now});
     }catch(e){console.error(e);}
   }
@@ -1909,9 +1910,10 @@ window.saveSeg=async()=>{
   const archivosSubidos=[];
   for(const f of pendingSegFiles){
     try{
-      const r=ref(storage,`seguimientos/${activePlanId}/${Date.now()}_${f.name}`);
-      await uploadBytes(r,f);
-      const url=await getDownloadURL(r);
+      const path = `seguimientos/${activePlanId}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const { data, error } = await supabase.storage.from('archivos').upload(path, f);
+      if (error) throw error;
+      const url = supabase.storage.from('archivos').getPublicUrl(path).data.publicUrl;
       archivosSubidos.push({nombre:f.name,url,fecha:now});
     }catch(e){console.error(e);}
   }
@@ -1969,9 +1971,10 @@ window.confirmarCierre=async()=>{
   let urlCierre=null;
   if(pendingCierreFile){
     try{
-      const r=ref(storage,`cierres/${activePlanId}/${Date.now()}_${pendingCierreFile.name}`);
-      await uploadBytes(r,pendingCierreFile);
-      urlCierre=await getDownloadURL(r);
+      const path = `cierres/${activePlanId}/${Date.now()}_${pendingCierreFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const { data, error } = await supabase.storage.from('archivos').upload(path, pendingCierreFile);
+      if (error) throw error;
+      urlCierre = supabase.storage.from('archivos').getPublicUrl(path).data.publicUrl;
     }catch(e){console.error(e);}
   }
   const fechaStr=nowStr();
@@ -2182,9 +2185,10 @@ window.savePlan=async()=>{
       const archivosAcuerdo=[];
       for(const f of files){
         try{
-          const sr=ref(storage,`smart/${r.id}/${idx}/${Date.now()}_${f.name}`);
-          await uploadBytes(sr,f);
-          const url=await getDownloadURL(sr);
+          const path = `smart/${r.id}/${idx}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const { data, error } = await supabase.storage.from('archivos').upload(path, f);
+          if (error) throw error;
+          const url = supabase.storage.from('archivos').getPublicUrl(path).data.publicUrl;
           archivosAcuerdo.push({nombre:f.name,url,fecha:fmtDate(new Date())});
         }catch(e){console.error(e);}
       }
