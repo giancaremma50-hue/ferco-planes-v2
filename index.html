@@ -5041,6 +5041,37 @@ window.onPaisChange=()=>{
   areaSelect.disabled = false;
 }
 
+window.onAreaChange=()=>{
+  const pais = document.getElementById('uPais').value;
+  const area = document.getElementById('uArea').value;
+  const cargoSelect = document.getElementById('uCargo');
+  const repSelect = document.getElementById('uReportaA');
+  
+  repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
+  
+  if(!area){
+    cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>';
+    cargoSelect.disabled=true;
+    return;
+  }
+  
+  const cargos = new Set();
+  RAW_HIERARCHY.forEach(row => {
+    if(row[0] === pais && row[1] === area) {
+      for(let i=2; i<row.length; i++){
+        if(row[i]){
+          const parts = row[i].split('/');
+          parts.forEach(p => cargos.add(p.trim()));
+        }
+      }
+    }
+  });
+  
+  let cHtml = '<option value="">— Selecciona el puesto / rol —</option>';
+  Array.from(cargos).sort().forEach(c => cHtml += `<option>${c}</option>`);
+  cargoSelect.innerHTML = cHtml;
+  cargoSelect.disabled = false;
+};
 
 window.onPuestoChange=()=>{
   const pais = document.getElementById('uPais').value;
