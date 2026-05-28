@@ -2622,6 +2622,9 @@ async function loadUsers(){
                 <button class="uc-pass-btn" title="Restablecer Contraseña" onclick="resetUserPassword('${u.email}','${escHtml(u.nombre||'')}')">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </button>
+                <button class="uc-pass-btn" title="Eliminar Usuario" onclick="confirmDeleteUser('${u.uid}','${escHtml(u.nombre||'')}')" style="color:var(--danger); border-color:var(--danger); margin-left:6px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
               </div>
               <div class="uc-details">
                 <div class="uc-detail-item">
@@ -3917,3 +3920,58 @@ document.addEventListener('change', e => {
     }
   }
 });
+
+
+// --- SECURE USER DELETION ---
+let userToDeleteUid = null;
+window.confirmDeleteUser = (uid, nombre) => {
+  userToDeleteUid = uid;
+  document.getElementById('delUserNombre').textContent = nombre;
+  document.getElementById('delUserPass').value = '';
+  document.getElementById('delUserErr').innerHTML = '';
+  document.getElementById('deleteUserOverlay').classList.add('open');
+  document.getElementById('delUserPass').focus();
+};
+window.closeDeleteUser = () => {
+  document.getElementById('deleteUserOverlay').classList.remove('open');
+  userToDeleteUid = null;
+};
+window.doDeleteUser = async () => {
+  const pass = document.getElementById('delUserPass').value;
+  if(!pass){ showErr('delUserErr', 'Ingresa tu contraseña'); return; }
+  
+  const btn = document.getElementById('btnConfirmDelete');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  
+  try {
+    // 1. Re-authenticate current admin
+    const sessionRes = await supabase.auth.getSession();
+    const currentUser = sessionRes?.data?.session?.user;
+    if(!currentUser) throw new Error('No hay sesión activa.');
+    
+    const { error: authErr } = await supabase.auth.signInWithPassword({
+      email: currentUser.email,
+      password: pass
+    });
+    
+    if(authErr) {
+      if(authErr.message.includes('Invalid login credentials')) {
+        throw new Error('Contraseña incorrecta.');
+      }
+      throw authErr;
+    }
+    
+    // 2. Delete user doc
+    btn.textContent = 'Eliminando...';
+    await deleteDoc(doc(db, 'users', userToDeleteUid));
+    
+    // 3. Close and reload
+    closeDeleteUser();
+    await loadUsers();
+  } catch(e) {
+    console.error(e);
+    showErr('delUserErr', e.message || 'Error al eliminar usuario');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Eliminar definitivamente';
+  }
+};

@@ -19,7 +19,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="stylesheet" href="css/main.css?v=1779934929">
+<link rel="stylesheet" href="css/main.css?v=1779936633">
 </head>
 <body>
 
@@ -392,7 +392,7 @@
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Supabase Client -->
-  <script type="module" src="js/app.js?v=1779934929"></script>
+  <script type="module" src="js/app.js?v=1779936633"></script>
 
 <!-- MODAL CONFIGURACIÓN GENERAL -->
 <div class="overlay" id="adminConfigOverlay">
@@ -476,6 +476,26 @@
     <div class="modal-footer">
       <button class="btn" onclick="document.getElementById('puestoModalOverlay').classList.remove('open')">Cancelar</button>
       <button class="btn btn-primary" onclick="savePuesto()">Guardar Puesto</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL ELIMINAR USUARIO SEGURO -->
+<div class="overlay" id="deleteUserOverlay">
+  <div class="chpass-modal" style="border-top: 4px solid var(--danger);">
+    <div class="modal-title" style="color:var(--danger)">⚠️ Confirmar Eliminación</div>
+    <p style="font-size:13px;color:#000;font-weight:500;">
+      Estás a punto de eliminar a <strong id="delUserNombre"></strong> del sistema. Esta acción revocará todos sus accesos inmediatamente.
+    </p>
+    <div class="form-group" style="margin-top:15px">
+      <label style="color:#000;font-weight:700;">Tu contraseña de administrador *</label>
+      <input type="password" id="delUserPass" placeholder="Ingresa tu contraseña para confirmar" onkeydown="if(event.key==='Enter')doDeleteUser()">
+    </div>
+    <div class="err-msg" id="delUserErr"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDeleteUser()">Cancelar</button>
+      <button class="btn btn-danger" id="btnConfirmDelete" onclick="doDeleteUser()">Eliminar definitivamente</button>
     </div>
   </div>
 </div>
