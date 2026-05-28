@@ -3975,3 +3975,56 @@ window.doDeleteUser = async () => {
     btn.disabled = false; btn.textContent = 'Eliminar definitivamente';
   }
 };
+
+
+// --- SECURE PLAN DELETION ---
+let planToDeleteId = null;
+window.confirmDeletePlan = (id, nombre) => {
+  planToDeleteId = id;
+  document.getElementById('delPlanNombre').textContent = nombre;
+  document.getElementById('delPlanPass').value = '';
+  document.getElementById('delPlanErr').innerHTML = '';
+  document.getElementById('deletePlanOverlay').classList.add('open');
+  document.getElementById('delPlanPass').focus();
+};
+window.closeDeletePlan = () => {
+  document.getElementById('deletePlanOverlay').classList.remove('open');
+  planToDeleteId = null;
+};
+window.doDeletePlan = async () => {
+  const pass = document.getElementById('delPlanPass').value;
+  if(!pass){ showErr('delPlanErr', 'Ingresa tu contraseña'); return; }
+  
+  const btn = document.getElementById('btnConfirmDeletePlan');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  
+  try {
+    const sessionRes = await supabase.auth.getSession();
+    const currentUser = sessionRes?.data?.session?.user;
+    if(!currentUser) throw new Error('No hay sesión activa.');
+    
+    const { error: authErr } = await supabase.auth.signInWithPassword({
+      email: currentUser.email,
+      password: pass
+    });
+    
+    if(authErr) {
+      if(authErr.message.includes('Invalid login credentials')) {
+        throw new Error('Contraseña incorrecta.');
+      }
+      throw authErr;
+    }
+    
+    btn.textContent = 'Eliminando...';
+    await deleteDoc(doc(db, 'planes', planToDeleteId));
+    
+    closeDeletePlan();
+    closeDetail();
+    await loadData();
+  } catch(e) {
+    console.error(e);
+    showErr('delPlanErr', e.message || 'Error al eliminar plan');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Eliminar definitivamente';
+  }
+};
