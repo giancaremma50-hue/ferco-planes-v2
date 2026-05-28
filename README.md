@@ -1,4 +1,4 @@
-# FERCO Planes v4
+# FERCO Planes v5
 
 Sistema de gestión de planes de desarrollo para colaboradores de FERCO, disponible en producción en **[ferco-planes-v2.netlify.app](https://ferco-planes-v2.netlify.app)**.
 
@@ -16,15 +16,13 @@ Digitalizar y centralizar el seguimiento de planes de desarrollo del equipo come
 |------|-----------|
 | Frontend | HTML5 + CSS3 + JavaScript vanilla (SPA, un solo archivo) |
 | Autenticación | Firebase Authentication (email/password) con persistencia de sesión por pestaña |
-| Base de datos | Firestore (NoSQL, tiempo real) con reglas de seguridad de nivel de producción |
-| Almacenamiento | Firebase Storage (archivos adjuntos y planes PDF firmados) con reglas de acceso seguro |
-| Notificaciones | Extensión "Trigger Email" de Firebase (envío automático vía Firestore) |
+| Base de datos | **Supabase (PostgreSQL)** alojando la base centralizada con un proxy adaptador transparente desde Firebase |
+| Almacenamiento | **Supabase Storage** (archivos adjuntos, evidencias y planes PDF firmados) con políticas RLS de acceso seguro |
+| Notificaciones | Extensión "Trigger Email" (envío automático vía colección de correos salientes) |
 | Hosting | Netlify (deploy automático desde GitHub) |
 | Gráficas | Chart.js 4.4.0 |
 | PDF / Impresión | `html2pdf.js` (generación y exportación de PDFs) + `window.print()` + CSS `@media print` |
 | Repositorio | GitHub → `giancaremma50-hue/ferco-planes-v2` |
-
-> **Proyecto Firebase:** `ferco-planes-staging`
 
 ---
 
@@ -38,97 +36,32 @@ Para el área **Comercial**. Captura 11 indicadores numéricos semanales (utilid
 
 ---
 
-## Colecciones Firestore
+## Funcionalidades y Mejoras Destacadas (v5)
 
-### `planes` — Planes de Fortalecimiento
-```
-asesor, puesto, lider, liderUid, creadoPor, fecha
-pais, region, zona, sucursal
-fortalezas, areas
-smart: [{ obj, accion, fseg, fcierre, evidencia, soporte, archivos[] }]
-estado: "En curso" | "En seguimiento" | "Cierre"
-pct: número (0–100)
-seguimientos: [{ avance, pct, acuerdo, soporte, fecha, autor, archivos[] }]
-archivos: [], comentarios: []
-creadoEn: timestamp
-```
+### 🗄️ Bóveda Maestra de Evidencias
+- El contador de la pestaña **Archivos** es ahora dinámico, sumando de manera global todas las evidencias adjuntas al plan.
+- Al acceder a la pestaña, se presenta la **Bóveda Maestra**, una lista consolidada que agrupa inteligentemente todos los archivos según su origen (Acuerdos SMART, Seguimientos Históricos, Archivos Generales y Firma de Cierre), con hipervínculos directos al bucket seguro de Supabase.
 
-### `unoauno` — Planes Uno a Uno
-```
-asesor, lider, liderUid, creadoPor
-semana, año, sucursal, pais, region, zona
-indicadores: { metaUtilidad, utilidadGenerada, montoCotizado, facturacion,
-               clientesAtendidos, cotizaciones, facturas,
-               oport2_5K_mas, oport2_5K_menos, totalOportSF, oportunidadesPerdidas }
-resumen, compromisosAsesor, compromisosGerente
-estado: "En curso" | "En seguimiento"
-seguimientos: [{ semana, año, indicadores{}, resumen, compromisosAsesor,
-                 compromisosGerente, fecha, autor, archivos[] }]
-archivos: [], comentarios: []
-creadoEn: timestamp
-```
+### 🏢 Red de Sucursales Dinámicas e Internacionales
+- Integración completa de sucursales a nivel centroamericano (Guatemala, El Salvador, Honduras, México).
+- Sistema de **Formularios Dinámicos Inteligentes**: Los campos de "Sucursal" permanecen ocultos por defecto y solo se despliegan para puestos de *Gerente de sucursal* o *Asesor*.
+- **Auto-Sembrado en Base de Datos**: Las listas de sucursales se autoconfiguran en el documento de configuración de Supabase y filtran sus opciones en tiempo real dependiendo del *País* seleccionado por el usuario.
 
-### `users` — Perfiles de usuario
-```
-uid, nombre, email, rol, area, pais, region, zona, sucursal, reportaA
-```
-
-### `mail` — Correos salientes (Trigger Email Extension)
-```
-to: [emails],
-message: { subject, html }
-```
-
-### `notificaciones_{uid}` — Notificaciones por usuario
-```
-mensaje, tipo, planId, fecha, leida, ts
-```
-
----
-
-## Sistema de roles y jerarquía híbrida recursiva
-
-El sistema combina la estructura comercial geográfica con un modelo corporativo dinámico para dar soporte a cualquier dirección de la empresa sin límites de niveles.
-
-### 1. Área Comercial (Cascada Geográfica)
-
-| Rol | Acceso |
-|-----|--------|
-| `director` | Ve todos los planes de sus regionales (por país y región) |
-| `regional` | Ve planes de sus zonas (misma región) |
-| `zona` | Ve planes de sus sucursales (misma zona) |
-| `sucursal` | Ve solo sus propios planes |
-
-### 2. Puestos Corporativos y Administrativos (Jerarquía de Reporte Directo)
-Para departamentos como Operaciones (COO), CPO, Finanzas, Transformación, CHRO, etc., la jerarquía se establece mediante el campo **"Reporta A"** en la creación del usuario.
-- **Búsqueda Recursiva:** El sistema analiza en tiempo real y de forma infinita quién le reporta a quién. Un líder de cualquier nivel corporativo puede visualizar de inmediato los planes de todo su equipo (subordinados directos e indirectos) sin límites programáticos en el código.
-
-### 3. Roles Especiales y Administración
-- **`rh` / `rh_global`:** Administradores del sistema. Tienen visibilidad global ilimitada sobre todo el sistema, todos los países y todos los departamentos comerciales y corporativos. Tienen control total para la creación de usuarios.
-
----
-
-## Funcionalidades y Mejoras Destacadas
+### ⚙️ Configuración Administrativa Premium (RH Global)
+- Interfaz flotante renovada (Overlay) para el manejo rápido del diccionario maestro de la empresa.
+- Motor de búsqueda inteligente de puestos, diseño minimalista y botones contextuales, limpiando la barra de navegación lateral y ubicando la configuración de jerarquías estratégicamente en el módulo de Usuarios.
 
 ### ✉️ Notificaciones e Integración de Correo
-- **Alta Automática Segura:** Al dar de alta un usuario desde RH, el sistema genera automáticamente una contraseña aleatoria de 16 caracteres y dispara el correo oficial de Firebase para que el usuario configure su clave personal de forma confidencial.
-- **Correo de Bienvenida:** Se encola un correo de bienvenida automático al colaborador con detalles sobre su rol y pasos iniciales.
-- **Envío de Planes en PDF:** Los planes (Fortalecimiento y Uno a Uno) incluyen la opción de **"Enviar PDF"**. Al hacer clic:
-  1. Se genera un documento PDF preciso usando `html2pdf.js`.
-  2. Se sube el archivo de forma encriptada a Firebase Storage.
-  3. Se envía un correo automático a todos los participantes con el enlace seguro de descarga.
+- **Alta Automática Segura:** Al dar de alta un usuario desde RH, el sistema dispara correos oficiales para la configuración de claves.
+- **Envío de Planes en PDF:** Generación automática de documentos PDF vía `html2pdf.js`, almacenados de forma segura en Supabase Storage y despachados por correo con links encriptados.
 
 ### 🌎 Gestión de Usuarios en Cascada Interactiva
-- **Organización Multinivel:** La interfaz plana de usuarios fue reemplazada por un árbol jerárquico colapsable agrupado en: **País ➔ Área/Departamento ➔ Colaboradores**.
-- **Tarjetas Premium:** Se despliega un Grid responsivo de tarjetas elegantes que detallan el Nombre, Correo, Rol exacto, a quién reporta y jerarquía comercial.
-- **Filtrado Inteligente de Líderes:** En el modal de creación de usuarios, la lista de selección "Reporta A" se reduce y filtra de manera dinámica de acuerdo al área seleccionada para encontrar al jefe directo en segundos.
-- **Restablecimiento de Contraseñas Rápido:** Cada tarjeta de usuario posee un icono de candado/llave siempre activo que permite a RH o Administradores enviar el correo de recuperación al instante con confirmación flotante (*Toast*).
+- Árbol jerárquico colapsable agrupado en: **País ➔ Área/Departamento ➔ Colaboradores**.
+- Tarjetas Premium y Filtrado Inteligente de Líderes.
 
-### 🛡️ Seguridad de Servidor y Hardening
-- **Reglas de Seguridad Firestore (`firestore.rules`):** Reglas optimizadas para producción que validan en el servidor que los usuarios solo accedan a los datos permitidos de acuerdo a su ID, subordinación o asignación regional.
-- **Reglas de Firebase Storage (`storage.rules`):** Bloqueo total para subida y descarga de archivos PDF y adjuntos a usuarios no autenticados en el sistema.
-- **Sanamiento de Errores:** Eliminación del uso de `.message` crudos en el frontend para evitar fugas de información técnica o de bases de datos. Los errores reales se imprimen de forma protegida en consola y se muestran mensajes genéricos y amigables en la UI.
-- **Protección de Sesión:** Persistencia de inicio de sesión por pestaña (`browserSessionPersistence`), cerrando sesiones automáticamente al cerrar la pestaña o ventana del navegador en ordenadores compartidos.
+### 🛡️ Migración y Seguridad Backend a Supabase
+- **Reglas RLS Postgre:** Implementación de políticas (Row Level Security) nativas en Supabase Storage bloqueando subidas anónimas y permitiendo manipulación protegida mediante autenticación.
+- Base de datos relacional híbrida con adaptador de Firestore a consultas REST de Supabase, manteniendo la velocidad interactiva del frontend.
 
 ---
 
@@ -137,9 +70,10 @@ Para departamentos como Operaciones (COO), CPO, Finanzas, Transformación, CHRO,
 ```
 ferco-planes-v2/
 ├── index.html          # SPA completa con toda la lógica interactiva
-├── firestore.rules     # Reglas oficiales de seguridad para Firestore Database
-├── storage.rules       # Reglas oficiales de seguridad para Firebase Storage
-├── netlify.toml        # Config Netlify (publish, secrets scan)
+├── css/                # Hojas de estilo modulares
+├── js/app.js           # Lógica central (UI, Supabase, Auth)
+├── Listado_Sucursales_Unificado.md # Matriz de tiendas por país
+├── supabase_schema.sql # Scripts de inyección PostgreSQL para Supabase
 └── README.md           # Esta guía de documentación y arquitectura
 ```
 
@@ -159,13 +93,6 @@ Netlify detecta el push, construye y publica la nueva versión en **[ferco-plane
 
 ---
 
-## Pendientes / Roadmap
-
-- [ ] **Dominio personalizado** — Configurar `planes.ferco.com.gt` en Netlify DNS
-- [ ] **Habilitar Firebase App Check** — Integración final con reCAPTCHA Enterprise en producción
-
----
-
 ## Créditos
 
-Desarrollado para **FERCO** · Sistema corporativo interno de planes de desarrollo · v4 · 2026
+Desarrollado para **FERCO** · Sistema corporativo interno de planes de desarrollo · v5 · 2026
