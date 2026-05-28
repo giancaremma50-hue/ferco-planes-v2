@@ -613,6 +613,10 @@ try {
     currentUser=user;
     const snap=await getDoc(doc(db,'users',user.uid));
     userProfile=snap.exists()?snap.data():{nombre:user.email,rol:'rh'};
+    
+    // FETCH SUCURSALES MAESTRAS
+    const { data: sucs_data } = await supabase.from('sucursales').select('*');
+    if (sucs_data) ALL_SUCURSALES_DB = sucs_data;;
     storageAvailable=true;
     // Cargar todos los usuarios para menciones y jerarquía
     const usersSnap=await getDocs(collection(db,'users'));
