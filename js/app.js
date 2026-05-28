@@ -2176,7 +2176,7 @@ window.savePlan=async()=>{
     liderUid:currentUser.uid,creadoPor:currentUser.uid,
     fecha:new Date().toISOString().slice(0,10),pais:formData.pais||'',
     proxSeg:'',region:up.region||'',zona:up.zona||'',
-    sucursal:'',
+    sucursal:formData.sucursal||'',
     fortalezas:formData.fortalezas||'',areas:formData.areas||'',
     smart,estado:'En curso',pct:0,
     seguimientos:[],archivos:[],comentarios:[],
@@ -2244,6 +2244,32 @@ function renderEditTab(t){
   const autoHier=up.rol==='sucursal'&&up.region;
   const content=document.getElementById('editTabContent');
   if(t===0){
+  setTimeout(()=>{
+    const paisEl = document.getElementById('edit_pais');
+    const puestoEl = document.getElementById('edit_puesto');
+    const sucGroup = document.getElementById('edit_sucursal')?.parentElement;
+    const sucEl = document.getElementById('edit_sucursal');
+    if(paisEl && puestoEl && sucGroup && sucEl) {
+      const updateSucursalVisibility = () => {
+        const p = puestoEl.value;
+        if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
+          sucGroup.style.display = 'block';
+          const country = paisEl.value;
+          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const currentVal = sucEl.value || p.sucursal; // p is editFormData
+          sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+          if(stores.includes(currentVal)) sucEl.value = currentVal;
+        } else {
+          sucGroup.style.display = 'none';
+          sucEl.value = '';
+        }
+      };
+      paisEl.addEventListener('change', updateSucursalVisibility);
+      puestoEl.addEventListener('change', updateSucursalVisibility);
+      updateSucursalVisibility();
+    }
+  }, 100);
+
     content.innerHTML=`<div class="form-grid">
       <div class="form-group"><label>Nombre completo del colaborador *</label><input type="text" id="ef_nombre" value="${p.asesor||''}"></div>
       <div class="form-group"><label>Puesto *</label><input type="text" id="ef_puesto" value="${p.puesto||''}"></div>
@@ -3002,6 +3028,32 @@ function renderUauTab(t){
   const c=document.getElementById('uauTabContent');
   if(!c) return;
   if(t===0){
+  setTimeout(()=>{
+    const paisEl = document.getElementById('edit_pais');
+    const puestoEl = document.getElementById('edit_puesto');
+    const sucGroup = document.getElementById('edit_sucursal')?.parentElement;
+    const sucEl = document.getElementById('edit_sucursal');
+    if(paisEl && puestoEl && sucGroup && sucEl) {
+      const updateSucursalVisibility = () => {
+        const p = puestoEl.value;
+        if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
+          sucGroup.style.display = 'block';
+          const country = paisEl.value;
+          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const currentVal = sucEl.value || p.sucursal; // p is editFormData
+          sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+          if(stores.includes(currentVal)) sucEl.value = currentVal;
+        } else {
+          sucGroup.style.display = 'none';
+          sucEl.value = '';
+        }
+      };
+      paisEl.addEventListener('change', updateSucursalVisibility);
+      puestoEl.addEventListener('change', updateSucursalVisibility);
+      updateSucursalVisibility();
+    }
+  }, 100);
+
     const sucs=getSucursalesForUser();
     const sucsOpts=sucs.map(s=>`<option value="${escHtml(s)}"${uauData.sucursal===s?' selected':''}>${escHtml(s)}</option>`).join('');
     c.innerHTML=`<div class="form-grid">
@@ -3146,6 +3198,32 @@ function renderUauSegTab(t){
   const c=document.getElementById('uauSegTabContent');
   if(!c) return;
   if(t===0){
+  setTimeout(()=>{
+    const paisEl = document.getElementById('edit_pais');
+    const puestoEl = document.getElementById('edit_puesto');
+    const sucGroup = document.getElementById('edit_sucursal')?.parentElement;
+    const sucEl = document.getElementById('edit_sucursal');
+    if(paisEl && puestoEl && sucGroup && sucEl) {
+      const updateSucursalVisibility = () => {
+        const p = puestoEl.value;
+        if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
+          sucGroup.style.display = 'block';
+          const country = paisEl.value;
+          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const currentVal = sucEl.value || p.sucursal; // p is editFormData
+          sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+          if(stores.includes(currentVal)) sucEl.value = currentVal;
+        } else {
+          sucGroup.style.display = 'none';
+          sucEl.value = '';
+        }
+      };
+      paisEl.addEventListener('change', updateSucursalVisibility);
+      puestoEl.addEventListener('change', updateSucursalVisibility);
+      updateSucursalVisibility();
+    }
+  }, 100);
+
     const inds=uauSegData.indicadores||{};
     c.innerHTML=`<div class="uau-ind-grid" style="padding:4px 0">
       <div class="form-group" style="grid-column:1/-1;display:flex;gap:12px">
@@ -3806,3 +3884,36 @@ window.openAdminConfig = () => {
   loadAdminConfig();
   document.getElementById('adminConfigOverlay').classList.add('open');
 };
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(!t) return;
+  const isPuesto = t.id === 'puesto' || t.id === 'puesto2' || t.id === 'edit_puesto';
+  const isPais = t.id === 'pais' || t.id === 'pais2' || t.id === 'edit_pais';
+  
+  if(isPuesto || isPais) {
+    let prefix = '';
+    if (t.id.endsWith('2')) prefix = '2';
+    else if (t.id.startsWith('edit_')) prefix = 'edit_';
+    
+    const paisEl = document.getElementById(prefix === 'edit_' ? 'edit_pais' : 'pais' + prefix);
+    const puestoEl = document.getElementById(prefix === 'edit_' ? 'edit_puesto' : 'puesto' + prefix);
+    const sucEl = document.getElementById(prefix === 'edit_' ? 'edit_sucursal' : 'sucursal' + prefix);
+    const sucGroup = sucEl?.parentElement;
+    
+    if(paisEl && puestoEl && sucGroup && sucEl) {
+      const p = puestoEl.value || '';
+      if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
+        sucGroup.style.display = 'block';
+        const country = paisEl.value;
+        const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+        const currentVal = sucEl.value;
+        sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+        if(stores.includes(currentVal)) sucEl.value = currentVal;
+      } else {
+        sucGroup.style.display = 'none';
+        sucEl.value = '';
+      }
+    }
+  }
+});
