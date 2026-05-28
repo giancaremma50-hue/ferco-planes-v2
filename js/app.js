@@ -722,7 +722,8 @@ function applyRoleUI(){
   if(btnUaU) btnUaU.style.display=(isRH||isCom)?'':'none';
 
   const toggleRow=document.getElementById('viewToggleRow');
-  const hasReportes=['director','regional','zona','rh'].includes(rol)||ADMIN_HIERARCHY.includes(rol);
+  const subUids=getSubordinateUids();
+  const hasReportes=subUids.length > 0;
   toggleRow.style.display=hasReportes?'block':'none';
   renderFilters();
   updateSubViewCounts();
@@ -746,16 +747,13 @@ window.setSubView=(v,btn)=>{
 };
 
 function updateSubViewCounts(){
-  const rol=userProfile.rol;
-  const hasReportes=['director','regional','zona','rh'].includes(rol)||ADMIN_HIERARCHY.includes(rol);
-  if(!hasReportes) return;
   const subUids=getSubordinateUids();
+  const hasReportes=subUids.length > 0;
+  if(!hasReportes) return;
   const activos=p=>['En curso','En seguimiento'].includes(p.estado);
   const creadorDe=p=>p.creadoPor||p.liderUid||'';
   const misPlanesCount=allPlanes.filter(p=>creadorDe(p)===currentUser.uid&&activos(p)).length;
-  const misReportesCount=['director','regional','zona'].includes(rol)
-    ?allPlanes.filter(p=>creadorDe(p)!==currentUser.uid&&activos(p)).length
-    :allPlanes.filter(p=>subUids.includes(creadorDe(p))&&activos(p)).length;
+  const misReportesCount=allPlanes.filter(p=>subUids.includes(creadorDe(p))&&activos(p)).length;
   document.querySelectorAll('.vt-btn').forEach(btn=>{
     if(btn.getAttribute('onclick')?.includes("'mis'")) btn.textContent=`Mis planes (${misPlanesCount})`;
     if(btn.getAttribute('onclick')?.includes("'reportes'")) btn.textContent=`Mis reportes (${misReportesCount})`;
@@ -979,9 +977,8 @@ window.toggleHN=(id)=>{
 };
 
 function filteredPlans(){
-  const rol=userProfile.rol;
-  const hasReportes=['director','regional','zona','rh'].includes(rol)||ADMIN_HIERARCHY.includes(rol);
   const subUids=getSubordinateUids();
+  const hasReportes=subUids.length > 0;
 
   const creadorDe=p=>p.creadoPor||p.liderUid||'';
 
@@ -990,13 +987,7 @@ function filteredPlans(){
     if(currentSubView==='mis'){
       base=allPlanes.filter(p=>creadorDe(p)===currentUser.uid);
     } else {
-      // Director/Regional/Zona: field-based (cubre todos los niveles de la jerarquía)
-      // RH y Admin: UID-based con subordinados directos
-      if(['director','regional','zona'].includes(rol)){
-        base=allPlanes.filter(p=>creadorDe(p)!==currentUser.uid);
-      } else {
-        base=allPlanes.filter(p=>subUids.includes(creadorDe(p)));
-      }
+      base=allPlanes.filter(p=>subUids.includes(creadorDe(p)));
     }
   }
 
