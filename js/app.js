@@ -1033,7 +1033,11 @@ function renderKanban(plans,hayAtr){
       const atr=isAtrasado(p);
       const avenc=acuerdosVencidos(p);
       const segsN=(p.seguimientos||[]).length;
-      const archN=(p.archivos||[]).length;
+      let totalArchivos = (p.archivos || []).length;
+  if (p.smart) p.smart.forEach(s => { totalArchivos += (s.archivos || []).length; });
+  if (p.seguimientos) p.seguimientos.forEach(s => { totalArchivos += (s.archivosSubidos || []).length; });
+  if (p.cierreFileUrl) totalArchivos += 1;
+  const archN = totalArchivos;
       const comN=(p.comentarios||[]).length;
       const isUaU=p.tipo==='unoauno';
       const tipoBadge=isUaU
@@ -1104,7 +1108,11 @@ window.openDetail=id=>{
 function refreshTabHeaders(p){
   const isUaU=p.tipo==='unoauno';
   const segsN=(p.seguimientos||[]).length;
-  const archN=(p.archivos||[]).length;
+  let totalArchivos = (p.archivos || []).length;
+  if (p.smart) p.smart.forEach(s => { totalArchivos += (s.archivos || []).length; });
+  if (p.seguimientos) p.seguimientos.forEach(s => { totalArchivos += (s.archivosSubidos || []).length; });
+  if (p.cierreFileUrl) totalArchivos += 1;
+  const archN = totalArchivos;
   const comN=(p.comentarios||[]).length;
   const cambiosN=(p.historialCambios||[]).length;
   const canEdit=userProfile.rol==='rh'||p.liderUid===currentUser.uid;
