@@ -285,6 +285,7 @@ function renderMentions(txt){
 function getSubordinateUids(){
   const myUid = currentUser.uid;
   const myRol = userProfile.rol;
+  const myCargo = userProfile.cargo;
   const subs = new Set();
   const rawCfg = window.EmpresaConfig || {};
   const cfg = {
@@ -306,27 +307,29 @@ function getSubordinateUids(){
 
   // 2. Jerarquía Global por Rol (Opción B: Roles reportan a Roles en Configuración)
   // SuperAdmin / CEO ve todo
-  if (myRol === 'rh_global' || myRol === 'rh' || myRol === 'ceo') {
+  if (myRol === 'rh_global' || myRol === 'rh' || myRol === 'ceo' || (myCargo && myCargo.startsWith('ceo_'))) {
       allUsers.forEach(u => { if (u.uid !== myUid) subs.add(u.uid); });
       return Array.from(subs);
   }
 
-  // Encontramos todos los roles subordinados a nuestro rol recursivamente
+  // Encontramos todos los roles subordinados a nuestro rol/cargo recursivamente
   const subordinateRoles = new Set();
-  function findSubordinateRoles(rolId) {
+  function findSubordinateRoles(puestoId) {
+      if (!puestoId) return;
       cfg.puestos.forEach(p => {
-          if (p.reportaA === rolId && !subordinateRoles.has(p.id)) {
+          if (p.reportaA === puestoId && !subordinateRoles.has(p.id)) {
               subordinateRoles.add(p.id);
               findSubordinateRoles(p.id);
           }
       });
   }
-  findSubordinateRoles(myRol);
+  findSubordinateRoles(myCargo);
+  findSubordinateRoles(myRol); // Por retrocompatibilidad con roles legacy
 
   // Agregar a los usuarios que tienen un rol subordinado Y que están en la misma línea (país)
   allUsers.forEach(u => {
       if (u.uid === myUid) return;
-      if (subordinateRoles.has(u.rol)) {
+      if (subordinateRoles.has(u.cargo) || subordinateRoles.has(u.rol)) {
           // Si queremos que un Gerente de Guatemala no vea a los de México, filtramos por país:
           if (u.pais === userProfile.pais || !userProfile.pais) {
               subs.add(u.uid);
@@ -2803,7 +2806,7 @@ window.onPuestoChange=()=>{
   const puestoInfo = cfg.puestos.find(p => p.id === cargo);
   if(!puestoInfo || !puestoInfo.reportaA) { repSelect.innerHTML='<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>'; return; }
   const parentRolId = puestoInfo.reportaA;
-  const posiblesJefes = allUsers.filter(u => u.rol === parentRolId);
+  const posiblesJefes = allUsers.filter(u => u.cargo === parentRolId);
   let rHtml = '<option value="">— Selecciona a quién le reporta —</option>';
   if(posiblesJefes.length === 0){ rHtml += '<option value="">(No hay usuarios con el rol requerido en el sistema)</option>'; }
   else { posiblesJefes.forEach(jefe => { rHtml += `<option value="${jefe.uid}">${jefe.nombre} (${jefe.pais || 'Global'})</option>`; }); }
