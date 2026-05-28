@@ -639,7 +639,7 @@ try {
           });
           if (modified) {
              console.log("Migrating role names across all countries...");
-             window.supabase.from('config').update({
+             supabase.from('config').update({
                  paises: window.EmpresaConfig.paises,
                  areas: window.EmpresaConfig.areas,
                  puestos: window.EmpresaConfig.puestos
