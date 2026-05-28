@@ -131,23 +131,10 @@ async function sendEmailNotification(to, subject, html) {
 }
 
 // ── DATOS GT ──────────────────────────────────────────────────────────────────
-const GT_DATA = {
-  Freddy:{
-    Giovany:['Barillas','Camojá','Cuilco','Huehuetenango','MCP Huehuetenango'],
-    Freddy:['Caes','Deco City','Majadas'],
-    Diego:['Chimaltenango','Sololá'],
-    Jose:['Joyabaj','Nebaj','Quiche'],
-    Selvin:['Poptun','San Benito Peten']
-  },
-  Keny:{Keny:['CC','Dubai','Israel','Lisboa','Roma','Tokio']},
-  Marlon:{Marlon:['Chiquimula','Cobán','Escuintla','Jalapa','Jutiapa','Morales','Puerto Barrios','Rey Roosevelt','Salama','Tactic','Villa Nueva','Zona 5']},
-  Sandra:{Sandra:['Coatepeque','Malacatan','Mazatenango','Retalhuleu','San Marcos']},
-  'Juan Manuel':{Eva:['Rey Xela','Totonicapan','Xela']},
-  'Carlos Noriega':{'Carlos Noriega':['San Juan','Studio','Zona 10']}
-};
-const HN_SUCS=['Choluteca','Comayagua','Juticalpa','La Ceiba','Proyectos','Roatan','San Lorenzo','San Pedro Sula','Tegucigalpa'];
-const SV_SUCS=['Chalatenango','Juan Pablo II','Nejapa','San Benito','San Miguel','Santa Ana','Sonsonate','Usulután'];
-const MX_SUCS=['60 Norte','Cancún','Canek','Cedis','Dragones','Mayoreo','Mérida','Proyectos','Tizimin','Tuxtla','Villahermosa'];
+let ALL_SUCURSALES_DB = [];
+
+
+
 
 // ── ESTADO GLOBAL ─────────────────────────────────────────────────────────────
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
@@ -2929,16 +2916,15 @@ let uauSegData={};
 let uauSegTab=0;
 
 function getSucursalesForUser(){
-  const pais=(userProfile.pais||'').toLowerCase();
-  if(pais.startsWith('hon')||pais==='hn') return HN_SUCS||[];
-  if(pais.startsWith('el sal')||pais==='sv') return SV_SUCS||[];
-  if(pais.startsWith('m\xe9x')||pais.startsWith('mex')||pais==='mx') return MX_SUCS||[];
-  if(pais.startsWith('guat')||pais==='gt'){
-    const all=[];
-    Object.values(GT_DATA||{}).forEach(reg=>Object.values(reg).forEach(sucs=>all.push(...sucs)));
-    return [...new Set(all)].sort();
-  }
-  return [];
+  const pais=(userProfile?.pais||'').toLowerCase();
+  let countryMatch = '';
+  if(pais.startsWith('hon')||pais==='hn') countryMatch = 'Honduras';
+  else if(pais.startsWith('el sal')||pais==='sv') countryMatch = 'El Salvador';
+  else if(pais.startsWith('méx')||pais.startsWith('mex')||pais==='mx') countryMatch = 'México';
+  else if(pais.startsWith('guat')||pais==='gt') countryMatch = 'Guatemala';
+  
+  if(!countryMatch) return [];
+  return ALL_SUCURSALES_DB.filter(s => s.pais === countryMatch).map(s => s.nombre).sort();
 }
 
 window.openUnoAUnoForm=()=>{
