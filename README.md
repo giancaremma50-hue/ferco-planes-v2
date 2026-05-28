@@ -45,7 +45,7 @@ Para el área **Comercial**. Captura 11 indicadores numéricos semanales (utilid
 ### 🏢 Red de Sucursales Dinámicas e Internacionales
 - Integración completa de sucursales a nivel centroamericano (Guatemala, El Salvador, Honduras, México).
 - Sistema de **Formularios Dinámicos Inteligentes**: Los campos de "Sucursal" permanecen ocultos por defecto y solo se despliegan para puestos de *Gerente de sucursal* o *Asesor*.
-- **Auto-Sembrado en Base de Datos**: Las listas de sucursales se autoconfiguran en el documento de configuración de Supabase y filtran sus opciones en tiempo real dependiendo del *País* seleccionado por el usuario.
+- **Auto-Sembrado y Limpieza de Datos**: Las listas de sucursales se extraen directamente desde una tabla maestra en Supabase, reaccionando en vivo a los cambios de País. Además, el sistema incorpora rutinas de auto-migración al inicio de sesión para estandarizar nomenclaturas históricas erróneas en la base de datos (ej. "Sucursal" a "Gerente de Sucursal").
 
 ### ⚙️ Configuración Administrativa Premium (RH Global)
 - Interfaz flotante renovada (Overlay) para el manejo rápido del diccionario maestro de la empresa.
