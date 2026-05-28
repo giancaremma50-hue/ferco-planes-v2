@@ -2863,6 +2863,13 @@ window.onPuestoChange=()=>{
     // Filtrar jefes posibles: usuarios cuyos cargos coincidan con IDs o nombres legacy
     const posiblesJefes = allUsers.filter(u => {
       const uCargoLower = (u.cargo || '').trim().toLowerCase();
+      
+      // Excepción especial: Si el puesto requiere reportarle a un CEO, 
+      // cualquier usuario con rol 'ceo' o cargo que inicie con 'ceo_' es válido, sin importar el área.
+      if (parentPuestoNames.has('ceo') && (u.rol === 'ceo' || uCargoLower.startsWith('ceo_'))) {
+        return true;
+      }
+      
       return parentPuestoIds.has(u.cargo) || parentPuestoNames.has(uCargoLower);
     });
     let rHtml = '<option value="">— Selecciona a quién le reporta —</option>';
