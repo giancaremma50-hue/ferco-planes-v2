@@ -2922,14 +2922,15 @@ window.saveUser=async()=>{
 
   }catch(e){
     console.error('Error creando usuario:',e);
-    if(e.code==='auth/email-already-in-use'){
-      showErr('userErrMsg','Este correo ya está registrado. Usa un correo diferente.');
-    }else if(e.code==='auth/invalid-email'){
+    const msg = e.message || '';
+    if(msg.includes('already registered') || e.status === 422 || e.code === '23505') {
+      showErr('userErrMsg','Este correo ya está registrado. Si es una cuenta huérfana (sin perfil), elimínala de Supabase Auth antes de reintentar.');
+    }else if(msg.includes('invalid-email') || msg.includes('Email address is invalid')){
       showErr('userErrMsg','El correo no tiene un formato válido.');
-    }else if(e.code==='auth/network-request-failed'){
+    }else if(msg.includes('network') || msg.includes('Failed to fetch')){
       showErr('userErrMsg','Error de red. Verifica tu conexión e inténtalo de nuevo.');
     }else{
-      showErr('userErrMsg',`Error (${e.code||e.message||'desconocido'}). Intenta de nuevo.`);
+      showErr('userErrMsg',`Error: ${msg || 'desconocido'}. Intenta de nuevo.`);
     }
   }finally{
     // Siempre restaurar el botón y limpiar la app secundaria
