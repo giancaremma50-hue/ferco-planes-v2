@@ -639,7 +639,14 @@ try {
           });
           if (modified) {
              console.log("Migrating role names across all countries...");
-             setDoc(doc(db, 'config', 'empresa'), window.EmpresaConfig);
+             window.supabase.from('config').update({
+                 paises: window.EmpresaConfig.paises,
+                 areas: window.EmpresaConfig.areas,
+                 puestos: window.EmpresaConfig.puestos
+             }).eq('id', 'empresa').then(({error}) => {
+                 if(error) console.error("Error migrating config:", error);
+                 else console.log("Migration successful");
+             });
           }
         }
         // -------------------------------------------
@@ -2845,10 +2852,19 @@ window.saveUser=async()=>{
   const reportaA=document.getElementById('uReportaA')?.value||'';
   const esRhGlobal=document.getElementById('uEsRhGlobal')?.checked||false;
 
+  const uSucWrap = document.getElementById('uSucursalWrap');
+  const uSucEl = document.getElementById('uSucursal');
+  const sucursal = (uSucWrap && uSucWrap.style.display !== 'none' && uSucEl) ? uSucEl.value : null;
+
   // Validaciones
   if(!nombre||!email){showErr('userErrMsg','Completa el nombre y correo del usuario.');return;}
   if(!pais||!area){showErr('userErrMsg','Selecciona el país y el área.');return;}
   if(!cargo){showErr('userErrMsg','Escribe el cargo o puesto.');return;}
+
+  if (uSucWrap && uSucWrap.style.display !== 'none' && uSucEl && !uSucEl.value) {
+    showErr('userErrMsg','Por favor selecciona la sucursal.');
+    return;
+  }
 
   // Derivar rol legacy para compatibilidad con acceso control
   const nivel = parseInt(document.getElementById('uCargo').dataset.nivel || '99', 10);
