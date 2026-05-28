@@ -118,6 +118,7 @@ async function sendPasswordResetEmail(auth, email) {
 // ── UTILIDADES DE CORREO ──────────────────────────────────────────────────────
 async function sendEmailNotification(to, subject, html) {
   try {
+    // 1. Registrar en la base de datos de Supabase para registro/cola histórica
     await addDoc(collection(db, 'mail'), {
       to: [to],
       message: {
@@ -125,6 +126,14 @@ async function sendEmailNotification(to, subject, html) {
         html: html
       }
     });
+
+    // 2. Despachar de inmediato a través de nuestra Netlify Function segura
+    fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, html })
+    }).catch(err => console.warn('Error en llamada directa a función send-email:', err));
+
   } catch(e) {
     console.error('Error al enviar correo:', e);
   }
@@ -2417,16 +2426,25 @@ window.sendActivePlanByEmail=async()=>{
     
     const to = [...new Set(emails)];
     if(to.length > 0) {
-      await addDoc(collection(db, 'mail'), {
-        to: to,
-        message: {
-          subject: `PDF: Plan de Fortalecimiento - ${activePlanData.asesor}`,
-          html: `<p>Hola,</p>
+      const subject = `PDF: Plan de Fortalecimiento - ${activePlanData.asesor}`;
+      const html = `<p>Hola,</p>
                  <p>Adjunto encontrarás el enlace para descargar el PDF del plan o Uno a Uno de <b>${activePlanData.asesor}</b>.</p>
                  <p><a href="${downloadUrl}" style="background:var(--foreground);color:#fff;padding:8px 12px;text-decoration:none;border-radius:6px;display:inline-block;">Descargar PDF</a></p>
-                 <p>Saludos.</p>`
-        }
+                 <p>Saludos.</p>`;
+
+      // 1. Guardar en base de datos para historial
+      await addDoc(collection(db, 'mail'), {
+        to: to,
+        message: { subject: subject, html: html }
       });
+
+      // 2. Despachar de inmediato usando la Netlify Function
+      fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: to, subject: subject, html: html })
+      }).catch(err => console.warn('Error en llamada directa a send-email function:', err));
+
       showToast('✅ Correo con PDF enviado correctamente.');
     } else {
       showToast('⚠️ No se encontraron correos para enviar.');
