@@ -1135,7 +1135,7 @@ function refreshTabHeaders(p){
   }
   const editBtn=document.getElementById('fm-edit-btn');
   if(editBtn) editBtn.style.display=canEdit&&p.estado!=='Cierre'&&!isUaU?'':'none';
-  const canDelete = currentUserProfile?.rol==='rh_global' || currentUserProfile?.esRhGlobal;
+  const canDelete = userProfile?.rol==='rh_global' || userProfile?.esRhGlobal;
   const delBtn = document.getElementById('fm-delete-btn');
   if(delBtn) delBtn.style.display=canDelete?'':'none';
   // Ajuste color botones header para UaU
