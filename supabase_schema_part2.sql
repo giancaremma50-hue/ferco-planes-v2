@@ -45,3 +45,9 @@ ALTER TABLE public.notificaciones ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Permitir acceso a planes" ON public.planes FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Permitir acceso a notificaciones" ON public.notificaciones FOR ALL USING (auth.role() = 'authenticated');
+
+-- ==========================================
+-- 4. AJUSTE DE COLUMNA DE SUCURSAL EN PERFILES
+-- ==========================================
+ALTER TABLE IF EXISTS public.perfiles ADD COLUMN IF NOT EXISTS sucursal TEXT;
+
