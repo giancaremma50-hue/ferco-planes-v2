@@ -626,6 +626,23 @@ try {
       const configSnap=await getDoc(doc(db,'config','empresa'));
       if(configSnap.exists()){
         window.EmpresaConfig=configSnap.data();
+        
+        // --- DATA MIGRATION: Fix role names ---
+        if (window.EmpresaConfig && window.EmpresaConfig.puestos) {
+          let modified = false;
+          window.EmpresaConfig.puestos.forEach(p => {
+             const lowerName = (p.nombre || '').trim().toLowerCase();
+             if (lowerName === 'sucursal' || lowerName === 'gerente sucursal') {
+                p.nombre = 'Gerente de Sucursal';
+                modified = true;
+             }
+          });
+          if (modified) {
+             console.log("Migrating role names across all countries...");
+             setDoc(doc(db, 'config', 'empresa'), window.EmpresaConfig);
+          }
+        }
+        // -------------------------------------------
       } else {
         const defaultConfig = {
           paises: ['Guatemala', 'El Salvador', 'Honduras', 'México'],
