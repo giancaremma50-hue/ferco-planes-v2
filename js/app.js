@@ -2786,9 +2786,22 @@ window.onAreaChange=()=>{
   };
   repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>';
   if(!area){ cargoSelect.innerHTML='<option value="">— Selecciona el área primero —</option>'; cargoSelect.disabled=true; return; }
-  const pais = document.getElementById('uPais').value; const rolesArea = cfg.puestos.filter(p => p.area === area && p.pais === pais);
+  const pais = document.getElementById('uPais').value; 
+  const rolesArea = cfg.puestos.filter(p => p.area === area && p.pais === pais);
+  
+  // Deduplicar puestos por nombre para no mostrar puestos repetidos
+  const seenNombres = new Set();
+  const uniqueRoles = [];
+  rolesArea.forEach(r => {
+    const normNombre = r.nombre.trim().toLowerCase();
+    if(!seenNombres.has(normNombre)){
+      seenNombres.add(normNombre);
+      uniqueRoles.push(r);
+    }
+  });
+
   let cHtml = '<option value="">— Selecciona el puesto / rol —</option>';
-  rolesArea.forEach(r => { cHtml += `<option value="${r.id}">${r.nombre}</option>`; });
+  uniqueRoles.forEach(r => { cHtml += `<option value="${r.id}">${r.nombre}</option>`; });
   cargoSelect.innerHTML = cHtml;
   cargoSelect.disabled = false;
 };
@@ -2804,13 +2817,37 @@ window.onPuestoChange=()=>{
   };
   if(!cargo){ repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>'; return; }
   const puestoInfo = cfg.puestos.find(p => p.id === cargo);
-  if(!puestoInfo || !puestoInfo.reportaA) { repSelect.innerHTML='<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>'; return; }
-  const parentRolId = puestoInfo.reportaA;
-  const posiblesJefes = allUsers.filter(u => u.cargo === parentRolId);
-  let rHtml = '<option value="">— Selecciona a quién le reporta —</option>';
-  if(posiblesJefes.length === 0){ rHtml += '<option value="">(No hay usuarios con el rol requerido en el sistema)</option>'; }
-  else { posiblesJefes.forEach(jefe => { rHtml += `<option value="${jefe.uid}">${jefe.nombre} (${jefe.pais || 'Global'})</option>`; }); }
-  repSelect.innerHTML = rHtml;
+  if(!puestoInfo) { repSelect.innerHTML='<option value="">— Sin asignación (Opcional) —</option>'; return; }
+  
+  // Encontrar todas las variantes del puesto con el mismo nombre en esta misma área y país
+  const normNombre = puestoInfo.nombre.trim().toLowerCase();
+  const puestosEquivalentes = cfg.puestos.filter(p => 
+    p.area === puestoInfo.area && 
+    p.pais === puestoInfo.pais && 
+    p.nombre.trim().toLowerCase() === normNombre
+  );
+  
+  // Coleccionar todos los IDs de puestos superiores válidos para todas estas variantes
+  const parentPuestoIds = new Set();
+  puestosEquivalentes.forEach(p => {
+    if (p.reportaA) parentPuestoIds.add(p.reportaA);
+  });
+  
+  if (parentPuestoIds.size === 0) {
+    repSelect.innerHTML = '<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>';
+  } else {
+    // Filtrar jefes posibles: usuarios cuyos cargos coincidan con cualquiera de los puestos superiores válidos
+    const posiblesJefes = allUsers.filter(u => parentPuestoIds.has(u.cargo));
+    let rHtml = '<option value="">— Selecciona a quién le reporta —</option>';
+    if(posiblesJefes.length === 0){ 
+      rHtml += '<option value="">(No hay usuarios con el rol requerido en el sistema)</option>'; 
+    } else { 
+      posiblesJefes.forEach(jefe => { 
+        rHtml += `<option value="${jefe.uid}">${jefe.nombre} (${jefe.cargo || jefe.rol})</option>`; 
+      }); 
+    }
+    repSelect.innerHTML = rHtml;
+  }
   
   const pName = puestoInfo ? puestoInfo.nombre.toLowerCase() : '';
   const uSucWrap = document.getElementById('uSucursalWrap');
