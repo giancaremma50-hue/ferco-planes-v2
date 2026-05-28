@@ -2245,7 +2245,7 @@ function renderEditTab(t){
         if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
           sucGroup.style.display = 'block';
           const country = paisEl.value;
-          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const stores = ALL_SUCURSALES_DB.filter(s => s.pais === country).map(s => s.nombre).sort();
           const currentVal = sucEl.value || p.sucursal; // p is editFormData
           sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
           if(stores.includes(currentVal)) sucEl.value = currentVal;
@@ -3031,7 +3031,7 @@ function renderUauTab(t){
         if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
           sucGroup.style.display = 'block';
           const country = paisEl.value;
-          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const stores = ALL_SUCURSALES_DB.filter(s => s.pais === country).map(s => s.nombre).sort();
           const currentVal = sucEl.value || p.sucursal; // p is editFormData
           sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
           if(stores.includes(currentVal)) sucEl.value = currentVal;
@@ -3201,7 +3201,7 @@ function renderUauSegTab(t){
         if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
           sucGroup.style.display = 'block';
           const country = paisEl.value;
-          const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+          const stores = ALL_SUCURSALES_DB.filter(s => s.pais === country).map(s => s.nombre).sort();
           const currentVal = sucEl.value || p.sucursal; // p is editFormData
           sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
           if(stores.includes(currentVal)) sucEl.value = currentVal;
@@ -3898,7 +3898,7 @@ document.addEventListener('change', e => {
       if(p.toLowerCase().includes('gerente de sucursal') || p.toLowerCase().includes('asesor')) {
         sucGroup.style.display = 'block';
         const country = paisEl.value;
-        const stores = (companyConfig.sucursales_por_pais || {})[country] || [];
+        const stores = ALL_SUCURSALES_DB.filter(s => s.pais === country).map(s => s.nombre).sort();
         const currentVal = sucEl.value;
         sucEl.innerHTML = '<option value="">Seleccione sucursal...</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
         if(stores.includes(currentVal)) sucEl.value = currentVal;
