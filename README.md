@@ -59,6 +59,13 @@ Para el área **Comercial**. Captura 11 indicadores numéricos semanales (utilid
 - Árbol jerárquico colapsable agrupado en: **País ➔ Área/Departamento ➔ Colaboradores**.
 - Tarjetas Premium y Filtrado Inteligente de Líderes.
 
+
+### 🗑️ Eliminación Segura (Super-Admin)
+- Privilegio exclusivo para perfiles `RH Global`.
+- Botones de eliminación inyectados estratégicamente en la tarjeta de Usuarios y en el Detalle de los Planes.
+- **Validación de seguridad:** Cada intento de borrado levanta un *overlay* oscuro que exige la re-autenticación (contraseña actual del administrador) validando contra `supabase.auth.signInWithPassword`.
+- Impacto inmediato de RLS: Al borrarse un registro, se invalidan en tiempo real los accesos a recursos protegidos.
+
 ### 🛡️ Migración y Seguridad Backend a Supabase
 - **Reglas RLS Postgre:** Implementación de políticas (Row Level Security) nativas en Supabase Storage bloqueando subidas anónimas y permitiendo manipulación protegida mediante autenticación.
 - Base de datos relacional híbrida con adaptador de Firestore a consultas REST de Supabase, manteniendo la velocidad interactiva del frontend.
