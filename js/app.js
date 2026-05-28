@@ -2883,7 +2883,16 @@ window.saveUser=async()=>{
   try{
     // 1. Crear cuenta con cliente temporal para no desloguear al admin
     const tempSupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        storage: {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {}
+        }
+      }
     });
     const { data: authData, error: authErr } = await tempSupabase.auth.signUp({ email, password: pass });
     if (authErr) throw authErr;

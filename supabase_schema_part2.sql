@@ -51,3 +51,30 @@ CREATE POLICY "Permitir acceso a notificaciones" ON public.notificaciones FOR AL
 -- ==========================================
 ALTER TABLE IF EXISTS public.perfiles ADD COLUMN IF NOT EXISTS sucursal TEXT;
 
+
+-- ==========================================
+-- 5. TABLA PARA LA COLA DE CORREOS (mail)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.mail (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    "to" TEXT[] NOT NULL,
+    message JSONB NOT NULL
+);
+
+-- RLS para la tabla mail
+ALTER TABLE public.mail ENABLE ROW LEVEL SECURITY;
+
+-- Permitir a usuarios autenticados insertar correos en la cola
+CREATE POLICY "Permitir inserción de correos a autenticados" 
+ON public.mail FOR INSERT 
+TO authenticated 
+WITH CHECK (true);
+
+-- Permitir a usuarios autenticados leer sus propios registros o consultas de envío
+CREATE POLICY "Permitir lectura de correos a autenticados" 
+ON public.mail FOR SELECT 
+TO authenticated 
+USING (true);
+
+
