@@ -2762,6 +2762,21 @@ window.onPuestoChange=()=>{
   if(posiblesJefes.length === 0){ rHtml += '<option value="">(No hay usuarios con el rol requerido en el sistema)</option>'; }
   else { posiblesJefes.forEach(jefe => { rHtml += `<option value="${jefe.uid}">${jefe.nombre} (${jefe.pais || 'Global'})</option>`; }); }
   repSelect.innerHTML = rHtml;
+  
+  const pName = puestoInfo ? puestoInfo.nombre.toLowerCase() : '';
+  const uSucWrap = document.getElementById('uSucursalWrap');
+  const uSucEl = document.getElementById('uSucursal');
+  if(uSucWrap && uSucEl) {
+    if(pName.includes('gerente de sucursal') || pName.includes('asesor')) {
+      uSucWrap.style.display = 'block';
+      const cPais = document.getElementById('uPais').value;
+      const stores = ALL_SUCURSALES_DB.filter(s => s.pais === cPais).map(s => s.nombre).sort();
+      uSucEl.innerHTML = '<option value="">— Selecciona sucursal —</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+    } else {
+      uSucWrap.style.display = 'none';
+      uSucEl.value = '';
+    }
+  }
 }
 
 window.populateReportaA=()=>{}
@@ -2827,7 +2842,7 @@ window.saveUser=async()=>{
       nombre,email,cargo,
       area:esRhGlobal?'rh_global':area,
       pais:esRhGlobal?'Global':(pais||''),
-      esRhGlobal,rol:rolLegacy,reportaA: reportaA || null
+      esRhGlobal,rol:rolLegacy,sucursal,reportaA: reportaA || null
     };
     const { error: dbErr } = await supabase.from('perfiles').insert(profile);
     if (dbErr) {
