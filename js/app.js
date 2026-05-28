@@ -3982,9 +3982,10 @@ window.doDeleteUser = async () => {
 
 // --- SECURE PLAN DELETION ---
 let planToDeleteId = null;
-window.confirmDeletePlan = (id, nombre) => {
-  planToDeleteId = id;
-  document.getElementById('delPlanNombre').textContent = nombre;
+window.confirmDeletePlan = () => {
+  if (!activePlanData) return;
+  planToDeleteId = activePlanData.id;
+  document.getElementById('delPlanNombre').textContent = activePlanData.asesor || 'Plan';
   document.getElementById('delPlanPass').value = '';
   document.getElementById('delPlanErr').innerHTML = '';
   document.getElementById('deletePlanOverlay').classList.add('open');

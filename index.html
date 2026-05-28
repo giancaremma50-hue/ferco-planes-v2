@@ -19,7 +19,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="stylesheet" href="css/main.css?v=1779938386">
+<link rel="stylesheet" href="css/main.css?v=1779938619">
 </head>
 <body>
 
@@ -133,7 +133,7 @@
       <div><div class="fm-title" id="fm-title">Detalle</div><div class="fm-sub" id="fm-sub"></div></div>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-sm" id="fm-edit-btn" onclick="openEditModal()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Editar</button>
-        <button class="btn btn-sm" id="fm-delete-btn" style="display:none;" title="Eliminar Plan" onclick="confirmDeletePlan(activePlanData.id, activePlanData.asesor)">🗑️ Eliminar</button>
+        <button class="btn btn-sm" id="fm-delete-btn" style="display:none;" title="Eliminar Plan" onclick="confirmDeletePlan()">🗑️ Eliminar</button>
         <button class="btn btn-sm" id="fm-email-btn" onclick="sendActivePlanByEmail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Enviar PDF</button>
         <button class="btn btn-gold btn-sm" onclick="printActivePlan()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>PDF</button>
         <button class="btn btn-sm btn-danger" onclick="closeDetail()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -393,7 +393,7 @@
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Supabase Client -->
-  <script type="module" src="js/app.js?v=1779938386"></script>
+  <script type="module" src="js/app.js?v=1779938619"></script>
 
 <!-- MODAL CONFIGURACIÓN GENERAL -->
 <div class="overlay" id="adminConfigOverlay">
