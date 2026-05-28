@@ -2725,14 +2725,32 @@ window.onPaisChange=()=>{
   const pais = document.getElementById('uPais').value;
   const areaSelect = document.getElementById('uArea');
   const cargoSelect = document.getElementById('uCargo');
-  if(!pais){ areaSelect.disabled = true; cargoSelect.disabled = true; return; }
+  
+  // RESET downstream
+  areaSelect.value = '';
+  cargoSelect.innerHTML = '<option value="">— Selecciona el área primero —</option>';
+  cargoSelect.disabled = true;
+  const repSelect = document.getElementById('uReportaA');
+  if(repSelect) repSelect.innerHTML = '<option value="">— Sin asignación —</option>';
+  const uSucWrap = document.getElementById('uSucursalWrap');
+  if(uSucWrap) { uSucWrap.style.display = 'none'; document.getElementById('uSucursal').value = ''; }
+
+  if(!pais){ areaSelect.disabled = true; return; }
   areaSelect.disabled = false;
+  
+  // Also populate areas based on EmpresaConfig if needed
+  // Not strictly needed since HTML has them hardcoded for now, but let's just leave it as enabling
 }
 
 window.onAreaChange=()=>{
   const area = document.getElementById('uArea').value;
   const cargoSelect = document.getElementById('uCargo');
   const repSelect = document.getElementById('uReportaA');
+  
+  // RESET downstream
+  const uSucWrap = document.getElementById('uSucursalWrap');
+  if(uSucWrap) { uSucWrap.style.display = 'none'; document.getElementById('uSucursal').value = ''; }
+  repSelect.innerHTML = '<option value="">— Sin asignación —</option>';
   const rawCfg = window.EmpresaConfig || {};
   const cfg = {
     paises: rawCfg.paises || [],
