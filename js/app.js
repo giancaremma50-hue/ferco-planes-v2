@@ -2847,15 +2847,24 @@ window.onPuestoChange=()=>{
   
   // Coleccionar todos los IDs de puestos superiores válidos para todas estas variantes
   const parentPuestoIds = new Set();
+  const parentPuestoNames = new Set();
   puestosEquivalentes.forEach(p => {
-    if (p.reportaA) parentPuestoIds.add(p.reportaA);
+    if (p.reportaA) {
+      parentPuestoIds.add(p.reportaA);
+      // Find the name of this parent position to support legacy cargo text
+      const pParent = cfg.puestos.find(x => x.id === p.reportaA);
+      if (pParent) parentPuestoNames.add(pParent.nombre.trim().toLowerCase());
+    }
   });
   
   if (parentPuestoIds.size === 0) {
     repSelect.innerHTML = '<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>';
   } else {
-    // Filtrar jefes posibles: usuarios cuyos cargos coincidan con cualquiera de los puestos superiores válidos
-    const posiblesJefes = allUsers.filter(u => parentPuestoIds.has(u.cargo));
+    // Filtrar jefes posibles: usuarios cuyos cargos coincidan con IDs o nombres legacy
+    const posiblesJefes = allUsers.filter(u => {
+      const uCargoLower = (u.cargo || '').trim().toLowerCase();
+      return parentPuestoIds.has(u.cargo) || parentPuestoNames.has(uCargoLower);
+    });
     let rHtml = '<option value="">— Selecciona a quién le reporta —</option>';
     if(posiblesJefes.length === 0){ 
       rHtml += '<option value="">(No hay usuarios con el rol requerido en el sistema)</option>'; 
@@ -3930,7 +3939,19 @@ window.onAdmPuestoChange = () => {
   }
   
   const posibles = window.EmpresaConfig.puestos.filter(p => p.pais === pais && p.area === area);
-  sRep.innerHTML = '<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>' + posibles.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  
+  // Deduplicar puestos en el dropdown de administración por nombre
+  const seenNombres = new Set();
+  const uniquePosibles = [];
+  posibles.forEach(p => {
+    const normNombre = p.nombre.trim().toLowerCase();
+    if(!seenNombres.has(normNombre)){
+      seenNombres.add(normNombre);
+      uniquePosibles.push(p);
+    }
+  });
+
+  sRep.innerHTML = '<option value="">— Máximo Nivel (Nadie a quien reportar) —</option>' + uniquePosibles.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
 };
 
 window.savePuesto = () => {
