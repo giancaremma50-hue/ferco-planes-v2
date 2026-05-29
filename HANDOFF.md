@@ -1,78 +1,28 @@
-# HANDOFF — Planes FERCO v5
-*Última actualización: May 28, 2026*
+# Documento de Transición (Handoff)
 
----
+Este documento está diseñado para cualquier desarrollador, ingeniero o agente de IA que tome el control del proyecto "Planes FERCO V3" en el futuro.
 
-## 1. Descripción general del proyecto
+## Estado Actual del Proyecto
+El proyecto se encuentra **en producción y completamente funcional**. Recientemente se completó una refactorización mayor para migrar de una jerarquía estática a una jerarquía 100% dinámica, permitiendo que cualquier puesto en la empresa pueda tener subordinados y que la plataforma respete la cadena de mando de forma automática.
 
-**Planes de Fortalecimiento FERCO** es una aplicación web SPA (Single Page Application) que gestiona planes de desarrollo comercial y administrativo para los equipos de FERCO en Guatemala, El Salvador, Honduras y México.
+## Estructura de Archivos Clave
+- `index.html`: Punto de entrada único (Single Page Application). Contiene la estructura de todas las vistas, modales y llamadas a scripts.
+- `js/app.js`: Contiene toda la lógica del negocio. Aquí se manejan las llamadas a Supabase, validaciones de formularios, renderizado de tablas, gráficos y cálculo recursivo de jerarquías (`getSubordinateUids`).
+- `css/main.css`: Estilos visuales. Se debe mantener el diseño moderno y limpio.
+- `netlify/functions/send-email.js`: Función backend de Netlify que se conecta a la API de **Resend** para notificaciones por correo electrónico.
 
-* **URL de producción:** [https://ferco-planes-v2.netlify.app](https://ferco-planes-v2.netlify.app)
-* **Repositorio:** [https://github.com/giancaremma50-hue/ferco-planes-v2](https://github.com/giancaremma50-hue/ferco-planes-v2)
-* **Rama principal:** `main` (despliegue automático en Netlify)
-* **Archivo central:** `js/app.js` e `index.html` en la raíz del proyecto.
+## Configuración de Entorno (Deploy / Local)
+Para levantar el proyecto de forma local:
+1. Clona el repositorio.
+2. Puedes usar una extensión como *Live Server* en VSCode o correr `npx serve` en el directorio principal.
+3. Asegúrate de configurar la variable de entorno `RESEND_API_KEY` y `FROM_EMAIL` en tu entorno local o en el panel de Netlify para que el envío de correos funcione.
+4. Las llaves públicas de Supabase (`supabaseUrl` y `supabaseKey`) se encuentran en las primeras líneas de `app.js`.
 
----
+## Notas Importantes para Futuros Desarrolladores
+- **Caché en Producción:** Netlify suele cachear agresivamente los archivos `.js`. Si haces modificaciones en `js/app.js`, **debes incrementar el parámetro `?v=...`** en la etiqueta `<script>` dentro de `index.html` (ej. `?v=1780000018`) para romper la caché de los usuarios.
+- **Creación de Usuarios:** La función `saveUser` en `app.js` utiliza un cliente de Supabase temporal (`tempSupabase`) con almacenamiento simulado para crear usuarios nuevos. Esto es intencional y evita que la sesión del administrador activo se cierre por accidente al crear la cuenta de un colaborador. ¡No remover esta lógica!
+- **Jerarquías Cruzadas (CEO):** En la función `onPuestoChange` existe una excepción codificada explícitamente para el rol de **CEO**. Dado que el árbol divide los puestos por país y área, la excepción asegura que cualquier persona bajo el rol "CEO" pueda ser asignado como jefe, rompiendo la barrera de área/país.
 
-## 2. Stack tecnológico actual (v5)
-
-| Capa | Tecnología |
-|------|-----------|
-| **Frontend** | HTML5 + CSS3 + JavaScript vanilla (SPA sin frameworks) |
-| **Autenticación** | Firebase Authentication (email/password) |
-| **Base de Datos** | **Supabase (PostgreSQL)** alojando la base centralizada con conexión directa desde el cliente |
-| **Almacenamiento** | **Supabase Storage** (evidencias, archivos adjuntos y PDFs generados) con políticas RLS activas |
-| **Hosting** | Netlify (deploy automático desde la rama `main` en GitHub) |
-| **Gráficos** | Chart.js 4.4.0 (visualizaciones de históricos en planes Uno a Uno) |
-
----
-
-## 3. Estructura del repositorio
-
-```
-ferco-planes-v2/
-├── index.html          # HTML principal y estructura base de la SPA
-├── css/
-│   └── main.css        # Estilos visuales de la aplicación, temas Dark/Light
-├── js/
-│   ├── app.js           # Lógica central del negocio (Controladores, Renderers, Auth)
-│   └── supabase-client.js # Configuración del cliente Supabase y funciones DB
-├── supabase_schema.sql # Estructura y tablas DDL de Supabase (PostgreSQL)
-├── seed.sql            # Datos de inicialización y catálogo maestro de la base de datos
-└── README.md           # Documentación general y arquitectura v5
-```
-
----
-
-## 4. Estado de la Base de Datos (Supabase)
-
-El sistema ha sido migrado exitosamente de Firestore a **Supabase (PostgreSQL)**. 
-
-### Colección de Configuración (`config` en Supabase)
-El registro clave es `id = 'empresa'`. Contiene en formato JSON:
-* `paises`: Lista de países autorizados.
-* `areas`: Áreas de la empresa (Ej: Comercial, Administrativa, etc.).
-* `puestos`: Diccionario completo de cargos en la jerarquía, relacionando a quién reportan y su respectivo nivel jerárquico.
-
-### Control de Sucursales
-Las sucursales se obtienen directamente de la base de datos mediante la tabla maestra, permitiendo consistencia a nivel internacional y formularios de alta de usuario con dropdowns dinámicos basados en el país y puesto seleccionado.
-
----
-
-## 5. Próximos pasos pendientes y sugeridos
-
-### 1. Módulo de Edición de Puestos en UI (Punto 3 - Revertido temporalmente)
-* **Estado:** Actualmente, el panel administrativo permite **Agregar** y **Eliminar** puestos del diccionario maestro, pero la edición inline de un puesto existente fue revertida para conservar la versión estable mientras se redefine el flujo de actualización de IDs jerárquicos.
-* **Pendiente:** Si en el futuro se requiere editar puestos visualmente, se debe planificar cómo manejar la cascada de IDs jerárquicos (por ejemplo, si un puesto cambia de nombre, actualizar dinámicamente a todos los colaboradores que reportan a su ID anterior).
-
-### 2. Sincronización/Migración de Usuarios Firebase ➔ Supabase Auth (Punto 2 - Omitido)
-* **Estado:** Se decidió omitir la migración masiva automática de usuarios de Firebase Auth a Supabase Auth para mantener el flujo de autenticación actual simple y sin interrupciones.
-* **Pendiente:** Si se deseara unificar al 100% las cuentas en Supabase Auth en el futuro, se requerirá un script backend para exportar los hashes de contraseñas de Firebase e inyectarlos en la tabla `auth.users` de Supabase.
-
-### 3. Pruebas de Despliegue en Producción
-* **Estado:** Se ha hecho el rollback completo y limpio en la rama `main` de GitHub.
-* **Acción:** Verificar en el panel de Netlify que el despliegue automático haya finalizado exitosamente y que la URL pública funcione correctamente sin errores de consola.
-
----
-
-*Handoff preparado para FERCO · v5 · Mayo 2026*
+## Siguientes Pasos (Opcionales)
+- Considerar mover las credenciales públicas de Supabase de `app.js` hacia variables de entorno inyectadas durante el *build*, aunque no representan un riesgo crítico debido a las reglas RLS de Supabase.
+- Posible refactorización a módulos ECMAScript (`import/export`) si `app.js` sigue creciendo (actualmente supera las 4000 líneas).
